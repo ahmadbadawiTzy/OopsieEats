@@ -1,0 +1,65 @@
+# Environments and Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+backend/lib/
+backend/lib64/
+!frontend/lib/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+*.db
+*.sqlite
+*.sqlite3
+
+# Testing & Linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# ML Weights & Datasets
+*.pt
+*.onnx
+*.engine
+ml/weights/
+ml/dataset/
+backend/app/ml/weights/*.pt
+!backend/app/ml/weights/.gitkeep
+
+# Flutter & Dart
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+frontend/build/
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
+frontend/.packages
+*.log
+
+# Operating System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,18 @@
+# NutriView - Supported YOLO26n Food Classes
+# Single source of truth for YOLO26n detector classes (docs/ai.md §5, §12)
+names:
+  0: nasi_putih
+  1: nasi_goreng
+  2: ayam_goreng
+  3: ikan_goreng
+  4: telur_dadar
+  5: telur_rebus
+  6: tempe_goreng
+  7: tahu_goreng
+  8: perkedel
+  9: sate_ayam
+  10: rendang
+  11: gado_gado
+  12: bakso
+  13: mie_goreng
+  14: sayur_bening

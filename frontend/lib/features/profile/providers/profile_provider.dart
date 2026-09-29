@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+import 'package:nutriview/core/error_handler.dart';
+import 'package:nutriview/data/models/meal.dart';
+import 'package:nutriview/data/models/profile.dart';
+import 'package:nutriview/data/models/user.dart';
+import 'package:nutriview/data/repositories/profile_repository.dart';
+
+class ProfileProvider extends ChangeNotifier {
+  final ProfileRepository _repository;
+
+  User? _user;
+  UserProfile? _profile;
+  DailyTarget? _dailyTarget;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  ProfileProvider(this._repository);
+
+  User? get user => _user;
+  UserProfile? get profile => _profile;
+  DailyTarget? get dailyTarget => _dailyTarget;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get hasProfile => _profile != null;
+
+  Future<void> loadProfile() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _repository.getUser();
+      _profile = _user?.profile;
+      if (_profile != null) {
+        try {
+          _dailyTarget = await _repository.getDailyTarget();
+        } catch (_) {}
+      }
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+    } catch (_) {
+      _errorMessage = 'Gagal memuat profil pengguna.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> saveProfile(UserProfile newProfile) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _profile = await _repository.updateProfile(newProfile);
+      _dailyTarget = await _repository.getDailyTarget();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal menyimpan profil.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+}
