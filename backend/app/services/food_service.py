@@ -45,10 +45,64 @@ def get_food_by_id(db: Session, food_id: int) -> Food:
     return food
 
 
+YOLO_CLASS_ALIASES = {
+    "nasi_putih": "nasi_putih",
+    "nasi_goreng": "nasi_goreng",
+    "ayam_goreng": "ayam_goreng",
+    "ikan_goreng": "ikan_goreng",
+    "telur_dadar": "telur_dadar",
+    "telur_goreng": "telur_dadar",
+    "telur_rebus": "telur_rebus",
+    "tempe_goreng": "tempe_goreng",
+    "tahu_goreng": "tahu_goreng",
+    "perkedel": "perkedel",
+    "perkedel_kentang": "perkedel",
+    "sate": "sate_ayam",
+    "sate_ayam": "sate_ayam",
+    "rendang": "rendang",
+    "rendang_sapi": "rendang",
+    "gado_gado": "gado_gado",
+    "bakso": "bakso",
+    "bakso_sapi": "bakso",
+    "mie_goreng": "mie_goreng",
+    "sayur_bening": "sayur_bening",
+    "sayur_bening_bayam": "sayur_bening",
+    "apple": "Apel",
+    "apel": "Apel",
+    "banana": "Pisang ambon",
+    "pisang": "Pisang ambon",
+    "pisang_ambon": "Pisang ambon",
+}
+
+
 def get_food_by_yolo_class(db: Session, yolo_class: str) -> Optional[Food]:
+    if not yolo_class:
+        return None
+
+    # 1. Exact match on yolo_class
     stmt = (
         select(Food)
         .options(joinedload(Food.nutrition))
         .where(Food.yolo_class == yolo_class, Food.is_active.is_(True))
+    )
+    food = db.scalars(stmt).first()
+    if food:
+        return food
+
+    # 2. Normalized snake_case and alias lookup
+    normalized = yolo_class.strip().lower().replace(" ", "_").replace("-", "_")
+    target = YOLO_CLASS_ALIASES.get(normalized, normalized)
+
+    stmt = (
+        select(Food)
+        .options(joinedload(Food.nutrition))
+        .where(
+            (Food.yolo_class == target)
+            | (Food.yolo_class == normalized)
+            | (Food.name.ilike(yolo_class.strip()))
+            | (Food.name.ilike(target))
+            | (Food.name.ilike(f"{yolo_class.strip()}%")),
+            Food.is_active.is_(True),
+        )
     )
     return db.scalars(stmt).first()

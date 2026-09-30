@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:nutriview/core/config.dart';
 import 'package:nutriview/core/error_handler.dart';
 
@@ -125,9 +126,25 @@ class ApiClient {
     final headers = await _headers(isMultipart: true);
     request.headers.addAll(headers);
 
+    String filename = imageFile.path.split(Platform.pathSeparator).last;
+    final lower = filename.toLowerCase();
+    MediaType contentType;
+    if (lower.endsWith('.png')) {
+      contentType = MediaType('image', 'png');
+    } else if (lower.endsWith('.webp')) {
+      contentType = MediaType('image', 'webp');
+    } else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+      contentType = MediaType('image', 'jpeg');
+    } else {
+      filename = '$filename.jpg';
+      contentType = MediaType('image', 'jpeg');
+    }
+
     final multipartFile = await http.MultipartFile.fromPath(
       'image',
       imageFile.path,
+      filename: filename,
+      contentType: contentType,
     );
     request.files.add(multipartFile);
 

@@ -112,7 +112,20 @@ def detect_food(
         )
 
     # 3. Check Content-Type
-    if image.content_type not in ALLOWED_MIME_TYPES:
+    content_type = image.content_type
+    if (
+        (not content_type or content_type == "application/octet-stream")
+        and ext in ALLOWED_EXTENSIONS
+    ):
+        mime_map = {
+            ".jpg": "image/jpeg",
+            ".jpeg": "image/jpeg",
+            ".png": "image/png",
+            ".webp": "image/webp",
+        }
+        content_type = mime_map.get(ext, content_type)
+
+    if content_type not in ALLOWED_MIME_TYPES:
         raise AppError(
             status_code=status.HTTP_400_BAD_REQUEST,
             code="UNSUPPORTED_IMAGE_TYPE",

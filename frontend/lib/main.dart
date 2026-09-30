@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:nutriview/core/config.dart';
 import 'package:nutriview/core/routes.dart';
@@ -28,8 +29,9 @@ import 'package:nutriview/shared/widgets/loading_indicator.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
 
   final apiClient = ApiClient();
   final authRepository = AuthRepository(apiClient);
@@ -92,7 +94,9 @@ class _NutriViewAppState extends State<NutriViewApp> {
   @override
   void initState() {
     super.initState();
-    _checkInitialAuth();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkInitialAuth();
+    });
   }
 
   Future<void> _checkInitialAuth() async {
