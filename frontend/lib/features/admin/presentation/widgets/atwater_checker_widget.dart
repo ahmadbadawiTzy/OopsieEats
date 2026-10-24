@@ -61,13 +61,15 @@ class AtwaterCheckerWidget extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(NeoTokens.space12),
       decoration: BoxDecoration(
         color: NeoTokens.paper,
-        border: Border.all(color: NeoTokens.ink, width: 2.5),
-        boxShadow: const [
-          BoxShadow(color: NeoTokens.ink, offset: Offset(3, 3), blurRadius: 0),
-        ],
+        borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+        border: Border.all(
+          color: NeoTokens.ink,
+          width: NeoTokens.borderWidth,
+        ),
+        boxShadow: NeoTokens.neoBoxShadow(),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,35 +77,40 @@ class AtwaterCheckerWidget extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(NeoTokens.space8),
                 decoration: BoxDecoration(
                   color: statusColor,
-                  border: Border.all(color: NeoTokens.ink, width: 2),
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                  border: Border.all(
+                    color: NeoTokens.ink,
+                    width: NeoTokens.borderWidthThin,
+                  ),
                 ),
                 child: Icon(statusIcon, color: NeoTokens.ink, size: 20),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: NeoTokens.space10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'ATWATER ENERGY CHECKER',
                       style: TextStyle(
-                        fontFamily: 'Montserrat',
+                        fontFamily: 'monospace',
                         fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.inkSecondary,
-                        letterSpacing: 1.0,
+                        letterSpacing: 0.5,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       statusTitle,
                       style: const TextStyle(
-                        fontFamily: 'Montserrat',
                         fontSize: 13,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.ink,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],
@@ -111,7 +118,7 @@ class AtwaterCheckerWidget extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: NeoTokens.space8),
           Text(
             statusDesc,
             style: const TextStyle(
@@ -120,12 +127,16 @@ class AtwaterCheckerWidget extends StatelessWidget {
               color: NeoTokens.inkSecondary,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: NeoTokens.space10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
               color: NeoTokens.recess,
-              border: Border.all(color: NeoTokens.ink, width: 1.5),
+              borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+              border: Border.all(
+                color: NeoTokens.ink,
+                width: NeoTokens.borderWidthThin,
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

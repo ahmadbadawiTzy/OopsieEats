@@ -34,6 +34,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   bool _isLoadingFoods = false;
   String _foodSearchQuery = '';
   bool? _foodFilterActive;
+  final _foodSearchController = TextEditingController();
 
   // State: Articles
   List<dynamic> _articles = [];
@@ -52,6 +53,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   bool _isLoadingUsers = false;
   String _userSearchQuery = '';
   String? _userRoleFilter;
+  final _userSearchController = TextEditingController();
 
   // State: Simulator Tab
   final _simNameCtrl = TextEditingController(text: 'Simulasi Menu Sehat');
@@ -70,6 +72,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _foodSearchController.dispose();
+    _userSearchController.dispose();
     _simNameCtrl.dispose();
     _simCalCtrl.dispose();
     _simProCtrl.dispose();
@@ -166,63 +170,71 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     }
   }
 
-  void _confirmToggleUserStatus(int userId, bool currentStatus, String email) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
-          side: const BorderSide(color: NeoTokens.ink, width: 2),
-        ),
-        title: Text(currentStatus ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?'),
-        content: Text(
-          currentStatus
-              ? 'Akun $email tidak akan dapat login lagi sampai diaktifkan kembali.'
-              : 'Akun $email akan diaktifkan dan dapat login kembali ke aplikasi.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: currentStatus
-                  ? NeoTokens.alert
-                  : NeoTokens.primaryGreen,
-              foregroundColor: NeoTokens.paper,
-            ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              try {
-                await _adminRepo.setUserStatus(
-                  userId,
-                  !currentStatus,
-                  reason: 'Diubah dari dashboard manajemen pengguna',
-                );
-                _showSuccessSnackBar('Status akun $email berhasil diubah.');
-                _fetchUsers();
-                _fetchAuditLogs();
-              } on ApiException catch (e) {
-                _showErrorSnackBar(e.message);
-              } catch (e) {
-                _showErrorSnackBar('Gagal mengubah status akun: $e');
-              }
-            },
-            child: Text(currentStatus ? 'Nonaktifkan' : 'Aktifkan'),
-          ),
-        ],
-      ),
+  Future<void> _confirmToggleUserStatus(
+    int userId,
+    bool currentStatus,
+    String email,
+  ) async {
+    final confirmed = await NeoDialog.show(
+      context,
+      title: currentStatus ? 'Nonaktifkan Akun?' : 'Aktifkan Akun?',
+      message: currentStatus
+          ? 'Akun $email tidak akan dapat login lagi sampai diaktifkan kembali oleh administrator.'
+          : 'Akun $email akan diaktifkan dan dapat login kembali ke aplikasi.',
+      confirmText: currentStatus ? 'Nonaktifkan' : 'Aktifkan',
+      cancelText: 'Batal',
+      confirmColor: currentStatus ? NeoTokens.coralRed : NeoTokens.primaryGreen,
+      icon: currentStatus ? Icons.block_rounded : Icons.check_circle_outline_rounded,
     );
+
+    if (confirmed == true && mounted) {
+      try {
+        await _adminRepo.setUserStatus(
+          userId,
+          !currentStatus,
+          reason: 'Diubah dari dashboard manajemen pengguna',
+        );
+        _showSuccessSnackBar('Status akun $email berhasil diubah.');
+        _fetchUsers();
+        _fetchAuditLogs();
+      } on ApiException catch (e) {
+        _showErrorSnackBar(e.message);
+      } catch (e) {
+        _showErrorSnackBar('Gagal mengubah status akun: $e');
+      }
+    }
   }
 
   void _showErrorSnackBar(String message) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: NeoTokens.alert,
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              color: NeoTokens.paper,
+              size: 20,
+            ),
+            const SizedBox(width: NeoTokens.space10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: NeoTokens.paper,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: NeoTokens.coralRed,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+          side: const BorderSide(color: NeoTokens.ink, width: 2),
+        ),
       ),
     );
   }
@@ -231,9 +243,256 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.check_circle_outline_rounded,
+              color: NeoTokens.paper,
+              size: 20,
+            ),
+            const SizedBox(width: NeoTokens.space10),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: NeoTokens.paper,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
         backgroundColor: NeoTokens.primaryGreen,
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+          side: const BorderSide(color: NeoTokens.ink, width: 2),
+        ),
+      ),
+    );
+  }
+
+  // ========================================================================
+  // REUSABLE NEO-BRUTALIST UI HELPERS (FULL UI/UX PARITY)
+  // ========================================================================
+  Widget _buildFilterPill({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    Color activeColor = NeoTokens.lime,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? activeColor : NeoTokens.paper,
+            borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+            border: Border.all(
+              color: NeoTokens.ink,
+              width: isSelected
+                  ? NeoTokens.borderWidth
+                  : NeoTokens.borderWidthThin,
+            ),
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: NeoTokens.ink,
+                      offset: Offset(2, 2),
+                      blurRadius: 0,
+                    ),
+                  ]
+                : const [
+                    BoxShadow(
+                      color: NeoTokens.ink,
+                      offset: Offset(1, 1),
+                      blurRadius: 0,
+                    ),
+                  ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+              color: NeoTokens.ink,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar({
+    required TextEditingController controller,
+    required String hintText,
+    required ValueChanged<String> onChanged,
+    required VoidCallback onClear,
+  }) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: NeoTokens.paper,
+        borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+        border: Border.all(
+          color: NeoTokens.ink,
+          width: NeoTokens.borderWidthThin,
+        ),
+        boxShadow: NeoTokens.neoBoxShadowSmall(),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 14, right: 10),
+            child: Icon(Icons.search_rounded, size: 22, color: NeoTokens.ink),
+          ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              textInputAction: TextInputAction.search,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: NeoTokens.ink,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: const TextStyle(
+                  fontSize: 13.5,
+                  color: NeoTokens.inkMuted,
+                  fontWeight: FontWeight.w500,
+                ),
+                filled: false,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+          if (controller.text.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: NeoTokens.ink,
+                ),
+                onPressed: onClear,
+                tooltip: 'Hapus pencarian',
+                splashRadius: 20,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String message,
+    String? buttonText,
+    VoidCallback? onAction,
+  }) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(NeoTokens.space24),
+        child: NeoCard(
+          backgroundColor: NeoTokens.paper,
+          padding: const EdgeInsets.all(NeoTokens.space24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: NeoTokens.hazard,
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                  border: Border.all(
+                    color: NeoTokens.ink,
+                    width: NeoTokens.borderWidth,
+                  ),
+                  boxShadow: NeoTokens.neoBoxShadowSmall(),
+                ),
+                child: Icon(icon, size: 28, color: NeoTokens.ink),
+              ),
+              const SizedBox(height: NeoTokens.space16),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w900,
+                  color: NeoTokens.ink,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: NeoTokens.space8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: NeoTokens.inkSecondary,
+                  height: 1.4,
+                ),
+              ),
+              if (buttonText != null && onAction != null) ...[
+                const SizedBox(height: NeoTokens.space16),
+                NeoButton(
+                  text: buttonText,
+                  variant: NeoButtonVariant.primary,
+                  onPressed: onAction,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState({String message = 'Memuat data...'}) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: NeoTokens.paper,
+              borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+              border: Border.all(
+                color: NeoTokens.ink,
+                width: NeoTokens.borderWidth,
+              ),
+              boxShadow: NeoTokens.neoBoxShadowSmall(),
+            ),
+            child: const CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(NeoTokens.ink),
+            ),
+          ),
+          const SizedBox(height: NeoTokens.space12),
+          Text(
+            message,
+            style: const TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+              color: NeoTokens.ink,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -338,10 +597,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       Text(
                         isEdit ? 'EDIT NUTRISI PANGAN' : 'TAMBAH PANGAN BARU',
                         style: const TextStyle(
-                          fontFamily: 'Montserrat',
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           color: NeoTokens.ink,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       IconButton(
@@ -577,10 +836,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                       Text(
                         isEdit ? 'EDIT ARTIKEL GIZI' : 'TULIS ARTIKEL BARU',
                         style: const TextStyle(
-                          fontFamily: 'Montserrat',
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           color: NeoTokens.ink,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       IconButton(
@@ -693,19 +952,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              ChoiceChip(
-                                label: const Text('Draft'),
-                                selected: statusVal == 'draft',
-                                selectedColor: NeoTokens.hazard,
-                                onSelected: (_) =>
+                              _buildFilterPill(
+                                label: 'Draf',
+                                isSelected: statusVal == 'draft',
+                                activeColor: NeoTokens.hazard,
+                                onTap: () =>
                                     setSheetState(() => statusVal = 'draft'),
                               ),
-                              const SizedBox(width: 8),
-                              ChoiceChip(
-                                label: const Text('Published'),
-                                selected: statusVal == 'published',
-                                selectedColor: NeoTokens.lime,
-                                onSelected: (_) => setSheetState(
+                              _buildFilterPill(
+                                label: 'Publik',
+                                isSelected: statusVal == 'published',
+                                activeColor: NeoTokens.lime,
+                                onTap: () => setSheetState(
                                   () => statusVal = 'published',
                                 ),
                               ),
@@ -791,40 +1049,46 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       appBar: AppBar(
         backgroundColor: NeoTokens.paper,
         elevation: 0,
-        titleSpacing: 16,
+        titleSpacing: NeoTokens.space16,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const Text(
+              'NutriView',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+                color: NeoTokens.ink,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(width: NeoTokens.space8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
               decoration: BoxDecoration(
-                color: NeoTokens.cobalt,
+                color: NeoTokens.lime,
                 borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
                 border: Border.all(
                   color: NeoTokens.ink,
                   width: NeoTokens.borderWidthThin,
                 ),
-                boxShadow: NeoTokens.neoBoxShadowSmall(),
+                boxShadow: const [
+                  BoxShadow(
+                    color: NeoTokens.ink,
+                    offset: Offset(1.5, 1.5),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
               child: const Text(
-                'NV.ADMIN // CMS',
+                'PORTAL ADMIN',
                 style: TextStyle(
                   fontFamily: 'monospace',
                   fontWeight: FontWeight.w900,
                   fontSize: 10,
-                  color: NeoTokens.paper,
+                  color: NeoTokens.ink,
                   letterSpacing: -0.2,
                 ),
-              ),
-            ),
-            const SizedBox(width: NeoTokens.space10),
-            const Text(
-              'NutriView',
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                fontSize: 18,
-                color: NeoTokens.ink,
-                letterSpacing: -0.5,
               ),
             ),
           ],
@@ -833,13 +1097,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           Center(
             child: NeoBadge(
               label: widget.adminRole.toUpperCase().replaceAll('_', ' '),
-              color: NeoBadgeColor.yellow,
+              color: NeoBadgeColor.white,
+              fontSize: 9.5,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           IconButton(
             icon: const Icon(
-              Icons.person_outline_rounded,
+              Icons.dashboard_outlined,
               color: NeoTokens.ink,
             ),
             tooltip: 'Buka Mode Pengguna',
@@ -858,14 +1123,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           preferredSize: const Size.fromHeight(48),
           child: Column(
             children: [
-              Container(color: NeoTokens.ink, height: 2),
+              Container(color: NeoTokens.ink, height: NeoTokens.borderWidthThin),
               TabBar(
                 controller: _tabController,
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                indicatorColor: NeoTokens.cobalt,
+                indicatorColor: NeoTokens.ink,
                 indicatorWeight: 3.5,
-                labelColor: NeoTokens.cobalt,
+                labelColor: NeoTokens.ink,
                 unselectedLabelColor: NeoTokens.inkSecondary,
                 labelStyle: const TextStyle(
                   fontWeight: FontWeight.w900,
@@ -1033,14 +1298,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     const Text(
                       'LOG AUDIT TERAKHIR',
                       style: TextStyle(
-                        fontFamily: 'Montserrat',
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.ink,
+                        letterSpacing: -0.2,
                       ),
                     ),
                     TextButton(
-                      onPressed: () => _tabController.animateTo(4),
+                      onPressed: () => _tabController.animateTo(5),
                       child: const Text(
                         'Lihat Semua →',
                         style: TextStyle(fontWeight: FontWeight.w700),
@@ -1052,7 +1317,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                 if (_auditLogs.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Center(child: Text('Belum ada catatan aktivitas.')),
+                    child: Center(
+                      child: Text(
+                        'Belum ada catatan aktivitas audit.',
+                        style: TextStyle(
+                          color: NeoTokens.inkSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
                   )
                 else
                   ..._auditLogs.take(5).map((l) {
@@ -1188,102 +1462,70 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         // Search & Action Header
         Container(
           color: NeoTokens.paper,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(NeoTokens.space12),
           child: Column(
             children: [
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Cari makanan / yolo class...',
-                        hintStyle: const TextStyle(fontSize: 13),
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                        filled: true,
-                        fillColor: NeoTokens.warmBackground,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        border: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: NeoTokens.ink,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            NeoTokens.radiusSmall,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                            color: NeoTokens.ink,
-                            width: 2,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            NeoTokens.radiusSmall,
-                          ),
-                        ),
-                      ),
+                    child: _buildSearchBar(
+                      controller: _foodSearchController,
+                      hintText: 'Cari makanan atau YOLO class...',
                       onChanged: (v) {
                         _foodSearchQuery = v;
                         _fetchFoods();
                       },
+                      onClear: () {
+                        _foodSearchController.clear();
+                        setState(() => _foodSearchQuery = '');
+                        _fetchFoods();
+                      },
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 110,
-                    child: NeoButton(
-                      text: '+ Tambah',
-                      variant: NeoButtonVariant.primary,
-                      onPressed: () => _showFoodFormSheet(),
-                    ),
+                  const SizedBox(width: NeoTokens.space8),
+                  NeoButton(
+                    text: '+ Tambah',
+                    isFullWidth: false,
+                    height: 52,
+                    variant: NeoButtonVariant.primary,
+                    onPressed: () => _showFoodFormSheet(),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              // Filter Chips
-              Row(
-                children: [
-                  const Text(
-                    'Filter: ',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(width: 6),
-                  ChoiceChip(
-                    label: const Text('Semua', style: TextStyle(fontSize: 11)),
-                    selected: _foodFilterActive == null,
-                    selectedColor: NeoTokens.cobalt.withValues(alpha: 0.2),
-                    onSelected: (_) {
-                      setState(() => _foodFilterActive = null);
-                      _fetchFoods();
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  ChoiceChip(
-                    label: const Text('Aktif', style: TextStyle(fontSize: 11)),
-                    selected: _foodFilterActive == true,
-                    selectedColor: NeoTokens.lime.withValues(alpha: 0.5),
-                    onSelected: (_) {
-                      setState(() => _foodFilterActive = true);
-                      _fetchFoods();
-                    },
-                  ),
-                  const SizedBox(width: 6),
-                  ChoiceChip(
-                    label: const Text(
-                      'Nonaktif',
-                      style: TextStyle(fontSize: 11),
+              const SizedBox(height: NeoTokens.space10),
+              // Filter Pills
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterPill(
+                      label: 'Semua',
+                      isSelected: _foodFilterActive == null,
+                      onTap: () {
+                        setState(() => _foodFilterActive = null);
+                        _fetchFoods();
+                      },
                     ),
-                    selected: _foodFilterActive == false,
-                    selectedColor: NeoTokens.coralRed.withValues(alpha: 0.3),
-                    onSelected: (_) {
-                      setState(() => _foodFilterActive = false);
-                      _fetchFoods();
-                    },
-                  ),
-                ],
+                    _buildFilterPill(
+                      label: 'Aktif',
+                      isSelected: _foodFilterActive == true,
+                      activeColor: NeoTokens.lime,
+                      onTap: () {
+                        setState(() => _foodFilterActive = true);
+                        _fetchFoods();
+                      },
+                    ),
+                    _buildFilterPill(
+                      label: 'Nonaktif',
+                      isSelected: _foodFilterActive == false,
+                      activeColor: NeoTokens.coralRed.withValues(alpha: 0.35),
+                      onTap: () {
+                        setState(() => _foodFilterActive = false);
+                        _fetchFoods();
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1293,9 +1535,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         // Food List
         Expanded(
           child: _isLoadingFoods
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState(message: 'Memuat katalog pangan...')
               : _foods.isEmpty
-              ? const Center(child: Text('Tidak ada makanan ditemukan.'))
+              ? _buildEmptyState(
+                  icon: Icons.restaurant_menu_rounded,
+                  title: _foodSearchQuery.isNotEmpty
+                      ? 'Makanan Tidak Ditemukan'
+                      : 'Katalog Pangan Kosong',
+                  message: _foodSearchQuery.isNotEmpty
+                      ? 'Tidak ada data pangan yang cocok dengan kata kunci "$_foodSearchQuery".'
+                      : 'Belum ada item makanan yang terdaftar dalam katalog nutrisi.',
+                  buttonText: _foodSearchQuery.isNotEmpty
+                      ? 'Tampilkan Semua Pangan'
+                      : '+ Daftarkan Pangan Baru',
+                  onAction: _foodSearchQuery.isNotEmpty
+                      ? () {
+                          _foodSearchController.clear();
+                          setState(() => _foodSearchQuery = '');
+                          _fetchFoods();
+                        }
+                      : () => _showFoodFormSheet(),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -1393,41 +1653,90 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               ),
                               Row(
                                 children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      isActive
-                                          ? Icons.visibility_outlined
-                                          : Icons.visibility_off_outlined,
-                                      size: 20,
-                                      color: isActive
-                                          ? NeoTokens.primaryGreen
-                                          : NeoTokens.coralRed,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: NeoTokens.paper,
+                                      borderRadius: BorderRadius.circular(
+                                        NeoTokens.radiusSmall,
+                                      ),
+                                      border: Border.all(
+                                        color: NeoTokens.ink,
+                                        width: NeoTokens.borderWidthThin,
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: NeoTokens.ink,
+                                          offset: Offset(1.5, 1.5),
+                                          blurRadius: 0,
+                                        ),
+                                      ],
                                     ),
-                                    tooltip: isActive
-                                        ? 'Nonaktifkan'
-                                        : 'Aktifkan',
-                                    onPressed: () async {
-                                      await _adminRepo.setFoodStatus(
-                                        foodItem['id'],
-                                        !isActive,
-                                        reason: 'Toggle status via Mobile CMS',
-                                      );
-                                      _showSuccessSnackBar(
-                                        'Status makanan berhasil diubah.',
-                                      );
-                                      _fetchFoods();
-                                      _fetchAuditLogs();
-                                    },
+                                    child: IconButton(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      icon: Icon(
+                                        isActive
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                        size: 18,
+                                        color: isActive
+                                            ? NeoTokens.primaryGreen
+                                            : NeoTokens.coralRed,
+                                      ),
+                                      tooltip: isActive
+                                          ? 'Nonaktifkan'
+                                          : 'Aktifkan',
+                                      onPressed: () async {
+                                        await _adminRepo.setFoodStatus(
+                                          foodItem['id'],
+                                          !isActive,
+                                          reason: 'Toggle status via Mobile CMS',
+                                        );
+                                        _showSuccessSnackBar(
+                                          'Status makanan berhasil diubah.',
+                                        );
+                                        _fetchFoods();
+                                        _fetchAuditLogs();
+                                      },
+                                    ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.edit_outlined,
-                                      size: 20,
-                                      color: NeoTokens.cobalt,
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: NeoTokens.paper,
+                                      borderRadius: BorderRadius.circular(
+                                        NeoTokens.radiusSmall,
+                                      ),
+                                      border: Border.all(
+                                        color: NeoTokens.ink,
+                                        width: NeoTokens.borderWidthThin,
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: NeoTokens.ink,
+                                          offset: Offset(1.5, 1.5),
+                                          blurRadius: 0,
+                                        ),
+                                      ],
                                     ),
-                                    tooltip: 'Edit Nutrisi',
-                                    onPressed: () => _showFoodFormSheet(
-                                      initialFood: foodItem,
+                                    child: IconButton(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 36,
+                                        minHeight: 36,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 18,
+                                        color: NeoTokens.cobalt,
+                                      ),
+                                      tooltip: 'Edit Nutrisi',
+                                      onPressed: () => _showFoodFormSheet(
+                                        initialFood: foodItem,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1489,9 +1798,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                     Text(
                       'SIMULATOR FISIKA GIZI ATWATER',
                       style: TextStyle(
-                        fontFamily: 'Montserrat',
                         fontSize: 14,
                         fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
                       ),
                     ),
                   ],
@@ -1603,20 +1912,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       children: [
         Container(
           color: NeoTokens.paper,
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(NeoTokens.space12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 'KONTEN EDUKASI GIZI',
                 style: TextStyle(
-                  fontFamily: 'Montserrat',
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
+                  letterSpacing: -0.2,
                 ),
               ),
               NeoButton(
                 text: '+ Tulis Artikel',
+                isFullWidth: false,
+                height: 42,
                 variant: NeoButtonVariant.primary,
                 onPressed: () => _showArticleFormSheet(),
               ),
@@ -1626,9 +1937,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         const Divider(color: NeoTokens.ink, thickness: 2, height: 2),
         Expanded(
           child: _isLoadingArticles
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState(message: 'Memuat artikel...')
               : _articles.isEmpty
-              ? const Center(child: Text('Belum ada artikel.'))
+              ? _buildEmptyState(
+                  icon: Icons.article_rounded,
+                  title: 'Belum Ada Artikel',
+                  message:
+                      'Daftar artikel edukasi gizi masih kosong. Mulai buat dan publikasikan artikel nutrisi untuk pengguna aplikasi.',
+                  buttonText: '+ Tulis Artikel Baru',
+                  onAction: () => _showArticleFormSheet(),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: _articles.length,
@@ -1656,7 +1974,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                 ),
                               ),
                               NeoBadge(
-                                label: isPublished ? 'PUBLISHED' : 'DRAFT',
+                                label: isPublished ? 'PUBLIK' : 'DRAF',
                                 color: isPublished
                                     ? NeoBadgeColor.mint
                                     : NeoBadgeColor.yellow,
@@ -1688,8 +2006,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               ),
                               Row(
                                 children: [
-                                  TextButton(
-                                    onPressed: () async {
+                                  GestureDetector(
+                                    onTap: () async {
                                       final nextStatus = isPublished
                                           ? 'draft'
                                           : 'published';
@@ -1704,18 +2022,74 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                                       );
                                       _fetchArticles();
                                     },
-                                    child: Text(
-                                      isPublished ? 'Tarik Draf' : 'Terbitkan',
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isPublished
+                                            ? NeoTokens.recess
+                                            : NeoTokens.lime,
+                                        borderRadius: BorderRadius.circular(
+                                          NeoTokens.radiusSmall,
+                                        ),
+                                        border: Border.all(
+                                          color: NeoTokens.ink,
+                                          width: NeoTokens.borderWidthThin,
+                                        ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: NeoTokens.ink,
+                                            offset: Offset(1.5, 1.5),
+                                            blurRadius: 0,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        isPublished ? 'Tarik Draf' : 'Terbitkan',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w800,
+                                          color: NeoTokens.ink,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.edit_outlined,
-                                      size: 20,
-                                      color: NeoTokens.cobalt,
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: NeoTokens.paper,
+                                      borderRadius: BorderRadius.circular(
+                                        NeoTokens.radiusSmall,
+                                      ),
+                                      border: Border.all(
+                                        color: NeoTokens.ink,
+                                        width: NeoTokens.borderWidthThin,
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: NeoTokens.ink,
+                                          offset: Offset(1.5, 1.5),
+                                          blurRadius: 0,
+                                        ),
+                                      ],
                                     ),
-                                    onPressed: () => _showArticleFormSheet(
-                                      initialArticle: articleItem,
+                                    child: IconButton(
+                                      constraints: const BoxConstraints(
+                                        minWidth: 34,
+                                        minHeight: 34,
+                                      ),
+                                      padding: const EdgeInsets.all(6),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        size: 18,
+                                        color: NeoTokens.cobalt,
+                                      ),
+                                      tooltip: 'Edit Artikel',
+                                      onPressed: () => _showArticleFormSheet(
+                                        initialArticle: articleItem,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1740,39 +2114,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
       children: [
         Container(
           color: NeoTokens.paper,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
               const Text(
-                'Filter Entitas: ',
+                'Entitas: ',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: 8),
-              ChoiceChip(
-                label: const Text('Semua', style: TextStyle(fontSize: 11)),
-                selected: _auditFilterEntity == null,
-                selectedColor: NeoTokens.cobalt.withValues(alpha: 0.2),
-                onSelected: (_) {
+              _buildFilterPill(
+                label: 'Semua',
+                isSelected: _auditFilterEntity == null,
+                onTap: () {
                   setState(() => _auditFilterEntity = null);
                   _fetchAuditLogs();
                 },
               ),
-              const SizedBox(width: 6),
-              ChoiceChip(
-                label: const Text('Pangan', style: TextStyle(fontSize: 11)),
-                selected: _auditFilterEntity == 'food',
-                selectedColor: NeoTokens.lime.withValues(alpha: 0.5),
-                onSelected: (_) {
+              _buildFilterPill(
+                label: 'Pangan',
+                isSelected: _auditFilterEntity == 'food',
+                activeColor: NeoTokens.lime,
+                onTap: () {
                   setState(() => _auditFilterEntity = 'food');
                   _fetchAuditLogs();
                 },
               ),
-              const SizedBox(width: 6),
-              ChoiceChip(
-                label: const Text('Artikel', style: TextStyle(fontSize: 11)),
-                selected: _auditFilterEntity == 'article',
-                selectedColor: NeoTokens.hazard.withValues(alpha: 0.4),
-                onSelected: (_) {
+              _buildFilterPill(
+                label: 'Artikel',
+                isSelected: _auditFilterEntity == 'article',
+                activeColor: NeoTokens.hazard,
+                onTap: () {
                   setState(() => _auditFilterEntity = 'article');
                   _fetchAuditLogs();
                 },
@@ -1783,9 +2154,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         const Divider(color: NeoTokens.ink, thickness: 2, height: 2),
         Expanded(
           child: _isLoadingAudit
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState(message: 'Memuat log audit...')
               : _auditLogs.isEmpty
-              ? const Center(child: Text('Tidak ada log audit tercatat.'))
+              ? _buildEmptyState(
+                  icon: Icons.history_rounded,
+                  title: 'Tidak Ada Log Audit',
+                  message:
+                      'Belum ada catatan aktivitas administratif yang tercatat pada sistem.',
+                  buttonText: 'Segarkan Log',
+                  onAction: _fetchAuditLogs,
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: _auditLogs.length,
@@ -1855,126 +2233,96 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
     );
   }
 
+  // ========================================================================
+  // TAB 6: MANAJEMEN PENGGUNA
+  // ========================================================================
   Widget _buildUsersTab() {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
-          color: NeoTokens.canvas,
+          padding: const EdgeInsets.all(NeoTokens.space12),
+          color: NeoTokens.paper,
           child: Column(
             children: [
               Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Cari nama atau email pengguna...',
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            NeoTokens.radiusSmall,
-                          ),
-                          borderSide: const BorderSide(
-                            color: NeoTokens.ink,
-                            width: 2,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            NeoTokens.radiusSmall,
-                          ),
-                          borderSide: const BorderSide(
-                            color: NeoTokens.ink,
-                            width: 2,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            NeoTokens.radiusSmall,
-                          ),
-                          borderSide: const BorderSide(
-                            color: NeoTokens.cobalt,
-                            width: 2.5,
-                          ),
-                        ),
-                      ),
+                    child: _buildSearchBar(
+                      controller: _userSearchController,
+                      hintText: 'Cari nama atau email pengguna...',
                       onChanged: (val) {
                         _userSearchQuery = val;
                         _fetchUsers();
                       },
+                      onClear: () {
+                        _userSearchController.clear();
+                        setState(() => _userSearchQuery = '');
+                        _fetchUsers();
+                      },
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    style: IconButton.styleFrom(
-                      backgroundColor: NeoTokens.ink,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          NeoTokens.radiusSmall,
-                        ),
-                      ),
-                    ),
-                    icon: const Icon(
-                      Icons.refresh_rounded,
+                  const SizedBox(width: NeoTokens.space8),
+                  Container(
+                    height: 52,
+                    width: 52,
+                    decoration: BoxDecoration(
                       color: NeoTokens.paper,
+                      borderRadius: BorderRadius.circular(
+                        NeoTokens.radiusMedium,
+                      ),
+                      border: Border.all(
+                        color: NeoTokens.ink,
+                        width: NeoTokens.borderWidthThin,
+                      ),
+                      boxShadow: NeoTokens.neoBoxShadowSmall(),
                     ),
-                    onPressed: _fetchUsers,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.refresh_rounded,
+                        color: NeoTokens.ink,
+                      ),
+                      tooltip: 'Segarkan data pengguna',
+                      onPressed: _fetchUsers,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: NeoTokens.space10),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    ChoiceChip(
-                      label: const Text(
-                        'Semua Role',
-                        style: TextStyle(fontSize: 11),
-                      ),
-                      selected: _userRoleFilter == null,
-                      selectedColor: NeoTokens.cobalt.withValues(alpha: 0.3),
-                      onSelected: (_) {
+                    _buildFilterPill(
+                      label: 'Semua Role',
+                      isSelected: _userRoleFilter == null,
+                      onTap: () {
                         setState(() => _userRoleFilter = null);
                         _fetchUsers();
                       },
                     ),
-                    const SizedBox(width: 6),
-                    ChoiceChip(
-                      label: const Text('User', style: TextStyle(fontSize: 11)),
-                      selected: _userRoleFilter == 'user',
-                      selectedColor: NeoTokens.cobalt.withValues(alpha: 0.3),
-                      onSelected: (_) {
+                    _buildFilterPill(
+                      label: 'User',
+                      isSelected: _userRoleFilter == 'user',
+                      activeColor: NeoTokens.lime,
+                      onTap: () {
                         setState(() => _userRoleFilter = 'user');
                         _fetchUsers();
                       },
                     ),
-                    const SizedBox(width: 6),
-                    ChoiceChip(
-                      label: const Text(
-                        'Dietitian',
-                        style: TextStyle(fontSize: 11),
-                      ),
-                      selected: _userRoleFilter == 'dietitian',
-                      selectedColor: NeoTokens.cobalt.withValues(alpha: 0.3),
-                      onSelected: (_) {
+                    _buildFilterPill(
+                      label: 'Dietitian',
+                      isSelected: _userRoleFilter == 'dietitian',
+                      activeColor: NeoTokens.hazard,
+                      onTap: () {
                         setState(() => _userRoleFilter = 'dietitian');
                         _fetchUsers();
                       },
                     ),
-                    const SizedBox(width: 6),
-                    ChoiceChip(
-                      label: const Text(
-                        'Super Admin',
-                        style: TextStyle(fontSize: 11),
-                      ),
-                      selected: _userRoleFilter == 'super_admin',
-                      selectedColor: NeoTokens.cobalt.withValues(alpha: 0.3),
-                      onSelected: (_) {
+                    _buildFilterPill(
+                      label: 'Super Admin',
+                      isSelected: _userRoleFilter == 'super_admin',
+                      activeColor: NeoTokens.coralRed.withValues(alpha: 0.35),
+                      onTap: () {
                         setState(() => _userRoleFilter = 'super_admin');
                         _fetchUsers();
                       },
@@ -1988,9 +2336,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         const Divider(color: NeoTokens.ink, thickness: 2, height: 2),
         Expanded(
           child: _isLoadingUsers
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState(message: 'Memuat data pengguna...')
               : _users.isEmpty
-              ? const Center(child: Text('Tidak ada pengguna ditemukan.'))
+              ? _buildEmptyState(
+                  icon: Icons.people_alt_rounded,
+                  title: _userSearchQuery.isNotEmpty || _userRoleFilter != null
+                      ? 'Pengguna Tidak Ditemukan'
+                      : 'Belum Ada Pengguna',
+                  message:
+                      _userSearchQuery.isNotEmpty || _userRoleFilter != null
+                          ? 'Tidak ada akun pengguna yang sesuai dengan filter atau pencarian saat ini.'
+                          : 'Daftar pengguna aplikasi masih kosong.',
+                  buttonText:
+                      _userSearchQuery.isNotEmpty || _userRoleFilter != null
+                          ? 'Reset Filter & Pencarian'
+                          : 'Segarkan Data',
+                  onAction: () {
+                    _userSearchController.clear();
+                    setState(() {
+                      _userSearchQuery = '';
+                      _userRoleFilter = null;
+                    });
+                    _fetchUsers();
+                  },
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: _users.length,
@@ -2019,8 +2388,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                               ),
                               border: Border.all(
                                 color: NeoTokens.ink,
-                                width: 2,
+                                width: NeoTokens.borderWidthThin,
                               ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: NeoTokens.ink,
+                                  offset: Offset(1.5, 1.5),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
                             child: Icon(
                               role == 'super_admin'
@@ -2094,22 +2470,47 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                             ),
                           ),
                           const SizedBox(width: 8),
-                          IconButton(
-                            icon: Icon(
-                              isActive
-                                  ? Icons.block_rounded
-                                  : Icons.check_circle_outline_rounded,
-                              color: isActive
-                                  ? NeoTokens.alert
-                                  : NeoTokens.primaryGreen,
+                          Container(
+                            decoration: BoxDecoration(
+                              color: NeoTokens.paper,
+                              borderRadius: BorderRadius.circular(
+                                NeoTokens.radiusSmall,
+                              ),
+                              border: Border.all(
+                                color: NeoTokens.ink,
+                                width: NeoTokens.borderWidthThin,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: NeoTokens.ink,
+                                  offset: Offset(1.5, 1.5),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
-                            tooltip: isActive
-                                ? 'Nonaktifkan Akun'
-                                : 'Aktifkan Akun',
-                            onPressed: () => _confirmToggleUserStatus(
-                              userId,
-                              isActive,
-                              email,
+                            child: IconButton(
+                              constraints: const BoxConstraints(
+                                minWidth: 36,
+                                minHeight: 36,
+                              ),
+                              padding: const EdgeInsets.all(6),
+                              icon: Icon(
+                                isActive
+                                    ? Icons.block_rounded
+                                    : Icons.check_circle_outline_rounded,
+                                size: 20,
+                                color: isActive
+                                    ? NeoTokens.coralRed
+                                    : NeoTokens.primaryGreen,
+                              ),
+                              tooltip: isActive
+                                  ? 'Nonaktifkan Akun'
+                                  : 'Aktifkan Akun',
+                              onPressed: () => _confirmToggleUserStatus(
+                                userId,
+                                isActive,
+                                email,
+                              ),
                             ),
                           ),
                         ],

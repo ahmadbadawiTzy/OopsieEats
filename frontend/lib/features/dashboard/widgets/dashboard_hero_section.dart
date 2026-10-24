@@ -18,22 +18,8 @@ class DashboardHeroSection extends StatelessWidget {
     this.onAvatarTap,
   });
 
-  String _getTimeGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour >= 4 && hour < 11) {
-      return 'Selamat Pagi';
-    } else if (hour >= 11 && hour < 15) {
-      return 'Selamat Siang';
-    } else if (hour >= 15 && hour < 18) {
-      return 'Selamat Sore';
-    } else {
-      return 'Selamat Malam';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final timeGreeting = _getTimeGreeting();
     final firstName = userName.trim().isNotEmpty
         ? userName.trim().split(' ').first
         : 'Sobat';
