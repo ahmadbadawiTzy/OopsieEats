@@ -1,7 +1,7 @@
 name: nutriview
 description: "NutriView - Food Nutrition Recognition & Daily Tracking App"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2002
 
 environment:
   sdk: ^3.13.4
@@ -9,13 +9,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   provider: ^6.1.2
-  http: ^1.2.1
   image_picker: ^1.1.2
   flutter_secure_storage: ^9.2.2
   intl: ^0.19.0
-  http_parser: ^4.1.2
+  firebase_core: ^5.1.0
+  firebase_auth: ^7.0.1
+  cloud_firestore: ^7.1.0
+  tflite_flutter: ^0.12.1
+  image: ^4.12.0
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +27,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/models/
+    - assets/data/
+    - assets/images/
+    - assets/images/about/

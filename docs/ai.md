@@ -690,7 +690,7 @@ nutrisi_dikonsumsi = nutrisi_per_100g × portion_grams / 100
 | Batas arsitektur | Unit | `nutrition_service` tidak mengimpor `app.ml` |
 | Konsistensi seed | Unit | Setiap kelas di `ml/classes.yaml` terpetakan ke satu makanan |
 
-- Tes integrasi memakai basis data MySQL khusus uji (skema terpisah, mis. `*_test`), dibuat via Alembic; **bukan** SQLite, agar perilaku ENUM/DECIMAL sama dengan produksi.
+- Tes integrasi memakai basis data MySQL khusus uji, dibuat via Alembic, agar perilaku ENUM/DECIMAL sama dengan produksi.
 - Tes API deteksi memakai detektor tiruan. Satu tes *smoke* opsional (`@pytest.mark.ml`) menjalankan model asli pada gambar contoh bila bobot tersedia.
 - Dilarang memanggil layanan eksternal pada tes.
 

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
 import 'package:nutriview/data/models/food.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
 import 'package:nutriview/features/scanner/screens/food_search_modal.dart';
-import 'package:nutriview/shared/widgets/custom_button.dart';
+import 'package:nutriview/shared/neo/neo_badge.dart';
+import 'package:nutriview/shared/neo/neo_button.dart';
+import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/shared/neo/neo_icon_button.dart';
+import 'package:nutriview/shared/neo/neo_section_header.dart';
 
 class DetectionConfirmationScreen extends StatelessWidget {
   const DetectionConfirmationScreen({super.key});
@@ -16,6 +20,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
     final FoodItem? selected = await showModalBottomSheet<FoodItem>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => FoodSearchModal(foodRepository: foodRepo),
     );
 
@@ -29,6 +34,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
     final FoodItem? selected = await showModalBottomSheet<FoodItem>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (_) => FoodSearchModal(foodRepository: foodRepo),
     );
 
@@ -43,113 +49,168 @@ class DetectionConfirmationScreen extends StatelessWidget {
     final items = flow.confirmedItems;
 
     return Scaffold(
+      backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
         title: const Text('Konfirmasi Makanan'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(color: NeoTokens.black, height: 2),
+        ),
       ),
       body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: NeoTokens.space16,
+                vertical: NeoTokens.space12,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Image preview if present
+                  // Image preview with bounding box overlay if present
                   if (flow.imageFile != null) ...[
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.borderSubtle),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Image.file(
-                        flow.imageFile!,
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+                    NeoCard(
+                      padding: EdgeInsets.zero,
+                      backgroundColor: NeoTokens.black,
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 220,
+                            width: double.infinity,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                NeoTokens.radiusMedium,
+                              ),
+                            ),
+                            child: Image.file(
+                              flow.imageFile!,
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          if (flow.rawDetections.isNotEmpty)
+                            Positioned.fill(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  NeoTokens.radiusMedium,
+                                ),
+                                child: CustomPaint(
+                                  painter: BoundingBoxOverlayPainter(
+                                    detections: flow.rawDetections,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: NeoTokens.space12),
+
+                    // Detection count NeoCard
+                    NeoCard(
+                      backgroundColor: NeoTokens.mintGreen,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      shadowOffset: NeoTokens.shadowOffsetSmall,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.auto_awesome_rounded,
+                            size: 20,
+                            color: NeoTokens.black,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Ditemukan ${flow.rawDetections.isNotEmpty ? flow.rawDetections.length : items.length} makanan dari foto',
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w900,
+                              color: NeoTokens.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
                   ],
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Item Makanan (${items.length})',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textDark,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppTheme.primaryGreen,
-                        ),
-                        icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                        label: const Text(
-                          'Tambah Manual',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                        ),
-                        onPressed: () => _openManualAdd(context),
-                      ),
-                    ],
+                  NeoSectionHeader(
+                    title: 'Item Makanan (${items.length})',
+                    accentColor: NeoTokens.vividYellow,
+                    trailing: NeoBadge(
+                      label: '+ Tambah Manual',
+                      color: NeoBadgeColor.yellow,
+                      hasShadow: true,
+                      onTap: () => _openManualAdd(context),
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: NeoTokens.space8),
 
                   if (items.isEmpty)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF1F5F9),
-                                shape: BoxShape.circle,
+                    NeoCard(
+                      backgroundColor: NeoTokens.white,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 40.0,
+                        horizontal: 20.0,
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: NeoTokens.surfaceMuted,
+                              borderRadius: BorderRadius.circular(
+                                NeoTokens.radiusMedium,
                               ),
-                              child: const Icon(
-                                Icons.search_off_rounded,
-                                size: 30,
-                                color: AppTheme.textMuted,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Tidak Ada Makanan Terdeteksi',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textDark,
-                                letterSpacing: -0.2,
+                              border: Border.all(
+                                color: NeoTokens.black,
+                                width: NeoTokens.borderWidth,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            const Text(
-                              'Foto mungkin kurang jelas atau makanan belum dikenali otomatis. Tambahkan item secara manual dari basis data kami.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppTheme.textMuted,
-                                height: 1.4,
-                              ),
+                            child: const Icon(
+                              Icons.search_off_rounded,
+                              size: 32,
+                              color: NeoTokens.black,
                             ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: 220,
-                              child: CustomButton(
-                                text: 'Pilih Makanan Manual',
-                                icon: Icons.add_rounded,
-                                onPressed: () => _openManualAdd(context),
-                              ),
+                          ),
+                          const SizedBox(height: NeoTokens.space16),
+                          const Text(
+                            'Makanan Belum Teridentifikasi',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: NeoTokens.textDark,
+                              letterSpacing: -0.3,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: NeoTokens.space8),
+                          const Text(
+                            'Foto mungkin kurang jelas atau makanan belum dikenali otomatis. Tambahkan item secara manual dari basis data kami.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: NeoTokens.textMuted,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: NeoTokens.space20),
+                          SizedBox(
+                            width: 230,
+                            child: NeoButton(
+                              text: 'Pilih Makanan Manual',
+                              prefixIcon: Icons.add_rounded,
+                              variant: NeoButtonVariant.primary,
+                              onPressed: () => _openManualAdd(context),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else
@@ -158,161 +219,240 @@ class DetectionConfirmationScreen extends StatelessWidget {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
-                        final item = items[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 5.0),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14.0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryGreenLight,
-                                    borderRadius: BorderRadius.circular(10),
+                        final detectedItem = items[index];
+                        return NeoCard(
+                          margin: const EdgeInsets.symmetric(
+                            vertical: NeoTokens.space4,
+                          ),
+                          padding: const EdgeInsets.all(NeoTokens.space12),
+                          shadowOffset: NeoTokens.shadowOffsetSmall,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: NeoTokens.mintGreen,
+                                  borderRadius: BorderRadius.circular(
+                                    NeoTokens.radiusSmall,
                                   ),
-                                  child: const Icon(
-                                    Icons.restaurant_rounded,
-                                    color: AppTheme.primaryGreen,
-                                    size: 20,
+                                  border: Border.all(
+                                    color: NeoTokens.black,
+                                    width: NeoTokens.borderWidthThin,
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.foodName,
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppTheme.textDark,
-                                          letterSpacing: -0.1,
+                                child: const Icon(
+                                  Icons.restaurant_rounded,
+                                  color: NeoTokens.black,
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: NeoTokens.space12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      detectedItem.foodName,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: NeoTokens.textDark,
+                                        letterSpacing: -0.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 4,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        if (detectedItem.source == 'detected' &&
+                                            detectedItem.detectionConfidence !=
+                                                null) ...[
+                                          NeoBadge(
+                                            label:
+                                                'Deteksi ${(detectedItem.detectionConfidence! * 100).toInt()}%',
+                                            color: NeoBadgeColor.white,
+                                            fontSize: 10.5,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                          ),
+                                          if (detectedItem.lowConfidence)
+                                            const NeoBadge(
+                                              label: 'Perlu dicek',
+                                              icon: Icons.warning_amber_rounded,
+                                              color: NeoBadgeColor.yellow,
+                                              fontSize: 10.5,
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
+                                            ),
+                                          if (detectedItem.isUnmapped)
+                                            const NeoBadge(
+                                              label: 'Belum Terdaftar',
+                                              icon: Icons.help_outline_rounded,
+                                              color: NeoBadgeColor.coral,
+                                              fontSize: 10.5,
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 6,
+                                                vertical: 2,
+                                              ),
+                                            ),
+                                        ] else if (detectedItem.source ==
+                                            'corrected') ...[
+                                          const NeoBadge(
+                                            label: 'Hasil Koreksi',
+                                            color: NeoBadgeColor.sky,
+                                            fontSize: 10.5,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                          ),
+                                        ] else ...[
+                                          const NeoBadge(
+                                            label: 'Manual',
+                                            color: NeoBadgeColor.white,
+                                            fontSize: 10.5,
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    if (detectedItem.hasNutritionData) ...[
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: NeoTokens.surfaceMuted,
+                                          borderRadius: BorderRadius.circular(
+                                            NeoTokens.radiusSmall,
+                                          ),
+                                          border: Border.all(
+                                            color: NeoTokens.black,
+                                            width: NeoTokens.borderWidthThin,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${detectedItem.caloriesPer100g?.round() ?? 0} kkal · P: ${detectedItem.proteinPer100g?.toStringAsFixed(1) ?? "0"}g · K: ${detectedItem.carbsPer100g?.toStringAsFixed(1) ?? "0"}g · L: ${detectedItem.fatPer100g?.toStringAsFixed(1) ?? "0"}g / 100g',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: NeoTokens.textDark,
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 4,
-                                        crossAxisAlignment: WrapCrossAlignment.center,
-                                        children: [
-                                          if (item.source == 'detected' && item.detectionConfidence != null) ...[
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                'Deteksi ${(item.detectionConfidence! * 100).toInt()}%',
-                                                style: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: AppTheme.textMuted,
-                                                ),
-                                              ),
-                                            ),
-                                            if (item.lowConfidence) ...[
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.accentOrangeLight,
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  border: Border.all(color: AppTheme.accentOrange),
-                                                ),
-                                                child: const Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.warning_amber_rounded,
-                                                      size: 12,
-                                                      color: AppTheme.accentOrange,
-                                                    ),
-                                                    SizedBox(width: 4),
-                                                    Text(
-                                                      'Perlu dicek',
-                                                      style: TextStyle(
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.w700,
-                                                        color: AppTheme.accentOrange,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ] else if (item.source == 'corrected') ...[
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: AppTheme.accentBlueLight,
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Text(
-                                                'Hasil Koreksi',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: AppTheme.accentBlue,
-                                                ),
-                                              ),
-                                            ),
-                                          ] else ...[
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFFF1F5F9),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Text(
-                                                'Manual',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: AppTheme.textMuted,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
+                                    ] else ...[
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: NeoTokens.coralRed.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            NeoTokens.radiusSmall,
+                                          ),
+                                          border: Border.all(
+                                            color: NeoTokens.coralRed,
+                                            width: NeoTokens.borderWidthThin,
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Gizi belum tersedia · Ketuk ganti untuk memilih dari database',
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: NeoTokens.coralRed,
+                                          ),
+                                        ),
                                       ),
                                     ],
-                                  ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppTheme.textMuted),
-                                  tooltip: 'Ganti makanan',
-                                  visualDensity: VisualDensity.compact,
-                                  onPressed: () => _openReplace(context, index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppTheme.errorRed),
-                                  tooltip: 'Hapus makanan',
-                                  visualDensity: VisualDensity.compact,
-                                  onPressed: () => flow.removeItem(index),
-                                ),
-                              ],
-                            ),
+                              ),
+                              NeoIconButton(
+                                icon: Icons.edit_outlined,
+                                tooltip: 'Ganti makanan',
+                                size: 36,
+                                iconSize: 18,
+                                shadowOffset: Offset.zero,
+                                onPressed: () => _openReplace(context, index),
+                              ),
+                              const SizedBox(width: 6),
+                              NeoIconButton(
+                                icon: Icons.delete_outline_rounded,
+                                tooltip: 'Hapus makanan',
+                                size: 36,
+                                iconSize: 18,
+                                iconColor: NeoTokens.coralRed,
+                                shadowOffset: Offset.zero,
+                                onPressed: () => flow.removeItem(index),
+                              ),
+                            ],
                           ),
                         );
                       },
                     ),
+                  if (items.isNotEmpty) ...[
+                    const SizedBox(height: NeoTokens.space12),
+                    NeoCard(
+                      backgroundColor: NeoTokens.surfaceMuted,
+                      padding: const EdgeInsets.all(NeoTokens.space12),
+                      shadowOffset: NeoTokens.shadowOffsetSmall,
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 20,
+                            color: NeoTokens.black,
+                          ),
+                          SizedBox(width: NeoTokens.space12),
+                          Expanded(
+                            child: Text(
+                              'Catatan: Pemindai mengenali jenis makanan dari foto. Porsi dan gramatur dapat disesuaikan pada langkah berikutnya agar perhitungan gizi lebih akurat.',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: NeoTokens.textDark,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(NeoTokens.space16),
             decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: AppTheme.borderSubtle)),
+              color: NeoTokens.warmBackground,
+              border: Border(top: BorderSide(color: NeoTokens.black, width: 2)),
             ),
             child: SafeArea(
-              child: CustomButton(
+              child: NeoButton(
                 text: 'Lanjut ke Input Porsi',
-                icon: Icons.arrow_forward_rounded,
+                suffixIcon: Icons.arrow_forward_rounded,
+                variant: NeoButtonVariant.primary,
                 onPressed: items.isEmpty
                     ? null
                     : () {
@@ -324,5 +464,119 @@ class DetectionConfirmationScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class BoundingBoxOverlayPainter extends CustomPainter {
+  final List<DetectionItem> detections;
+
+  BoundingBoxOverlayPainter({required this.detections});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (detections.isEmpty) return;
+
+    int maxX = 0;
+    int maxY = 0;
+    for (final d in detections) {
+      if (d.boundingBox != null) {
+        if (d.boundingBox!.x2 > maxX) maxX = d.boundingBox!.x2;
+        if (d.boundingBox!.y2 > maxY) maxY = d.boundingBox!.y2;
+      }
+    }
+
+    final double refW = maxX > 0 ? maxX.toDouble() : 640.0;
+    final double refH = maxY > 0 ? maxY.toDouble() : 640.0;
+    final double scaleX = size.width / refW;
+    final double scaleY = size.height / refH;
+
+    final boxBorderPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..color = NeoTokens.black;
+
+    final boxFillPaint = Paint()..style = PaintingStyle.fill;
+
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    final colors = [
+      NeoTokens.mintGreen,
+      NeoTokens.vividYellow,
+      NeoTokens.skyBlue,
+      NeoTokens.lavender,
+      NeoTokens.orangeCarb,
+      NeoTokens.coralRed,
+    ];
+
+    for (int i = 0; i < detections.length; i++) {
+      final det = detections[i];
+      final box = det.boundingBox;
+      if (box == null) continue;
+
+      final color = colors[i % colors.length];
+      boxFillPaint.color = color.withValues(alpha: 0.25);
+
+      final rect = Rect.fromLTRB(
+        (box.x1 * scaleX).clamp(0.0, size.width),
+        (box.y1 * scaleY).clamp(0.0, size.height),
+        (box.x2 * scaleX).clamp(0.0, size.width),
+        (box.y2 * scaleY).clamp(0.0, size.height),
+      );
+
+      // Draw box with Neo styling
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          rect,
+          const Radius.circular(NeoTokens.radiusSmall),
+        ),
+        boxFillPaint,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          rect,
+          const Radius.circular(NeoTokens.radiusSmall),
+        ),
+        boxBorderPaint,
+      );
+
+      // Label chip with black border
+      final label = '${det.displayName} ${(det.confidence * 100).toInt()}%';
+      final textSpan = TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: NeoTokens.black,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      );
+      textPainter.text = textSpan;
+      textPainter.layout();
+
+      final labelBgRect = Rect.fromLTWH(
+        rect.left,
+        (rect.top - 22).clamp(0.0, size.height - 22),
+        textPainter.width + 12,
+        22,
+      );
+
+      final labelBgPaint = Paint()..color = color;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(labelBgRect, const Radius.circular(4)),
+        labelBgPaint,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(labelBgRect, const Radius.circular(4)),
+        boxBorderPaint,
+      );
+      textPainter.paint(
+        canvas,
+        Offset(labelBgRect.left + 6, labelBgRect.top + 3),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant BoundingBoxOverlayPainter oldDelegate) {
+    return oldDelegate.detections != detections;
   }
 }

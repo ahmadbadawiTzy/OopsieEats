@@ -1,0 +1,30 @@
+name,yolo_class,calories_kcal,protein_g,carbs_g,fat_g,source
+Apel,Apple,52.00,0.30,13.80,0.20,TKPI 2020 (Kode J-2)
+Ayam goreng,Ayam Goreng,246.00,25.00,0.00,16.00,TKPI 2020 (Kode C-12)
+Bakso,Bakso,202.00,10.30,19.00,9.50,TKPI 2020 (Kode C-20)
+Pisang,Banana,97.00,1.00,25.80,0.20,TKPI 2020 (Kode J-15)
+Burger,Burger,,,,,DATA_BELUM_TERSEDIA
+Capcay,Capcay,,,,,DATA_BELUM_TERSEDIA
+Chocolate chip cookie,Chocolate Chip Cookie,,,,,DATA_BELUM_TERSEDIA
+Donat,Donat,,,,,DATA_BELUM_TERSEDIA
+Ikan goreng,Ikan Goreng,195.00,20.00,0.00,12.00,TKPI 2020 (Kode D-8)
+Kentang goreng,Kentang Goreng,,,,,DATA_BELUM_TERSEDIA
+Kiwi,Kiwi,,,,,DATA_BELUM_TERSEDIA
+Mie goreng,Mie Goreng,175.00,4.00,26.00,6.20,TKPI 2020 (Kode B-14)
+Nasi goreng,Nasi Goreng,168.00,4.20,23.80,6.20,TKPI 2020 (Kode B-5)
+Nasi putih,Nasi Putih,130.00,2.40,28.60,0.20,TKPI 2020 (Kode B-1)
+Nugget ayam,Nugget,,,,,DATA_BELUM_TERSEDIA
+Pempek,Pempek,,,,,DATA_BELUM_TERSEDIA
+Nanas,Pineapples,,,,,DATA_BELUM_TERSEDIA
+Pizza,Pizza,,,,,DATA_BELUM_TERSEDIA
+Rendang sapi,Rendang Sapi,193.00,22.60,7.80,7.90,TKPI 2020 (Kode C-2)
+Sate ayam,Sate,218.00,20.00,7.50,12.00,TKPI 2020 (Kode C-15)
+Spaghetti,Spaghetti,,,,,DATA_BELUM_TERSEDIA
+Steak daging,Steak,,,,,DATA_BELUM_TERSEDIA
+Stroberi,Strawberry,,,,,DATA_BELUM_TERSEDIA
+Tahu goreng,Tahu Goreng,115.00,9.70,2.50,8.50,TKPI 2020 (Kode F-2)
+Telur goreng,Telur Goreng,196.00,10.60,1.40,16.00,TKPI 2020 (Kode E-3)
+Telur rebus,Telur Rebus,155.00,12.60,1.10,10.60,TKPI 2020 (Kode E-1)
+Tempe goreng,Tempe Goreng,225.00,19.00,15.00,11.00,TKPI 2020 (Kode F-4)
+Terong balado,Terong Balado,,,,,DATA_BELUM_TERSEDIA
+Tumis kangkung,Tumis Kangkung,,,,,DATA_BELUM_TERSEDIA

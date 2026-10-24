@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/theme.dart';
+import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/food.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
+import 'package:nutriview/shared/neo/neo_badge.dart';
+import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/shared/neo/neo_icon_button.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
 
 class FoodSearchModal extends StatefulWidget {
@@ -56,23 +59,42 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+      height: MediaQuery.of(context).size.height * 0.85,
+      padding: const EdgeInsets.symmetric(
+        horizontal: NeoTokens.space20,
+        vertical: NeoTokens.space12,
+      ),
       decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        color: NeoTokens.warmBackground,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(NeoTokens.radiusLarge),
+        ),
+        border: Border(
+          top: BorderSide(
+            color: NeoTokens.black,
+            width: NeoTokens.borderWidthThick,
+          ),
+          left: BorderSide(
+            color: NeoTokens.black,
+            width: NeoTokens.borderWidthThick,
+          ),
+          right: BorderSide(
+            color: NeoTokens.black,
+            width: NeoTokens.borderWidthThick,
+          ),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
             child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 12),
+              width: 44,
+              height: 5,
+              margin: const EdgeInsets.only(bottom: NeoTokens.space12),
               decoration: BoxDecoration(
-                color: const Color(0xFFCBD5E1),
-                borderRadius: BorderRadius.circular(2),
+                color: NeoTokens.black,
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
           ),
@@ -82,98 +104,172 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
               const Text(
                 'Pilih Makanan',
                 style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textDark,
-                  letterSpacing: -0.3,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: NeoTokens.black,
+                  letterSpacing: -0.4,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, size: 22),
-                visualDensity: VisualDensity.compact,
+              NeoIconButton(
+                icon: Icons.close_rounded,
+                size: 34,
+                iconSize: 18,
+                shadowOffset: Offset.zero,
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _searchController,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textDark,
+          const SizedBox(height: NeoTokens.space12),
+
+          // Neo Search Input
+          Container(
+            decoration: BoxDecoration(
+              color: NeoTokens.white,
+              borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+              border: Border.all(
+                color: NeoTokens.black,
+                width: NeoTokens.borderWidth,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: NeoTokens.black,
+                  offset: NeoTokens.shadowOffsetSmall,
+                  blurRadius: NeoTokens.shadowBlurRadius,
+                ),
+              ],
             ),
-            decoration: InputDecoration(
-              hintText: 'Cari makanan, e.g. nasi, ayam...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        _fetchFoods();
-                      },
-                    )
-                  : null,
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.w700,
+                color: NeoTokens.textDark,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Cari makanan, e.g. nasi, ayam...',
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: NeoTokens.textLight,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  size: 22,
+                  color: NeoTokens.black,
+                ),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear_rounded,
+                          size: 20,
+                          color: NeoTokens.black,
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          _fetchFoods();
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+              ),
+              onChanged: (val) {
+                _fetchFoods(val);
+              },
             ),
-            onChanged: (val) {
-              _fetchFoods(val);
-            },
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: NeoTokens.space16),
+
           Expanded(
             child: _isLoading
                 ? const LoadingIndicator(message: 'Mencari makanan...')
                 : _error != null
-                    ? Center(
-                        child: Text(
-                          _error!,
-                          style: const TextStyle(color: AppTheme.errorRed, fontSize: 13),
+                ? Center(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(
+                        color: NeoTokens.coralRed,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  )
+                : _foods.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 44,
+                          color: NeoTokens.black,
                         ),
-                      )
-                    : _foods.isEmpty
-                        ? const Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.search_off_rounded, size: 40, color: AppTheme.textLight),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Tidak ada makanan yang cocok.',
-                                  style: TextStyle(fontSize: 13, color: AppTheme.textMuted),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.separated(
-                            itemCount: _foods.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1, color: AppTheme.borderSubtle),
-                            itemBuilder: (context, index) {
-                              final food = _foods[index];
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                title: Text(
-                                  food.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    color: AppTheme.textDark,
-                                  ),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 2.0),
-                                  child: Text(
-                                    '${food.caloriesPer100g} kkal • P: ${food.proteinPer100g}g • K: ${food.carbsPer100g}g • L: ${food.fatPer100g}g (per 100g)',
-                                    style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
-                                  ),
-                                ),
-                                trailing: const Icon(Icons.add_circle_outline_rounded, color: AppTheme.primaryGreen, size: 22),
-                                onTap: () {
-                                  Navigator.pop(context, food);
-                                },
-                              );
-                            },
+                        SizedBox(height: 8),
+                        Text(
+                          'Tidak ada makanan yang cocok.',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w600,
+                            color: NeoTokens.textMuted,
                           ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _foods.length,
+                    itemBuilder: (context, index) {
+                      final food = _foods[index];
+                      return NeoCard(
+                        margin: const EdgeInsets.symmetric(
+                          vertical: NeoTokens.space4,
+                        ),
+                        padding: const EdgeInsets.all(NeoTokens.space12),
+                        shadowOffset: NeoTokens.shadowOffsetSmall,
+                        onTap: () => Navigator.pop(context, food),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    food.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      color: NeoTokens.textDark,
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${food.caloriesPer100g} kkal • P: ${food.proteinPer100g}g • K: ${food.carbsPer100g}g • L: ${food.fatPer100g}g (per 100g)',
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: NeoTokens.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const NeoBadge(
+                              label: '+ Pilih',
+                              color: NeoBadgeColor.mint,
+                              fontSize: 11,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

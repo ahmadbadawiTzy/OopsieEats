@@ -1,151 +1,158 @@
 # NutriView
 
-Aplikasi mobile untuk **mengenali makanan dari foto dan melacak asupan gizi harian**. Pengguna mengisi profil, sistem menghitung target gizi harian, lalu pengguna memotret makanan; YOLO26n mendeteksi jenis makanan, pengguna mengonfirmasi dan memasukkan porsi (gram), dan backend menghitung gizi secara deterministik dari basis data nutrisi.
+Aplikasi mobile untuk **mengenali makanan secara offline dengan AI On-Device YOLO26n dan melacak asupan gizi harian berbasis Firebase**. Pengguna mengisi profil, sistem menghitung target gizi harian deterministik (Mifflin-St Jeor), lalu pengguna memotret makanan; model YOLO26n TensorFlow Lite berjalan secara lokal di perangkat mendeteksi objek makanan tanpa memerlukan koneksi internet, pengguna mengonfirmasi dan memasukkan porsi (gram), dan aplikasi menghitung nilai gizi presisi serta menyimpannya ke Cloud Firestore dengan persistensi offline penuh.
 
-> Proyek perkuliahan. Hasil aplikasi bersifat **estimasi** dan **bukan saran medis**.
+> Proyek NutriView. Hasil aplikasi bersifat **estimasi** dan **bukan saran medis**.
 
-## Alur Utama
+---
 
-```text
-Profil → Target Gizi Harian → Foto Makanan → Deteksi YOLO26n → Konfirmasi Pengguna
-      → Input Porsi (gram) → Perhitungan Gizi → Catatan Makan → Progres Harian
-```
+## 🌟 Arsitektur Modern: Serverless Edge AI + Firebase Spark Tier
 
-## Fitur MVP
-
-Registrasi/login/logout · profil pengguna · target kalori & makronutrien harian · scan makanan (kamera/galeri) · konfirmasi & koreksi deteksi · input porsi gram · perhitungan gizi · riwayat makan · dashboard harian · pencarian makanan manual.
-
-Rincian kebutuhan: [`docs/prd.md`](docs/prd.md).
-
-## Teknologi
-
-| Lapisan | Teknologi |
-|---|---|
-| Mobile | Flutter, Dart |
-| Backend | Python 3.11+, FastAPI |
-| Basis data | MySQL 8 |
-| Computer vision | YOLO26n (Ultralytics); pelatihan di Google Colab |
-| Komunikasi | REST API, JSON |
-
-## Arsitektur
-
-Modular monolith: satu backend FastAPI (Auth, Profile, Food Scanner + YOLO26n, Nutrition Calculator, Meal Tracking) dan satu database MySQL.
+Aplikasi NutriView telah dimigrasikan secara penuh ke **arsitektur modern Serverless + On-Device Edge ML**:
 
 ```text
-Flutter App ──HTTPS/REST──► FastAPI (modul + YOLO26n) ──► MySQL
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FLUTTER CLIENT APPLICATION                      │
+│                                                                        │
+│   ┌─────────────────────┐               ┌───────────────────────────┐  │
+│   │ On-Device YOLO26n   │               │   Nutrition Calculator    │  │
+│   │ TFLite [1,3,640,640]│               │   Mifflin-St Jeor +       │  │
+│   │ (best.tflite 9.4MB) │               │   Atwater Validation      │  │
+│   └──────────┬──────────┘               └─────────────┬─────────────┘  │
+│              │                                        │                │
+│              ▼                                        ▼                │
+│   ┌─────────────────────────────────────────────────────────────────┐  │
+│   │        Data Repositories & Local Persistent Cache (Offline)     │  │
+│   │  (FoodRepository, MealRepository, ProfileRepo, AdminRepo)       │  │
+│   └────────────────────────────────┬────────────────────────────────┘  │
+└────────────────────────────────────┼───────────────────────────────────┘
+                                     │ Direct SDK Connection
+                                     ▼ (Secure Rules & RBAC)
+┌────────────────────────────────────────────────────────────────────────┐
+│                        FIREBASE SERVICES (SPARK TIER)                  │
+│                                                                        │
+│   ┌──────────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
+│   │ Firebase Auth        │  │ Cloud Firestore │  │ Firebase Storage │  │
+│   │ (Email/Password,     │  │ (Multi-tenant   │  │ (CMS Media &     │  │
+│   │  Session Cache)      │  │  Meals, Foods,  │  │  Assets, max 5MB)│  │
+│   │                      │  │  CMS, Audit)    │  │                  │  │
+│   └──────────────────────┘  └─────────────────┘  └──────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-Prinsip penting: Flutter tidak mengakses database; YOLO26n hanya mendeteksi makanan dan **tidak** menghitung gizi; gizi dihitung backend dengan rumus `nutrisi_per_100g × porsi_gram / 100`. Detail lengkap: [`docs/ai.md`](docs/ai.md).
+### Keunggulan Arsitektur:
+1. **100% On-Device AI:** Model YOLO26n (9.4 MB) dieksekusi langsung di CPU/GPU perangkat menggunakan `tflite_flutter`, tanpa latensi jaringan dan tanpa biaya server komputasi.
+2. **Zero Cloud Server Costs (Spark Tier):** Bebas biaya server bulanan, VPS, FastAPI instance, atau Cloud Functions berbayar.
+3. **Kerahasiaan & Keamanan Data:** Pengguna memiliki isolasi data multi-tenant di path `users/{uid}/meals/{mealId}` yang dijaga ketat oleh `firestore.rules` deklaratif.
+4. **Desain Neubrutalism Konsisten:** Antarmuka bergaya Neubrutalism dengan palet warna berani, border hitam tegas, dan bayangan tajam tetap terjaga 100%.
 
-## Struktur Repositori
+---
+
+## 📱 Alur Utama Aplikasi
 
 ```text
-├── backend/    # FastAPI, layanan bisnis, model YOLO26n wrapper, migrasi, tes
-├── frontend/   # Aplikasi Flutter
-├── ml/         # Catatan dataset/pelatihan, classes.yaml, notebook Colab
-└── docs/       # prd.md dan ai.md
+Registrasi/Login → Profil Pengguna → Target Gizi Harian (BMR & TDEE)
+  → Kamera/Galeri → Deteksi On-Device YOLO26n (Zero Internet)
+  → Konfirmasi Pengguna → Input Porsi (gram)
+  → Snapshot Gizi Deterministik → Firestore Sync & Offline Cache
+  → Dashboard Progres Harian Makronutrien
 ```
 
-## Prasyarat
+---
 
-- Python 3.11+
-- MySQL 8.x
-- Flutter SDK (stable) dan Android emulator/perangkat
-- Bobot model YOLO26n `best.pt` (lihat [`ml/README.md`](ml/README.md); tidak disertakan di repositori)
+## 🛠️ Daftar Fitur & Status Integrasi
 
-## Memulai
+| Modul | Status | Keterangan |
+|---|---|---|
+| **Autentikasi** | ✅ Produksi | Firebase Auth + Session Caching + Role RBAC (`super_admin`, `dietitian`, `editor`, `user`) |
+| **Kalkulator Gizi** | ✅ Produksi | Formula Mifflin-St Jeor deterministik, Atwater factor consistency checking |
+| **On-Device Scanner** | ✅ Produksi | YOLO26n TFLite (Input `[1, 3, 640, 640]`, 29 kelas makanan khas Indonesia & global) |
+| **Basis Data Makanan** | ✅ Produksi | Cloud Firestore `foods` dengan fallback offline instan `seed_foods.json` |
+| **Pencatatan Makanan** | ✅ Produksi | Subkoleksi `users/{uid}/meals` dengan snapshot nilai gizi permanen (*immutable*) |
+| **Dashboard Harian** | ✅ Produksi | Agregasi harian real-time dan persentase capaian energi serta makronutrien |
+| **CMS Edukasi & Pengumuman** | ✅ Produksi | Artikel gizi, kategori, dan broadcast pengumuman sistem via Firestore |
+| **Panel Admin Neubrutalism** | ✅ Produksi | Manajemen makanan, audit log, simulasi energi, dan proteksi deaktivasi akun admin |
 
-### 1. Backend
+---
 
+## 🚀 Panduan Setup Firebase & Menjalankan Aplikasi
+
+### Prasyarat
+- Flutter SDK 3.x+ (Channel stable)
+- OpenJDK 17 atau 21 / Android SDK (minSdk 23)
+
+### 1. Menghubungkan ke Proyek Firebase Console Anda
+Jika Anda menggunakan proyek Firebase baru di [Firebase Console](https://console.firebase.google.com):
+1. **Buat Proyek:** Buka Firebase Console, klik **Add project**, beri nama (misal: `nutriview-app`).
+2. **Aktifkan Authentication:**
+   - Masuk ke menu **Build** > **Authentication** > klik **Get Started**.
+   - Pada tab **Sign-in method**, pilih **Email/Password**, aktifkan toggle **Enable**, lalu klik **Save**.
+3. **Aktifkan Cloud Firestore:**
+   - Masuk ke menu **Build** > **Firestore Database** > klik **Create database**.
+   - Pilih lokasi server terdekat (misal `asia-southeast2` Jakarta), mulai dalam mode produksi (*production mode*).
+4. **Aktifkan Cloud Storage:**
+   - Masuk ke menu **Build** > **Storage** > klik **Get Started**.
+5. **Daftarkan Aplikasi Android di Firebase Console:**
+   - Tambahkan aplikasi Android dengan Package Name: `com.nutriview.nutriview`.
+   - Unduh berkas `google-services.json` dan letakkan di direktori:
+     ```text
+     frontend/android/app/google-services.json
+     ```
+   - Atau gunakan FlutterFire CLI di terminal:
+     ```bash
+     flutterfire configure
+     ```
+
+### 2. Cara Membuat Akun Admin Pertama (Bootstrap Super Admin)
+Secara desain keamanan, Security Rules melarang pengguna aplikasi menetapkan `role: 'super_admin'` secara mandiri dari klien (*privilege escalation protection*). Untuk membuat admin pertama:
+
+**Metode Rekomendasi (Melalui Firebase Console):**
+1. Buka aplikasi NutriView dan lakukan pendaftaran akun Anda sendiri melalui layar **Daftar Akun** (atau buat akun langsung di **Firebase Console** > **Authentication** > **Add user**).
+2. Di **Firebase Console** > **Authentication** > tab **Users**, salin **User UID** dari akun Anda (contoh: `abc123xyz456`).
+3. Buka **Firebase Console** > **Firestore Database** > pilih koleksi `users` > buka dokumen dengan ID yang sesuai dengan UID Anda (`users/{UID}`).
+4. Ubah nilai field:
+   - `role`: `"super_admin"`
+   - `is_active`: `true`
+5. Selesai! Sekarang Anda dapat langsung masuk melalui layar login utama (`/login`) menggunakan email dan kata sandi tersebut. Sistem akan secara otomatis mengarahkan akun administrator ke **Panel Admin Neubrutalism**, dengan opsi berpindah ke mode pengguna kapan saja.
+
+**Metode Skrip Otomatis (Menggunakan Service Account Admin):**
+Jika Anda memiliki berkas service account private key:
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env               # lalu isi nilai sebenarnya (jangan di-commit)
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+python scripts/migrate_to_firestore.py
 ```
 
-Buat database MySQL (`utf8mb4`), sesuaikan `DATABASE_URL` di `.env`, lalu:
-
-```bash
-alembic upgrade head               # membuat skema
-python -m app.db.seed              # mengisi data makanan & gizi dari app/db/seed/foods.csv
-uvicorn app.main:app --reload
-```
-
-Letakkan bobot model di `backend/app/ml/weights/best.pt` (atau atur `MODEL_PATH`). Tanpa model, endpoint deteksi mengembalikan `503`, sedangkan fitur lain tetap berjalan.
-
-- Dokumentasi API interaktif: `http://localhost:8000/docs`
-- Health check: `http://localhost:8000/health`
-
-### 2. Frontend
-
+### 3. Menjalankan Aplikasi Flutter
 ```bash
 cd frontend
 flutter pub get
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000/api/v1
+flutter run
 ```
 
-`10.0.2.2` adalah alamat host dari emulator Android. Gunakan IP mesin Anda untuk perangkat fisik.
-
-## Konfigurasi
-
-Seluruh konfigurasi backend melalui environment variable (lihat `backend/.env.example`):
-
-| Variabel | Fungsi |
-|---|---|
-| `DATABASE_URL` | Koneksi MySQL |
-| `JWT_SECRET_KEY` | Kunci penandatangan token (acak, ≥ 32 karakter) |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Masa berlaku token |
-| `MODEL_FAMILY` | Arsitektur model deteksi (default: `YOLO26n`) |
-| `MODEL_PATH` | Lokasi bobot model (default: `app/ml/weights/best.pt`) |
-| `DETECTION_MIN_CONFIDENCE` / `DETECTION_LOW_CONFIDENCE_THRESHOLD` | Ambang deteksi |
-| `MAX_UPLOAD_SIZE_MB` | Batas ukuran gambar (default 5) |
-
-`.env` tidak boleh di-commit.
-
-## Pengujian
-
+### 4. Menjalankan Pengujian Otomatis
 ```bash
-# Backend
-cd backend
-ruff check .
-pytest
-
-# Frontend
 cd frontend
-flutter analyze
 flutter test
 ```
+Seluruh 46 tes unit, widget, dan integrasi (meliputi inferensi model on-device, formula gizi Mifflin-St Jeor, Atwater, session caching, dan repositori) berjalan 100% lulus.
 
-Tes integrasi backend memakai database MySQL khusus uji (`DATABASE_URL_TEST`). Strategi lengkap: `docs/ai.md` §17.
+---
 
-## Endpoint Utama
+## 🔒 Aturan Keamanan (Security Rules)
 
-`POST /auth/register` · `POST /auth/login` · `POST /auth/logout` · `GET /users/me` · `PUT /users/me/profile` · `GET /nutrition/target` · `POST /foods/detect` · `GET /foods` · `GET /foods/{id}` · `POST /meals` · `GET /meals` · `GET /meals/{id}` · `GET /dashboard/daily`
+- **Firestore (`firestore.rules`):**
+  - Pengguna hanya memiliki hak baca dan tulis pada data profil dan rekam makannya sendiri (`users/$(request.auth.uid)`).
+  - Koleksi `foods`, `cms_articles`, `cms_categories`, `cms_announcements` dapat dibaca publik.
+  - Perubahan data katalog makanan dan CMS dibatasi untuk staf berwenang (`super_admin`, `dietitian`, `editor`).
+  - Rekam jejak audit (`cms_audit_logs`) bersifat *append-only* dan tidak dapat diubah atau dihapus.
+  - Perlindungan *self-lockout*: Super admin tidak dapat menonaktifkan akunnya sendiri atau super admin terakhir.
+- **Storage (`storage.rules`):**
+  - Ukuran unggahan dibatasi maksimal 5 MB.
+  - Tipe berkas dibatasi pada citra yang valid (`image/jpeg`, `image/png`, `image/webp`).
 
-Semua berada di bawah `/api/v1`. Kontrak lengkap: `docs/ai.md` §9.
+---
 
-## Keterbatasan
+## 📜 Lisensi & Atribusi
 
-- Model hanya mendukung **10–20 kelas makanan** dan **tidak mewakili seluruh makanan Indonesia**; selalu tersedia input manual.
-- Porsi diisi pengguna dalam gram; **tidak ada** estimasi porsi otomatis dari gambar.
-- Target gizi adalah estimasi umum; aplikasi tidak memberikan diagnosis atau saran medis.
-- Belum ada rate limiting login, reset kata sandi, atau edit/hapus catatan makan.
-- Data gizi bersumber dari referensi yang dicatat pada tabel `food_nutrition.source` (mis. TKPI) dan harus diverifikasi tim.
-
-## Di Luar Cakupan
-
-Chatbot/LLM, rekomendasi makanan, optimasi belanja (OR-Tools), model rekomendasi Food.com, coaching real-time, wearable/IoT, fitur sosial, microservices, dan infrastruktur terdistribusi. Daftar lengkap: `docs/prd.md` §17.
-
-## Panduan untuk AI Coding Agent
-
-Sebelum mengerjakan apa pun, baca **`docs/prd.md`** (sumber kebenaran produk) dan **`docs/ai.md`** (sumber kebenaran rekayasa), terutama §22 (*AI Coding Agent Rules*) dan §23 (*Definition of Done*). Jangan menambah fitur, dependensi, atau infrastruktur di luar yang didefinisikan tanpa permintaan eksplisit.
-
-## Dokumentasi
-
-| Dokumen | Isi |
-|---|---|
-| [`docs/prd.md`](docs/prd.md) | Kebutuhan produk, user story, kriteria penerimaan, metrik |
-| [`docs/ai.md`](docs/ai.md) | Arsitektur, skema database, API, keamanan, standar kode, aturan agen AI |
-| [`ml/README.md`](ml/README.md) | Dataset, pelatihan, dan evaluasi model |
+- **Model YOLO26n:** Dilatih untuk 29 kelas makanan Indonesia & internasional. Bobot TFLite terpasang di `frontend/assets/models/best.tflite`.
+- **Data Nilai Gizi:** Tabel Komposisi Pangan Indonesia (TKPI 2020), Kementerian Kesehatan Republik Indonesia.

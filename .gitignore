@@ -1,7 +1,16 @@
 # Environments and Secrets
 .env
 .env.*
-!.env.example
+*.key
+*.pem
+*.jks
+*.keystore
+*key.properties
+
+# Firebase debug logs
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
 
 # Python
 __pycache__/
@@ -13,24 +22,8 @@ env/
 venv/
 .venv/
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-backend/lib/
-backend/lib64/
-!frontend/lib/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-*.db
-*.sqlite
-*.sqlite3
 
 # Testing & Linting
 .pytest_cache/
@@ -43,10 +36,6 @@ htmlcov/
 *.pt
 *.onnx
 *.engine
-ml/weights/
-ml/dataset/
-backend/app/ml/weights/*.pt
-!backend/app/ml/weights/.gitkeep
 
 # Flutter & Dart
 .dart_tool/
@@ -59,6 +48,15 @@ frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
 frontend/.packages
 *.log
+
+# Android build outputs & local config
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/app/release/
+symbols/
+
+# IDE
+.vscode/
 
 # Operating System
 .DS_Store

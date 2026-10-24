@@ -1,3 +1,5 @@
+export 'package:nutriview/data/models/profile.dart' show DailyTarget;
+
 class MealNutritionTotals {
   final double caloriesKcal;
   final double proteinG;
@@ -91,10 +93,12 @@ class MealRecord {
       consumedDate: json['consumed_date'] as String,
       items: json['items'] != null
           ? (json['items'] as List)
-              .map((item) => MealItem.fromJson(item as Map<String, dynamic>))
-              .toList()
+                .map((item) => MealItem.fromJson(item as Map<String, dynamic>))
+                .toList()
           : [],
-      totals: MealNutritionTotals.fromJson(json['totals'] as Map<String, dynamic>),
+      totals: MealNutritionTotals.fromJson(
+        json['totals'] as Map<String, dynamic>,
+      ),
       createdAt: json['created_at'] as String? ?? '',
     );
   }
@@ -112,35 +116,5 @@ class MealRecord {
       default:
         return mealType;
     }
-  }
-}
-
-class DailyTarget {
-  final int caloriesKcal;
-  final double proteinG;
-  final double carbsG;
-  final double fatG;
-  final double bmrKcal;
-  final double tdeeKcal;
-
-  DailyTarget({
-    required this.caloriesKcal,
-    required this.proteinG,
-    required this.carbsG,
-    required this.fatG,
-    required this.bmrKcal,
-    required this.tdeeKcal,
-  });
-
-  factory DailyTarget.fromJson(Map<String, dynamic> json) {
-    final basis = json['basis'] as Map<String, dynamic>? ?? {};
-    return DailyTarget(
-      caloriesKcal: (json['calories_kcal'] as num).toInt(),
-      proteinG: (json['protein_g'] as num).toDouble(),
-      carbsG: (json['carbs_g'] as num).toDouble(),
-      fatG: (json['fat_g'] as num).toDouble(),
-      bmrKcal: (basis['bmr_kcal'] as num?)?.toDouble() ?? 0.0,
-      tdeeKcal: (basis['tdee_kcal'] as num?)?.toDouble() ?? 0.0,
-    );
   }
 }

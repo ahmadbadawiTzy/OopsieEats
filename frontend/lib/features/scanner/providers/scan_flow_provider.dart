@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nutriview/core/error_handler.dart';
 import 'package:nutriview/data/models/food.dart';
@@ -8,21 +10,65 @@ import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/data/repositories/meal_repository.dart';
 
 class ConfirmedFoodItem {
-  int foodId;
+  int? foodId;
   String foodName;
   double? portionGrams;
   String source; // 'detected', 'corrected', 'manual'
   double? detectionConfidence;
   bool lowConfidence;
+  BoundingBox? boundingBox;
+  String status; // 'mapped', 'unmapped', 'food_unavailable', 'nutrition_unavailable'
+  String? error;
+
+  // Real nutritional metrics per 100g
+  double? caloriesPer100g;
+  double? proteinPer100g;
+  double? carbsPer100g;
+  double? fatPer100g;
+  bool hasNutritionData;
 
   ConfirmedFoodItem({
-    required this.foodId,
+    this.foodId,
     required this.foodName,
     this.portionGrams,
     required this.source,
     this.detectionConfidence,
     this.lowConfidence = false,
+    this.boundingBox,
+    this.status = 'mapped',
+    this.error,
+    this.caloriesPer100g,
+    this.proteinPer100g,
+    this.carbsPer100g,
+    this.fatPer100g,
+    this.hasNutritionData = true,
   });
+
+  bool get isUnmapped => foodId == null || status == 'unmapped';
+
+  /// Estimates calories dynamically based on [portionGrams].
+  double get estimatedCalories {
+    final grams = portionGrams ?? 0.0;
+    return ((caloriesPer100g ?? 0.0) * grams) / 100.0;
+  }
+
+  /// Estimates protein dynamically based on [portionGrams].
+  double get estimatedProtein {
+    final grams = portionGrams ?? 0.0;
+    return ((proteinPer100g ?? 0.0) * grams) / 100.0;
+  }
+
+  /// Estimates carbs dynamically based on [portionGrams].
+  double get estimatedCarbs {
+    final grams = portionGrams ?? 0.0;
+    return ((carbsPer100g ?? 0.0) * grams) / 100.0;
+  }
+
+  /// Estimates fat dynamically based on [portionGrams].
+  double get estimatedFat {
+    final grams = portionGrams ?? 0.0;
+    return ((fatPer100g ?? 0.0) * grams) / 100.0;
+  }
 }
 
 class ScanFlowProvider extends ChangeNotifier {
@@ -34,6 +80,7 @@ class ScanFlowProvider extends ChangeNotifier {
   bool _isProcessing = false;
   String? _errorMessage;
   List<ConfirmedFoodItem> _confirmedItems = [];
+  List<DetectionItem> _rawDetections = [];
   String _mealType = 'lunch';
   MealRecord? _savedMealRecord;
 
@@ -48,8 +95,21 @@ class ScanFlowProvider extends ChangeNotifier {
   bool get isProcessing => _isProcessing;
   String? get errorMessage => _errorMessage;
   List<ConfirmedFoodItem> get confirmedItems => _confirmedItems;
+  List<DetectionItem> get rawDetections => _rawDetections;
   String get mealType => _mealType;
   MealRecord? get savedMealRecord => _savedMealRecord;
+
+  double get totalEstimatedCalories =>
+      _confirmedItems.fold(0.0, (acc, item) => acc + item.estimatedCalories);
+
+  double get totalEstimatedProtein =>
+      _confirmedItems.fold(0.0, (acc, item) => acc + item.estimatedProtein);
+
+  double get totalEstimatedCarbs =>
+      _confirmedItems.fold(0.0, (acc, item) => acc + item.estimatedCarbs);
+
+  double get totalEstimatedFat =>
+      _confirmedItems.fold(0.0, (acc, item) => acc + item.estimatedFat);
 
   void _suggestDefaultMealType() {
     final hour = DateTime.now().hour;
@@ -84,25 +144,43 @@ class ScanFlowProvider extends ChangeNotifier {
       _imageFile = File(picked.path);
       _isProcessing = true;
       _confirmedItems = [];
+      _rawDetections = [];
       notifyListeners();
 
       final detections = await foodRepository.detectFood(_imageFile!);
+      _rawDetections = detections;
       _confirmedItems = detections.map((d) {
         return ConfirmedFoodItem(
           foodId: d.foodId,
-          foodName: d.foodName,
+          foodName: d.displayName,
           source: 'detected',
           detectionConfidence: d.confidence,
           lowConfidence: d.lowConfidence,
+          boundingBox: d.boundingBox,
+          status: d.status,
+          error: d.error,
+          caloriesPer100g: d.caloriesPer100g,
+          proteinPer100g: d.proteinPer100g,
+          carbsPer100g: d.carbsPer100g,
+          fatPer100g: d.fatPer100g,
+          hasNutritionData: d.hasNutritionData,
         );
       }).toList();
 
       return true;
+    } on PlatformException catch (e) {
+      if (e.code == 'camera_access_denied') {
+        _errorMessage =
+            'Akses kamera ditolak. Silakan izinkan akses kamera pada Pengaturan perangkat untuk memindai makanan.';
+      } else {
+        _errorMessage = 'Gagal mengakses kamera atau galeri: ${e.message}';
+      }
+      return false;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
       return false;
     } catch (_) {
-      _errorMessage = 'Gagal memproses gambar.';
+      _errorMessage = 'Gagal memproses gambar makanan. Silakan coba lagi.';
       return false;
     } finally {
       _isProcessing = false;
@@ -127,6 +205,14 @@ class ScanFlowProvider extends ChangeNotifier {
         source: 'corrected',
         detectionConfidence: old.detectionConfidence,
         lowConfidence: false,
+        boundingBox: old.boundingBox,
+        status: 'mapped',
+        error: null,
+        caloriesPer100g: newFood.caloriesKcalPer100g,
+        proteinPer100g: newFood.proteinGPer100g,
+        carbsPer100g: newFood.carbsGPer100g,
+        fatPer100g: newFood.fatGPer100g,
+        hasNutritionData: newFood.hasNutritionData,
       );
       notifyListeners();
     }
@@ -140,6 +226,12 @@ class ScanFlowProvider extends ChangeNotifier {
         source: 'manual',
         detectionConfidence: null,
         lowConfidence: false,
+        status: 'mapped',
+        caloriesPer100g: newFood.caloriesKcalPer100g,
+        proteinPer100g: newFood.proteinGPer100g,
+        carbsPer100g: newFood.carbsGPer100g,
+        fatPer100g: newFood.fatGPer100g,
+        hasNutritionData: newFood.hasNutritionData,
       ),
     );
     notifyListeners();
@@ -155,6 +247,7 @@ class ScanFlowProvider extends ChangeNotifier {
   bool validatePortions() {
     if (_confirmedItems.isEmpty) return false;
     for (final item in _confirmedItems) {
+      if (item.foodId == null) return false;
       if (item.portionGrams == null ||
           item.portionGrams! <= 0 ||
           item.portionGrams! > 5000) {
@@ -165,8 +258,16 @@ class ScanFlowProvider extends ChangeNotifier {
   }
 
   Future<bool> submitMeal() async {
+    if (_confirmedItems.any((i) => i.foodId == null)) {
+      _errorMessage =
+          'Harap pilih atau ganti makanan yang belum terdaftar di database sebelum menyimpan.';
+      notifyListeners();
+      return false;
+    }
+
     if (!validatePortions()) {
-      _errorMessage = 'Semua porsi makanan harus diisi antara 1 hingga 5000 gram.';
+      _errorMessage =
+          'Semua porsi makanan harus diisi antara 1 hingga 5000 gram.';
       notifyListeners();
       return false;
     }
@@ -212,6 +313,7 @@ class ScanFlowProvider extends ChangeNotifier {
     _isProcessing = false;
     _errorMessage = null;
     _confirmedItems = [];
+    _rawDetections = [];
     _savedMealRecord = null;
     _suggestDefaultMealType();
     notifyListeners();

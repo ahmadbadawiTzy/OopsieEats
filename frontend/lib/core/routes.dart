@@ -11,4 +11,14 @@ class AppRoutes {
   static const String mealHistory = '/meals';
   static const String mealDetail = '/meals/detail';
   static const String foodSearch = '/foods/search';
+
+  // CMS & Edukasi
+  static const String adminLogin = '/admin/login';
+  static const String adminDashboard = '/admin/dashboard';
+  static const String articles = '/articles';
+  static const String articleDetail = '/article/detail';
+
+  // Biodata & Creator Profile
+  static const String biodata = '/profile/biodata';
+  static const String about = '/about';
 }

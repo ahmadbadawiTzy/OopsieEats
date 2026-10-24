@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/data/models/profile.dart';
 import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/profile_repository.dart';
@@ -60,6 +59,82 @@ class ProfileProvider extends ChangeNotifier {
       return false;
     } catch (_) {
       _errorMessage = 'Gagal menyimpan profil.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateAvatar({String? photoUrl, String? avatarPreset}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.updateAvatar(
+        photoUrl: photoUrl,
+        avatarPreset: avatarPreset,
+      );
+      // Reload profile to refresh user object across app
+      await loadProfile();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal memperbarui avatar.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> saveBiodata({
+    required String fullName,
+    required UserProfile newProfile,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _profile = await _repository.saveBiodata(
+        fullName: fullName,
+        profile: newProfile,
+      );
+      _dailyTarget = await _repository.getDailyTarget();
+      await loadProfile();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal menyimpan biodata pengguna.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteBiodata() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteBiodata();
+      _profile = null;
+      _dailyTarget = null;
+      await loadProfile();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal menghapus biodata pengguna.';
       return false;
     } finally {
       _isLoading = false;

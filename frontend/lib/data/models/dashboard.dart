@@ -35,8 +35,12 @@ class DashboardProgress {
 
   factory DashboardProgress.fromJson(Map<String, dynamic> json) {
     return DashboardProgress(
-      calories: NutrientProgress.fromJson(json['calories_kcal'] as Map<String, dynamic>),
-      protein: NutrientProgress.fromJson(json['protein_g'] as Map<String, dynamic>),
+      calories: NutrientProgress.fromJson(
+        json['calories_kcal'] as Map<String, dynamic>,
+      ),
+      protein: NutrientProgress.fromJson(
+        json['protein_g'] as Map<String, dynamic>,
+      ),
       carbs: NutrientProgress.fromJson(json['carbs_g'] as Map<String, dynamic>),
       fat: NutrientProgress.fromJson(json['fat_g'] as Map<String, dynamic>),
     );
@@ -62,9 +66,15 @@ class DailyDashboard {
     return DailyDashboard(
       date: json['date'] as String,
       mealCount: json['meal_count'] as int,
-      target: MealNutritionTotals.fromJson(json['target'] as Map<String, dynamic>),
-      consumed: MealNutritionTotals.fromJson(json['consumed'] as Map<String, dynamic>),
-      progress: DashboardProgress.fromJson(json['progress'] as Map<String, dynamic>),
+      target: MealNutritionTotals.fromJson(
+        json['target'] as Map<String, dynamic>,
+      ),
+      consumed: MealNutritionTotals.fromJson(
+        json['consumed'] as Map<String, dynamic>,
+      ),
+      progress: DashboardProgress.fromJson(
+        json['progress'] as Map<String, dynamic>,
+      ),
     );
   }
 }

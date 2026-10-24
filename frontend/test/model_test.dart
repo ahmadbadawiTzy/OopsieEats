@@ -73,7 +73,7 @@ void main() {
             'fat_g': 0.45,
             'source': 'manual',
             'detection_confidence': null,
-          }
+          },
         ],
         'totals': {
           'calories_kcal': 195.0,
@@ -116,21 +116,9 @@ void main() {
             'target': 2200.0,
             'percentage': 50.0,
           },
-          'protein_g': {
-            'consumed': 45.0,
-            'target': 82.5,
-            'percentage': 54.5,
-          },
-          'carbs_g': {
-            'consumed': 150.0,
-            'target': 302.5,
-            'percentage': 49.6,
-          },
-          'fat_g': {
-            'consumed': 30.0,
-            'target': 61.1,
-            'percentage': 49.1,
-          },
+          'protein_g': {'consumed': 45.0, 'target': 82.5, 'percentage': 54.5},
+          'carbs_g': {'consumed': 150.0, 'target': 302.5, 'percentage': 49.6},
+          'fat_g': {'consumed': 30.0, 'target': 61.1, 'percentage': 49.1},
         },
       };
 

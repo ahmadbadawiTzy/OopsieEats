@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/theme.dart';
+import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/shared/neo/neo_button.dart';
 
+/// Legacy-compatible CustomButton upgraded with tactile Neo-Brutalist interaction.
 class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -21,56 +23,15 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveBg = backgroundColor ?? AppTheme.primaryGreen;
-    final isWhiteBg = effectiveBg == Colors.white || effectiveBg == AppTheme.surfaceWhite;
-    final effectiveFg = textColor ?? (isWhiteBg ? AppTheme.primaryGreen : Colors.white);
-
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: effectiveBg,
-          foregroundColor: effectiveFg,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          side: isWhiteBg ? const BorderSide(color: AppTheme.borderSubtle, width: 1.2) : null,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isWhiteBg ? AppTheme.primaryGreen : Colors.white,
-                  ),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 19),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+    return NeoButton(
+      text: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      customBackgroundColor: backgroundColor ?? NeoTokens.vividYellow,
+      customTextColor: textColor ?? NeoTokens.black,
+      prefixIcon: icon,
+      isFullWidth: true,
+      height: 52,
     );
   }
 }

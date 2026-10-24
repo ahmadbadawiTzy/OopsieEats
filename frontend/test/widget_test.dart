@@ -4,6 +4,7 @@ import 'package:nutriview/core/theme.dart';
 import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
 import 'package:nutriview/features/auth/screens/login_screen.dart';
+import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/shared/widgets/progress_card.dart';
 import 'package:provider/provider.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,8 +21,9 @@ void main() {
     authProvider = AuthProvider(mockAuthRepository);
   });
 
-  testWidgets('LoginScreen displays NutriView title and input fields',
-      (WidgetTester tester) async {
+  testWidgets('LoginScreen displays NutriView title and input fields', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -41,8 +43,9 @@ void main() {
     expect(find.text('Daftar Sekarang'), findsOneWidget);
   });
 
-  testWidgets('ProgressCard displays correct percentage and nutrient amounts',
-      (WidgetTester tester) async {
+  testWidgets('ProgressCard displays correct percentage and nutrient amounts', (
+    WidgetTester tester,
+  ) async {
     final progress = NutrientProgress(
       consumed: 1200.5,
       target: 2546.0,
@@ -66,5 +69,68 @@ void main() {
     expect(find.text('47.2%'), findsOneWidget);
     expect(find.text('Terkonsumsi: 1200.5 kkal'), findsOneWidget);
     expect(find.text('Target: 2546.0 kkal'), findsOneWidget);
+  });
+
+  testWidgets('NeoButton responds to tap and displays loading indicator', (
+    WidgetTester tester,
+  ) async {
+    bool tapped = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: NeoButton(text: 'Tekan Saya', onPressed: () => tapped = true),
+        ),
+      ),
+    );
+
+    expect(find.text('Tekan Saya'), findsOneWidget);
+    await tester.tap(find.text('Tekan Saya'));
+    expect(tapped, isTrue);
+
+    // Pump button in loading state
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: NeoButton(
+            text: 'Sedang Proses',
+            isLoading: true,
+            onPressed: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('Sedang Proses'), findsNothing);
+  });
+
+  testWidgets('NeoBadge renders text label and icon', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: NeoBadge(
+            label: 'TERVERIFIKASI',
+            icon: Icons.check_rounded,
+            color: NeoBadgeColor.mint,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('TERVERIFIKASI'), findsOneWidget);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+  });
+
+  testWidgets('NeoProgressBar renders visually and clamps fractions', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: NeoProgressBar(value: 0.75))),
+    );
+
+    expect(find.byType(NeoProgressBar), findsOneWidget);
   });
 }

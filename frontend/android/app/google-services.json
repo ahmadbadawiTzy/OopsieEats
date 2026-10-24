@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "350308179098",
+    "project_id": "nutriview-943cd",
+    "storage_bucket": "nutriview-943cd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350308179098:android:95f5dda5c337a14a7e5323",
+        "android_client_info": {
+          "package_name": "com.nutriview.nutriview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7Vu136ZplCHuV5d-nPuwQBr2Xq0_YI08"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

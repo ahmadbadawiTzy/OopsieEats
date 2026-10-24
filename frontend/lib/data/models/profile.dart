@@ -1,5 +1,8 @@
+import 'package:nutriview/core/age_calculator.dart';
+
 class UserProfile {
   final int age;
+  final DateTime? birthDate;
   final String sex;
   final double weightKg;
   final double heightCm;
@@ -8,6 +11,7 @@ class UserProfile {
 
   UserProfile({
     required this.age,
+    this.birthDate,
     required this.sex,
     required this.weightKg,
     required this.heightCm,
@@ -15,20 +19,30 @@ class UserProfile {
     required this.goal,
   });
 
+  /// Dynamic age computed from [birthDate]. Falls back to [age] if [birthDate] is null.
+  int get calculatedAge => AgeCalculator.calculateAge(birthDate) ?? age;
+
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    final rawBirthDate = json['birth_date'] as String?;
+    final parsedBirthDate = AgeCalculator.parseIsoDate(rawBirthDate);
+    final rawAge = (json['age'] as num?)?.toInt() ?? 25;
+    final dynamicAge = AgeCalculator.calculateAge(parsedBirthDate) ?? rawAge;
+
     return UserProfile(
-      age: json['age'] as int,
-      sex: json['sex'] as String,
-      weightKg: (json['weight_kg'] as num).toDouble(),
-      heightCm: (json['height_cm'] as num).toDouble(),
-      activityLevel: json['activity_level'] as String,
-      goal: json['goal'] as String,
+      age: dynamicAge,
+      birthDate: parsedBirthDate,
+      sex: json['sex'] as String? ?? 'male',
+      weightKg: (json['weight_kg'] as num?)?.toDouble() ?? 60.0,
+      heightCm: (json['height_cm'] as num?)?.toDouble() ?? 165.0,
+      activityLevel: json['activity_level'] as String? ?? 'moderate',
+      goal: json['goal'] as String? ?? 'maintain_weight',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'age': age,
+      'age': calculatedAge,
+      'birth_date': birthDate != null ? AgeCalculator.formatIsoDate(birthDate!) : null,
       'sex': sex,
       'weight_kg': weightKg,
       'height_cm': heightCm,
@@ -67,5 +81,35 @@ class UserProfile {
       default:
         return goal;
     }
+  }
+}
+
+class DailyTarget {
+  final int caloriesKcal;
+  final double proteinG;
+  final double carbsG;
+  final double fatG;
+  final double bmrKcal;
+  final double tdeeKcal;
+
+  DailyTarget({
+    required this.caloriesKcal,
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+    required this.bmrKcal,
+    required this.tdeeKcal,
+  });
+
+  factory DailyTarget.fromJson(Map<String, dynamic> json) {
+    final basis = json['basis'] as Map<String, dynamic>? ?? {};
+    return DailyTarget(
+      caloriesKcal: (json['calories_kcal'] as num).toInt(),
+      proteinG: (json['protein_g'] as num).toDouble(),
+      carbsG: (json['carbs_g'] as num).toDouble(),
+      fatG: (json['fat_g'] as num).toDouble(),
+      bmrKcal: (basis['bmr_kcal'] as num?)?.toDouble() ?? 0.0,
+      tdeeKcal: (basis['tdee_kcal'] as num?)?.toDouble() ?? 0.0,
+    );
   }
 }

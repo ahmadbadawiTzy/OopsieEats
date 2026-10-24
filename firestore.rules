@@ -1,0 +1,120 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(roles) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().role in roles &&
+        getUserData().is_active == true;
+    }
+
+    function isSuperAdmin() {
+      return hasRole(['super_admin']);
+    }
+
+    function isDietitian() {
+      return hasRole(['super_admin', 'dietitian']);
+    }
+
+    function isEditor() {
+      return hasRole(['super_admin', 'editor']);
+    }
+
+    function isStaff() {
+      return hasRole(['super_admin', 'dietitian', 'editor']);
+    }
+
+    // --- Users & Profiles ---
+    match /users/{userId} {
+      // User can read own doc; Super Admin can read all users
+      allow read: if isSignedIn() && (request.auth.uid == userId || isSuperAdmin());
+
+      // Registration: User can only create their own record as regular 'user' and active
+      allow create: if isSignedIn() && request.auth.uid == userId
+                    && request.resource.data.role == 'user'
+                    && request.resource.data.is_active == true;
+
+      // Profile updates: User cannot self-elevate role or toggle active state
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.is_active == resource.data.is_active)
+        || isSuperAdmin()
+      );
+
+      allow delete: if isOwner(userId) || isSuperAdmin();
+
+      // User Meals Subcollection (strict multi-tenant isolation)
+      match /meals/{mealId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // Top-level Profiles mapping (if used independently)
+    match /profiles/{userId} {
+      allow read, write: if isOwner(userId) || isSuperAdmin();
+    }
+
+    // --- Foods Catalog ---
+    match /foods/{foodId} {
+      // Food catalog is readable by everyone; Modification strictly restricted to staff
+      allow read: if true;
+      allow create, update, delete: if isDietitian();
+    }
+
+    // --- CMS Articles ---
+    match /cms_articles/{articleId} {
+      // Articles are readable by everyone; Manage only by Editors & Super Admin
+      allow read: if true;
+      allow create, update, delete: if isEditor();
+    }
+
+    // --- CMS Categories ---
+    match /cms_categories/{categoryId} {
+      allow read: if true;
+      allow create, update, delete: if isEditor();
+    }
+
+    // --- CMS Announcements ---
+    match /cms_announcements/{announcementId} {
+      allow read: if true;
+      allow create, update, delete: if isEditor();
+    }
+
+    // --- CMS Audit Logs ---
+    match /cms_audit_logs/{logId} {
+      // Only Super Admin can read audit trail
+      allow read: if isSuperAdmin();
+      // Any staff can record audit events for their own actions
+      allow create: if isStaff() && request.resource.data.performed_by == request.auth.uid;
+      // Audit logs are completely immutable once created
+      allow update, delete: if false;
+    }
+
+    // --- CMS Media Assets ---
+    match /cms_media/{mediaId} {
+      allow read: if true;
+      allow create, update, delete: if isStaff();
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

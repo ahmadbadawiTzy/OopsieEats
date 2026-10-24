@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
 import 'package:nutriview/data/models/food.dart';
+import 'package:nutriview/data/models/meal.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/data/repositories/meal_repository.dart';
 
 class MockFoodRepository extends Mock implements FoodRepository {}
+
 class MockMealRepository extends Mock implements MealRepository {}
 
 void main() {
@@ -105,6 +107,67 @@ void main() {
       expect(provider.confirmedItems.length, 1);
       expect(provider.confirmedItems[0].foodName, 'Ikan Bandeng');
       expect(provider.validatePortions(), isTrue);
+    });
+
+    test('ScanFlowProvider submitMeal validates unmapped items and portions before saving', () async {
+      final mockFoodRepo = MockFoodRepository();
+      final mockMealRepo = MockMealRepository();
+      final provider = ScanFlowProvider(
+        foodRepository: mockFoodRepo,
+        mealRepository: mockMealRepo,
+      );
+
+      // Add item without foodId (unmapped)
+      provider.confirmedItems.add(
+        ConfirmedFoodItem(
+          foodId: null,
+          foodName: 'Unknown Food',
+          source: 'detected',
+          portionGrams: 100.0,
+        ),
+      );
+
+      final unmappedSubmit = await provider.submitMeal();
+      expect(unmappedSubmit, isFalse);
+      expect(provider.errorMessage, contains('belum terdaftar'));
+
+      // Fix foodId, but leave portion empty
+      provider.confirmedItems[0].foodId = 10;
+      provider.confirmedItems[0].portionGrams = null;
+
+      final invalidPortionSubmit = await provider.submitMeal();
+      expect(invalidPortionSubmit, isFalse);
+      expect(provider.errorMessage, contains('1 hingga 5000'));
+
+      // Valid portion and mock createMeal success
+      provider.confirmedItems[0].portionGrams = 200.0;
+      final dummyRecord = MealRecord(
+        id: 99,
+        mealType: 'lunch',
+        consumedAt: '2026-10-24T12:00:00Z',
+        consumedDate: '2026-10-24',
+        createdAt: '2026-10-24T12:00:00Z',
+        items: [],
+        totals: MealNutritionTotals(
+          caloriesKcal: 260.0,
+          proteinG: 20.0,
+          carbsG: 25.0,
+          fatG: 5.0,
+        ),
+      );
+
+      when(
+        () => mockMealRepo.createMeal(
+          mealType: any(named: 'mealType'),
+          consumedAt: any(named: 'consumedAt'),
+          items: any(named: 'items'),
+        ),
+      ).thenAnswer((_) async => dummyRecord);
+
+      final successSubmit = await provider.submitMeal();
+      expect(successSubmit, isTrue);
+      expect(provider.savedMealRecord?.id, 99);
+      expect(provider.errorMessage, isNull);
     });
   });
 }

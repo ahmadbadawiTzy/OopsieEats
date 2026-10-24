@@ -1,0 +1,478 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:nutriview/core/config/creator_config.dart';
+import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/shared/neo/neo.dart';
+
+/// Dedicated "Tentang Aplikasi" screen showcasing NutriView consumer identity
+/// and the authentic creator profile for Ahmad Badawi.
+class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+
+  void _copyLink(BuildContext context, String title, String url) {
+    Clipboard.setData(ClipboardData(text: url));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: NeoTokens.black,
+        duration: const Duration(seconds: 2),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: NeoTokens.mintGreen, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Tautan $title berhasil disalin ke papan klip!',
+                style: const TextStyle(color: NeoTokens.white, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: NeoTokens.warmBackground,
+      appBar: AppBar(
+        title: const Text('Tentang NutriView'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(color: NeoTokens.black, height: 2),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(
+          horizontal: NeoTokens.space16,
+          vertical: NeoTokens.space16,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ================================================================
+            // SECTION 1: NUTRIVIEW APP IDENTITY
+            // ================================================================
+            NeoCard(
+              backgroundColor: NeoTokens.white,
+              padding: const EdgeInsets.all(NeoTokens.space20),
+              child: Column(
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: NeoTokens.vividYellow,
+                      borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                      border: Border.all(color: NeoTokens.black, width: NeoTokens.borderWidth),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: NeoTokens.black,
+                          offset: Offset(3, 3),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.restaurant_rounded,
+                      color: NeoTokens.black,
+                      size: 38,
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space12),
+                  const Text(
+                    CreatorConfig.appName,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: NeoTokens.black,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Versi ${CreatorConfig.appVersion}',
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: NeoTokens.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space12),
+                  Text(
+                    CreatorConfig.appDescription,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      color: NeoTokens.textDark,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: NeoTokens.space16),
+
+            // Key Value Pillars
+            const NeoSectionHeader(
+              title: 'Nilai Utama Aplikasi',
+              accentColor: NeoTokens.mintGreen,
+            ),
+            const SizedBox(height: NeoTokens.space8),
+
+            _buildPillarTile(
+              icon: Icons.camera_alt_rounded,
+              iconColor: NeoTokens.vividYellow,
+              title: 'Pemindai Makanan Praktis',
+              subtitle: 'Kenali jenis makanan dari foto kamera atau galeri untuk pencatatan gizi harian yang cepat.',
+            ),
+            _buildPillarTile(
+              icon: Icons.fact_check_rounded,
+              iconColor: NeoTokens.mintGreen,
+              title: 'Data Gizi Terverifikasi',
+              subtitle: 'Estimasi nilai kalori dan makronutrien merujuk pada Tabel Komposisi Pangan Indonesia (TKPI).',
+            ),
+            _buildPillarTile(
+              icon: Icons.calculate_rounded,
+              iconColor: NeoTokens.skyBlue,
+              title: 'Kebutuhan Kalori Personal',
+              subtitle: 'Target dihitung akurat berdasarkan umur dari tanggal lahir, tinggi badan, berat badan, dan aktivitas.',
+            ),
+            _buildPillarTile(
+              icon: Icons.menu_book_rounded,
+              iconColor: NeoTokens.lavender,
+              title: 'Artikel & Panduan Gizi Seimbang',
+              subtitle: 'Wawasan nutrisi terpercaya yang mudah dipahami untuk mendukung pola hidup sehat.',
+            ),
+            const SizedBox(height: NeoTokens.space20),
+
+            // ================================================================
+            // SECTION 2: CREATOR PROFILE (AHMAD BADAWI)
+            // ================================================================
+            const NeoSectionHeader(
+              title: 'Profil Pengembang',
+              accentColor: NeoTokens.vividYellow,
+            ),
+            const SizedBox(height: NeoTokens.space8),
+
+            NeoCard(
+              backgroundColor: NeoTokens.paper,
+              padding: const EdgeInsets.all(NeoTokens.space20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Photo & Main Headline
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Creator Photo with Neo-Brutalist Frame & Fallback
+                      Container(
+                        width: 84,
+                        height: 94,
+                        decoration: BoxDecoration(
+                          color: NeoTokens.mintGreen,
+                          borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                          border: Border.all(
+                            color: NeoTokens.black,
+                            width: NeoTokens.borderWidth,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: NeoTokens.black,
+                              offset: Offset(3, 3),
+                              blurRadius: 0,
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Image.asset(
+                          CreatorConfig.creatorPhotoAsset,
+                          width: 84,
+                          height: 94,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildCreatorPlaceholder();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: NeoTokens.space16),
+
+                      // Name, Role, Domains
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              CreatorConfig.creatorName,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: NeoTokens.black,
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              CreatorConfig.creatorProfession,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: NeoTokens.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Wrap(
+                              spacing: 5,
+                              runSpacing: 4,
+                              children: [
+                                _buildDomainChip('Web', NeoTokens.skyBlue),
+                                _buildDomainChip('AI', NeoTokens.vividYellow),
+                                _buildDomainChip('Mobile', NeoTokens.mintGreen),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: NeoTokens.space16),
+
+                  // Bio Quotation Box
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: NeoTokens.white,
+                      borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                      border: Border.all(
+                        color: NeoTokens.black,
+                        width: NeoTokens.borderWidthThin,
+                      ),
+                    ),
+                    child: const Text(
+                      CreatorConfig.creatorBio,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: NeoTokens.textDark,
+                        height: 1.45,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space16),
+
+                  // Verified Professional Links
+                  const Text(
+                    'TAUTAN RESMI PENGEMBANG:',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                      color: NeoTokens.textMuted,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space8),
+
+                  _buildLinkButton(
+                    context,
+                    label: 'GitHub',
+                    value: 'github.com/ahmadbadawiTzy',
+                    fullUrl: CreatorConfig.githubUrl,
+                    icon: Icons.code_rounded,
+                    color: NeoTokens.white,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildLinkButton(
+                    context,
+                    label: 'LinkedIn',
+                    value: 'Ahmad Badawi',
+                    fullUrl: CreatorConfig.linkedinUrl,
+                    icon: Icons.business_center_rounded,
+                    color: NeoTokens.white,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildLinkButton(
+                    context,
+                    label: 'Instagram',
+                    value: CreatorConfig.instagramHandle,
+                    fullUrl: CreatorConfig.instagramUrl,
+                    icon: Icons.camera_alt_outlined,
+                    color: NeoTokens.white,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: NeoTokens.space24),
+
+            // Footer note
+            Center(
+              child: Text(
+                '© 2026 ${CreatorConfig.creatorName} · NutriView',
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: NeoTokens.textMuted,
+                ),
+              ),
+            ),
+            const SizedBox(height: NeoTokens.space16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreatorPlaceholder() {
+    return Container(
+      color: NeoTokens.vividYellow,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.person_rounded, size: 40, color: NeoTokens.black),
+          SizedBox(height: 2),
+          Text(
+            'AB',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              color: NeoTokens.black,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDomainChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+        border: Border.all(color: NeoTokens.black, width: 1.5),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+          color: NeoTokens.black,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPillarTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: NeoCard(
+        backgroundColor: NeoTokens.white,
+        padding: const EdgeInsets.all(12),
+        shadowOffset: NeoTokens.shadowOffsetSmall,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: iconColor,
+                borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                border: Border.all(color: NeoTokens.black, width: 1.5),
+              ),
+              child: Icon(icon, color: NeoTokens.black, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: NeoTokens.black,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: NeoTokens.textMuted,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLinkButton(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required String fullUrl,
+    required IconData icon,
+    required Color color,
+  }) {
+    return GestureDetector(
+      onTap: () => _copyLink(context, label, fullUrl),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+          border: Border.all(color: NeoTokens.black, width: 1.5),
+          boxShadow: const [
+            BoxShadow(
+              color: NeoTokens.black,
+              offset: Offset(2, 2),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: NeoTokens.black),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w800,
+                color: NeoTokens.black,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: NeoTokens.textMuted,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const Icon(Icons.copy_rounded, size: 16, color: NeoTokens.black),
+          ],
+        ),
+      ),
+    );
+  }
+}

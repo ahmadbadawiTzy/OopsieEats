@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:nutriview/core/config.dart';
+import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/shared/widgets/custom_button.dart';
+import 'package:nutriview/shared/neo/neo_badge.dart';
+import 'package:nutriview/shared/neo/neo_button.dart';
+import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/shared/neo/neo_section_header.dart';
 
 class MealResultScreen extends StatelessWidget {
   const MealResultScreen({super.key});
@@ -16,198 +19,275 @@ class MealResultScreen extends StatelessWidget {
 
     if (meal == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Hasil Analisis')),
+        backgroundColor: NeoTokens.warmBackground,
+        appBar: AppBar(
+          title: const Text('Hasil Analisis'),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(2),
+            child: Container(color: NeoTokens.black, height: 2),
+          ),
+        ),
         body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Tidak ada catatan makan yang baru disimpan.'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.dashboard),
-                child: const Text('Ke Dashboard'),
+          child: Padding(
+            padding: const EdgeInsets.all(NeoTokens.space24),
+            child: NeoCard(
+              backgroundColor: NeoTokens.white,
+              padding: const EdgeInsets.all(NeoTokens.space24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Tidak ada catatan makan yang baru disimpan.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: NeoTokens.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space20),
+                  NeoButton(
+                    text: 'Ke Dashboard',
+                    variant: NeoButtonVariant.primary,
+                    onPressed: () => Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.dashboard,
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       );
     }
 
     return Scaffold(
+      backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
         title: const Text('Hasil Perhitungan Gizi'),
         automaticallyImplyLeading: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(2),
+          child: Container(color: NeoTokens.black, height: 2),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: NeoTokens.space16,
+          vertical: NeoTokens.space20,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
               child: Container(
-                width: 72,
-                height: 72,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryGreenLight,
-                  shape: BoxShape.circle,
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: NeoTokens.mintGreen,
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                  border: Border.all(
+                    color: NeoTokens.black,
+                    width: NeoTokens.borderWidth,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: NeoTokens.black,
+                      offset: NeoTokens.shadowOffset,
+                      blurRadius: NeoTokens.shadowBlurRadius,
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.check_circle_rounded,
-                  color: AppTheme.primaryGreen,
-                  size: 40,
+                  color: NeoTokens.black,
+                  size: 46,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: NeoTokens.space16),
             const Text(
               'Catatan Makan Tersimpan!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
-                letterSpacing: -0.3,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                color: NeoTokens.black,
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Waktu Makan: ${meal.mealTypeLabel}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: AppTheme.textMuted),
+            const SizedBox(height: NeoTokens.space6),
+            Center(
+              child: NeoBadge(
+                label: 'Waktu Makan: ${meal.mealTypeLabel}',
+                color: NeoBadgeColor.yellow,
+                hasShadow: true,
+                fontSize: 12,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: NeoTokens.space20),
 
             // Summary Card
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryGreenLight,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFC8E6C9)),
-              ),
+            NeoCard(
+              backgroundColor: NeoTokens.mintGreen,
+              padding: const EdgeInsets.all(NeoTokens.space16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'Total Gizi Makanan',
                     style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryGreenDark,
-                      letterSpacing: -0.2,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: NeoTokens.black,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: NeoTokens.space14),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _macroItem('Kalori', '${meal.totals.caloriesKcal} kkal'),
-                      _macroItem('Protein', '${meal.totals.proteinG}g'),
-                      _macroItem('Karbo', '${meal.totals.carbsG}g'),
-                      _macroItem('Lemak', '${meal.totals.fatG}g'),
+                      Expanded(
+                        child: _macroItem(
+                          'Kalori',
+                          '${meal.totals.caloriesKcal}',
+                          'kkal',
+                          NeoTokens.vividYellow,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _macroItem(
+                          'Protein',
+                          '${meal.totals.proteinG}',
+                          'g',
+                          NeoTokens.skyBlue,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _macroItem(
+                          'Karbo',
+                          '${meal.totals.carbsG}',
+                          'g',
+                          NeoTokens.orangeCarb,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _macroItem(
+                          'Lemak',
+                          '${meal.totals.fatG}',
+                          'g',
+                          NeoTokens.lavender,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: NeoTokens.space20),
 
-            Text(
-              'Rincian Item Makanan (${meal.items.length})',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textDark,
-                letterSpacing: -0.2,
-              ),
+            NeoSectionHeader(
+              title: 'Rincian Item Makanan (${meal.items.length})',
+              accentColor: NeoTokens.vividYellow,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: NeoTokens.space8),
 
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: meal.items.length,
               itemBuilder: (context, index) {
-                final item = meal.items[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              item.foodName,
+                final mealItem = meal.items[index];
+                return NeoCard(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: NeoTokens.space4,
+                  ),
+                  padding: const EdgeInsets.all(NeoTokens.space14),
+                  shadowOffset: NeoTokens.shadowOffsetSmall,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              mealItem.foodName,
                               style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textDark,
-                                letterSpacing: -0.1,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: NeoTokens.textDark,
+                                letterSpacing: -0.2,
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryGreenLight,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                '${item.portionGrams} g',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.primaryGreenDark,
-                                ),
-                              ),
+                          ),
+                          NeoBadge(
+                            label: '${mealItem.portionGrams} g',
+                            color: NeoBadgeColor.mint,
+                            fontSize: 12,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: NeoTokens.space8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${mealItem.caloriesKcal} kkal',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: NeoTokens.textDark,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '${item.caloriesKcal} kkal',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.textDark,
-                              ),
+                          ),
+                          Text(
+                            'P: ${mealItem.proteinG}g • K: ${mealItem.carbsG}g • L: ${mealItem.fatG}g',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: NeoTokens.textMuted,
                             ),
-                            Text(
-                              'P: ${item.proteinG}g • K: ${item.carbsG}g • L: ${item.fatG}g',
-                              style: const TextStyle(fontSize: 12, color: AppTheme.textMuted),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 );
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: NeoTokens.space20),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(12),
+            // Disclaimer
+            NeoCard(
+              backgroundColor: NeoTokens.surfaceMuted,
+              shadowOffset: NeoTokens.shadowOffsetSmall,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14.0,
+                vertical: 12.0,
               ),
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline_rounded, size: 16, color: AppTheme.textMuted),
-                  SizedBox(width: 8),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: NeoTokens.black,
+                  ),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       AppConfig.disclaimerText,
                       style: TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.textMuted,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        color: NeoTokens.textMuted,
                         height: 1.4,
                       ),
                     ),
@@ -215,11 +295,12 @@ class MealResultScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: NeoTokens.space24),
 
-            CustomButton(
+            NeoButton(
               text: 'Selesai & Ke Dashboard',
-              icon: Icons.check_circle_outline_rounded,
+              prefixIcon: Icons.check_circle_outline_rounded,
+              variant: NeoButtonVariant.primary,
               onPressed: () {
                 flow.reset();
                 Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
@@ -231,28 +312,47 @@ class MealResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _macroItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textDark,
-            letterSpacing: -0.2,
-          ),
+  Widget _macroItem(String label, String value, String unit, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+        border: Border.all(
+          color: NeoTokens.black,
+          width: NeoTokens.borderWidthThin,
         ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.textMuted,
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: NeoTokens.black,
+              letterSpacing: -0.3,
+            ),
           ),
-        ),
-      ],
+          Text(
+            unit,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: NeoTokens.black,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: NeoTokens.black,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
