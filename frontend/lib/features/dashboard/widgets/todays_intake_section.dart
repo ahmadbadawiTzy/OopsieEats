@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/core/app_icons.dart';
 
-/// Overkill Neo-Brutalist Today's Intake Section.
+/// Customer-First Today's Intake Section for NutriView.
 /// Displays today's meal records with loading skeleton, empty state, and error handling.
 class TodaysIntakeSection extends StatelessWidget {
   final List<MealRecord> meals;
@@ -79,27 +79,33 @@ class TodaysIntakeSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                Icon(
-                  AppIcons.restaurant,
-                  color: NeoTokens.ink,
-                  size: AppIcons.sizeLarge,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  '[04] TODAY\'S INTAKE',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
+            const Expanded(
+              child: Row(
+                children: [
+                  Icon(
+                    AppIcons.restaurant,
                     color: NeoTokens.ink,
-                    letterSpacing: 0.5,
+                    size: AppIcons.sizeLarge,
                   ),
-                ),
-              ],
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Makanan Hari Ini',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        color: NeoTokens.ink,
+                        letterSpacing: -0.3,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            if (meals.isNotEmpty)
+            if (meals.isNotEmpty) ...[
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: onViewAllHistory,
                 child: Container(
@@ -118,7 +124,7 @@ class TodaysIntakeSection extends StatelessWidget {
                       BoxShadow(
                         color: NeoTokens.ink,
                         offset: Offset(1.5, 1.5),
-                        blurRadius: 0,
+                        blurRadius: NeoTokens.shadowBlurRadius,
                       ),
                     ],
                   ),
@@ -144,13 +150,14 @@ class TodaysIntakeSection extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         const Text(
           'Yang sudah kamu konsumsi hari ini.',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: NeoTokens.inkSecondary,
           ),
@@ -277,27 +284,36 @@ class TodaysIntakeSection extends StatelessWidget {
                         color: NeoTokens.ink,
                         width: NeoTokens.borderWidth,
                       ),
-                      boxShadow: NeoTokens.neoBoxShadowSmall(),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          AppIcons.cameraAlt,
-                          size: AppIcons.sizeMedium,
+                      boxShadow: const [
+                        BoxShadow(
                           color: NeoTokens.ink,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'CATAT MAKANAN SEKARANG',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: NeoTokens.ink,
-                          ),
+                          offset: NeoTokens.shadowOffsetSmall,
+                          blurRadius: NeoTokens.shadowBlurRadius,
                         ),
                       ],
+                    ),
+                    child: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            AppIcons.cameraAlt,
+                            size: AppIcons.sizeMedium,
+                            color: NeoTokens.ink,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'CATAT MAKANAN SEKARANG',
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: NeoTokens.ink,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -409,7 +425,7 @@ class TodaysIntakeSection extends StatelessWidget {
                         BoxShadow(
                           color: NeoTokens.ink,
                           offset: Offset(1.5, 1.5),
-                          blurRadius: 0,
+                          blurRadius: NeoTokens.shadowBlurRadius,
                         ),
                       ],
                     ),

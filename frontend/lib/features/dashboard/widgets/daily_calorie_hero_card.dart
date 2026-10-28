@@ -1,16 +1,16 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_progress_bar.dart';
-import 'package:nutriview/core/app_icons.dart';
 
-/// Overkill Neo-Brutalist Daily Calorie Centerpiece Card.
-/// Displays Target, Consumed, and Remaining / Exceeded calories with
-/// big statistics typography, high-contrast badges, and heavy visual progress bar.
+/// Customer-First Daily Calorie Hero Card for NutriView.
+/// Displays daily energy target, current intake, and remaining balance
+/// with high-contrast Neo-Brutalist numbers, badges, and progress bar.
 class DailyCalorieHeroCard extends StatelessWidget {
   final NutrientProgress progress;
   final bool isProfileIncomplete;
@@ -82,7 +82,13 @@ class DailyCalorieHeroCard extends StatelessWidget {
                     color: NeoTokens.ink,
                     width: NeoTokens.borderWidth,
                   ),
-                  boxShadow: NeoTokens.neoBoxShadowSmall(),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: NeoTokens.ink,
+                      offset: NeoTokens.shadowOffsetSmall,
+                      blurRadius: NeoTokens.shadowBlurRadius,
+                    ),
+                  ],
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -152,30 +158,37 @@ class DailyCalorieHeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header: Index & Status Chip
+          // Header: Title & Status Chip
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                children: [
-                  Icon(
-                    AppIcons.localFire,
-                    color: NeoTokens.ink,
-                    size: AppIcons.sizeControl,
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    '[01] KEBUTUHAN KALORI',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
+              const Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      AppIcons.localFire,
                       color: NeoTokens.ink,
-                      letterSpacing: 0.5,
+                      size: AppIcons.sizeControl,
                     ),
-                  ),
-                ],
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Ringkasan Hari Ini',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          color: NeoTokens.ink,
+                          letterSpacing: -0.3,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               NeoBadge(
                 label: statusLabel,
                 customBackgroundColor: statusBg,
@@ -233,7 +246,7 @@ class DailyCalorieHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: NeoTokens.space16),
 
-          // Massive Brutalist Progress Bar
+          // Brutalist Progress Bar
           NeoProgressBar(
             value: visualFraction,
             height: 18,
@@ -247,17 +260,22 @@ class DailyCalorieHeroCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                isOver
-                    ? 'Konsumsi melampaui batas harian (+${excess.toStringAsFixed(0)} kkal)'
-                    : 'Tersisa ${remaining.toStringAsFixed(0)} kkal untuk mencapai target',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: isOver ? NeoTokens.alert : NeoTokens.inkSecondary,
+              Expanded(
+                child: Text(
+                  isOver
+                      ? 'Konsumsi melampaui batas harian (+${excess.toStringAsFixed(0)} kkal)'
+                      : 'Tersisa ${remaining.toStringAsFixed(0)} kkal untuk mencapai target',
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isOver ? NeoTokens.alert : NeoTokens.inkSecondary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(

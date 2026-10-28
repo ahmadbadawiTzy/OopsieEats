@@ -1,14 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_progress_bar.dart';
-import 'package:nutriview/core/app_icons.dart';
 
-/// Overkill Neo-Brutalist Bento Grid for Macronutrient Ratios and Daily Meal Tracking.
+/// Customer-First Bento Grid for Macronutrient Balance and Daily Meal Log Count.
 class MacroBentoGrid extends StatelessWidget {
   final DashboardProgress progress;
   final int mealCount;
@@ -35,17 +35,29 @@ class MacroBentoGrid extends StatelessWidget {
               size: AppIcons.sizeLarge,
             ),
             SizedBox(width: 6),
-            Text(
-              '[03] RINGKASAN MAKRONUTRIEN',
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.w900,
-                fontSize: 12,
-                color: NeoTokens.ink,
-                letterSpacing: 0.5,
+            Expanded(
+              child: Text(
+                'Keseimbangan Nutrisi',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  color: NeoTokens.ink,
+                  letterSpacing: -0.3,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 2),
+        const Text(
+          'Distribusi protein, karbohidrat, dan lemak harianmu.',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: NeoTokens.inkSecondary,
+          ),
         ),
         const SizedBox(height: NeoTokens.space10),
 
@@ -55,8 +67,8 @@ class MacroBentoGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _MacroBentoCard(
-                tag: '[PRO]',
-                title: 'PROTEIN',
+                tag: 'PROTEIN',
+                title: 'Protein',
                 accentColor: NeoTokens.cobalt,
                 accentTextColor: NeoTokens.paper,
                 progress: progress.protein,
@@ -66,10 +78,10 @@ class MacroBentoGrid extends StatelessWidget {
             const SizedBox(width: NeoTokens.space10),
             Expanded(
               child: _MacroBentoCard(
-                tag: '[CHO]',
-                title: 'KARBOHIDRAT',
+                tag: 'KARBO',
+                title: 'Karbohidrat',
                 accentColor: NeoTokens.tangerine,
-                accentTextColor: NeoTokens.ink,
+                accentTextColor: NeoTokens.paper,
                 progress: progress.carbs,
                 icon: AppIcons.grain,
               ),
@@ -84,8 +96,8 @@ class MacroBentoGrid extends StatelessWidget {
           children: [
             Expanded(
               child: _MacroBentoCard(
-                tag: '[FAT]',
-                title: 'LEMAK',
+                tag: 'LEMAK',
+                title: 'Lemak',
                 accentColor: NeoTokens.lilac,
                 accentTextColor: NeoTokens.ink,
                 progress: progress.fat,
@@ -93,10 +105,11 @@ class MacroBentoGrid extends StatelessWidget {
               ),
             ),
             const SizedBox(width: NeoTokens.space10),
+
             // Daily Meal Activity Bento Card
             Expanded(
               child: NeoCard(
-                backgroundColor: NeoTokens.recess,
+                backgroundColor: NeoTokens.paper,
                 borderWidth: NeoTokens.borderWidthThin,
                 shadowOffset: NeoTokens.shadowOffsetSmall,
                 padding: const EdgeInsets.all(NeoTokens.space12),
@@ -106,24 +119,32 @@ class MacroBentoGrid extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: NeoTokens.hud,
-                            borderRadius: BorderRadius.circular(
-                              NeoTokens.radiusSmall,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
                             ),
-                          ),
-                          child: const Text(
-                            '[LOG]',
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              color: NeoTokens.paper,
+                            decoration: BoxDecoration(
+                              color: NeoTokens.lime,
+                              borderRadius: BorderRadius.circular(
+                                NeoTokens.radiusSmall,
+                              ),
+                              border: Border.all(
+                                color: NeoTokens.ink,
+                                width: NeoTokens.borderWidthThin,
+                              ),
+                            ),
+                            child: const Text(
+                              'AKTIVITAS',
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: NeoTokens.ink,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ),
@@ -144,15 +165,21 @@ class MacroBentoGrid extends StatelessWidget {
                         color: NeoTokens.ink,
                         letterSpacing: -0.2,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$mealCount KALI',
-                      style: const TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: NeoTokens.ink,
+                    const SizedBox(height: 2),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$mealCount KALI',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: NeoTokens.ink,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -160,11 +187,11 @@ class MacroBentoGrid extends StatelessWidget {
                       onTap: onViewHistory,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 4,
+                          horizontal: 8,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: NeoTokens.paper,
+                          color: NeoTokens.recess,
                           borderRadius: BorderRadius.circular(
                             NeoTokens.radiusSmall,
                           ),
@@ -172,6 +199,13 @@ class MacroBentoGrid extends StatelessWidget {
                             color: NeoTokens.ink,
                             width: NeoTokens.borderWidthThin,
                           ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: NeoTokens.ink,
+                              offset: Offset(1, 1),
+                              blurRadius: NeoTokens.shadowBlurRadius,
+                            ),
+                          ],
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -242,26 +276,31 @@ class _MacroBentoCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
-                  border: Border.all(
-                    color: NeoTokens.ink,
-                    width: NeoTokens.borderWidthThin,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                    border: Border.all(
+                      color: NeoTokens.ink,
+                      width: NeoTokens.borderWidthThin,
+                    ),
                   ),
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: accentTextColor,
+                  child: Text(
+                    tag,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: accentTextColor,
+                    ),
                   ),
                 ),
               ),
+              const SizedBox(width: 4),
               NeoBadge(
                 label: '${progress.percentage.toStringAsFixed(0)}%',
                 customBackgroundColor: isOver
@@ -269,7 +308,7 @@ class _MacroBentoCard extends StatelessWidget {
                     : NeoTokens.paper,
                 customTextColor: isOver ? NeoTokens.paper : NeoTokens.ink,
                 fontSize: 10,
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               ),
             ],
           ),
@@ -279,18 +318,20 @@ class _MacroBentoCard extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: FontWeight.w900,
               color: NeoTokens.ink,
               letterSpacing: -0.2,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
           const SizedBox(height: 2),
 
           // Values
           FittedBox(
             fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,

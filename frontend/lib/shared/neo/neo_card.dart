@@ -98,8 +98,8 @@ class _NeoCardState extends State<NeoCard> {
         onTapCancel: _handleTapCancel,
         onTap: widget.onTap,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 90),
-          curve: Curves.easeInOut,
+          duration: NeoMotion.getDuration(context, NeoMotion.durationFast),
+          curve: NeoMotion.curveStandard,
           transform: Matrix4.translationValues(
             translateOffset.dx,
             translateOffset.dy,

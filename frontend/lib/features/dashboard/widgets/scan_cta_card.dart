@@ -1,176 +1,123 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/core/app_icons.dart';
+import 'package:nutriview/core/neo_tokens.dart';
 
-/// Overkill Neo-Brutalist Primary Call-To-Action Card for On-Device Food Scanning.
-/// High voltage Acid Lime background with bold typography, camera badge, and hard shadows.
-class ScanCtaCard extends StatelessWidget {
+/// Primary Call-To-Action Card for On-Device Food Scanning.
+/// High-voltage Acid Lime Neo-Brutalist card with tactile affordance,
+/// customer-centric copywriting, and instant camera trigger.
+class ScanCtaCard extends StatefulWidget {
   final VoidCallback onScanPressed;
 
   const ScanCtaCard({super.key, required this.onScanPressed});
 
   @override
+  State<ScanCtaCard> createState() => _ScanCtaCardState();
+}
+
+class _ScanCtaCardState extends State<ScanCtaCard> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return NeoCard(
-      backgroundColor: NeoTokens.lime,
-      borderWidth: 3.0,
-      shadowOffset: NeoTokens.shadowOffsetMedium,
-      padding: const EdgeInsets.all(NeoTokens.space16),
-      onTap: onScanPressed,
-      child: Stack(
-        children: [
-          // Background decorative geometric corner pattern
-          Positioned(
-            right: -10,
-            bottom: -15,
-            child: Opacity(
-              opacity: 0.12,
-              child: const Icon(
-                AppIcons.centerFocusStrong,
-                size: AppIcons.sizeIllustration,
-                color: NeoTokens.ink,
-              ),
-            ),
+    return Semantics(
+      button: true,
+      label: 'Scan Makanan, pindai makananmu untuk mencatat kalori dan nutrisi otomatis',
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.onScanPressed,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          curve: Curves.easeOut,
+          transform: Matrix4.translationValues(
+            _isPressed ? 2.0 : 0.0,
+            _isPressed ? 2.0 : 0.0,
+            0.0,
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header tag
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: NeoTokens.hud,
-                      borderRadius: BorderRadius.circular(
-                        NeoTokens.radiusSmall,
-                      ),
-                      border: Border.all(
-                        color: NeoTokens.ink,
-                        width: NeoTokens.borderWidthThin,
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          AppIcons.cameraAlt,
-                          size: AppIcons.sizeSmall,
-                          color: NeoTokens.lime,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'PINDAI MAKANAN',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                            color: NeoTokens.paper,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: NeoTokens.paper,
-                      borderRadius: BorderRadius.circular(
-                        NeoTokens.radiusSmall,
-                      ),
-                      border: Border.all(
-                        color: NeoTokens.ink,
-                        width: NeoTokens.borderWidthThin,
-                      ),
-                    ),
-                    child: const Text(
-                      'FOTO',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                        color: NeoTokens.ink,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: NeoTokens.space12),
-
-              // Title and Action Button Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'PINDAI MAKANAN',
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            height: 1.1,
-                            color: NeoTokens.ink,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Kenali makanan dari foto dan catat nutrisinya.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: NeoTokens.ink,
-                            height: 1.25,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: NeoTokens.space12),
-
-                  // Camera button badge
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: NeoTokens.paper,
-                      borderRadius: BorderRadius.circular(
-                        NeoTokens.radiusSmall,
-                      ),
-                      border: Border.all(color: NeoTokens.ink, width: 2.5),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: NeoTokens.ink,
-                          offset: Offset(3, 3),
-                          blurRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        AppIcons.cameraAlt,
-                        color: NeoTokens.ink,
-                        size: AppIcons.sizeState,
-                      ),
-                    ),
-                  ),
-                ],
+          decoration: BoxDecoration(
+            color: NeoTokens.lime,
+            borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+            border: Border.all(
+              color: NeoTokens.ink,
+              width: NeoTokens.borderWidthThick,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: NeoTokens.ink,
+                offset: _isPressed ? NeoTokens.shadowOffsetPressed : NeoTokens.shadowOffsetMedium,
+                blurRadius: NeoTokens.shadowBlurRadius,
               ),
             ],
           ),
-        ],
+          padding: const EdgeInsets.symmetric(
+            horizontal: NeoTokens.space16,
+            vertical: NeoTokens.space16,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Main Copy: Title and Subtitle
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Scan Makanan',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        height: 1.15,
+                        color: NeoTokens.ink,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Pindai makananmu untuk mencatat kalori dan nutrisi otomatis.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: NeoTokens.ink,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: NeoTokens.space16),
+
+              // Camera Action Button Badge
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: NeoTokens.paper,
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                  border: Border.all(
+                    color: NeoTokens.ink,
+                    width: NeoTokens.borderWidth,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: NeoTokens.ink,
+                      offset: NeoTokens.shadowOffsetSmall,
+                      blurRadius: NeoTokens.shadowBlurRadius,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    AppIcons.cameraAlt,
+                    color: NeoTokens.ink,
+                    size: AppIcons.sizeState,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

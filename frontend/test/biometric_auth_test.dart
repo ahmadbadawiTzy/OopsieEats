@@ -6,6 +6,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutriview/core/error_handler.dart';
 import 'package:nutriview/data/api_client.dart';
+import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
 import 'package:nutriview/data/services/biometric_service.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
@@ -400,7 +401,7 @@ void main() {
       verify(() => mockApiClient.clearBiometricPreference()).called(1);
     });
 
-    test('authenticateWithBiometrics throws BIOMETRIC_AUTH_FAILED when prompt cancelled', () async {
+    test('authenticateWithBiometrics throws BIOMETRIC_CANCELLED when prompt cancelled', () async {
       when(() => mockBiometricService.isBiometricAvailable())
           .thenAnswer((_) async => true);
       when(() => mockApiClient.isBiometricEnabled())
@@ -422,7 +423,7 @@ void main() {
           isA<ApiException>().having(
             (e) => e.code,
             'code',
-            'BIOMETRIC_AUTH_FAILED',
+            'BIOMETRIC_CANCELLED',
           ),
         ),
       );
@@ -539,7 +540,7 @@ void main() {
       expect(authProvider.isBiometricLocked, isFalse);
     });
 
-    test('unlockWithPasswordInstead switches state from biometricLocked to unauthenticated', () async {
+    test('unlockWithPasswordInstead switches state from biometricLocked to passwordFallback', () async {
       when(() => mockRepo.isRememberMeEnabled()).thenAnswer((_) async => true);
       when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
       when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
@@ -556,7 +557,8 @@ void main() {
       expect(authProvider.isBiometricLocked, isTrue);
 
       authProvider.unlockWithPasswordInstead();
-      expect(authProvider.state, equals(AuthLifecycleState.unauthenticated));
+      expect(authProvider.state, equals(AuthLifecycleState.passwordFallback));
+      expect(authProvider.isPasswordFallback, isTrue);
       expect(authProvider.isBiometricLocked, isFalse);
     });
 
@@ -644,7 +646,7 @@ void main() {
 
         // User chooses password fallback
         authProvider.unlockWithPasswordInstead();
-        expect(authProvider.state, equals(AuthLifecycleState.unauthenticated));
+        expect(authProvider.state, equals(AuthLifecycleState.passwordFallback));
         expect(authProvider.isBiometricEligible, isTrue);
 
         // User returns to biometric lock
@@ -653,5 +655,80 @@ void main() {
         expect(authProvider.state, equals(AuthLifecycleState.biometricLocked));
       },
     );
+
+    test('verifyPasswordFallback succeeds on valid password and routes user role', () async {
+      when(() => mockRepo.verifyPasswordFallback('mypassword123')).thenAnswer(
+        (_) async => User(
+          id: 10,
+          email: 'budi@nutriview.com',
+          fullName: 'Budi Santoso',
+          role: 'user',
+        ),
+      );
+
+      final user = await authProvider.verifyPasswordFallback('mypassword123');
+      expect(user, isNotNull);
+      expect(user?.email, equals('budi@nutriview.com'));
+      expect(authProvider.role, equals('user'));
+      expect(authProvider.isAdmin, isFalse);
+      expect(authProvider.state, equals(AuthLifecycleState.authenticated));
+      expect(authProvider.errorMessage, isNull);
+    });
+
+    test('verifyPasswordFallback succeeds on valid password and routes admin role', () async {
+      when(() => mockRepo.verifyPasswordFallback('adminsecret')).thenAnswer(
+        (_) async => User(
+          id: 1,
+          email: 'admin@nutriview.com',
+          fullName: 'Super Admin',
+          role: 'admin',
+        ),
+      );
+
+      final user = await authProvider.verifyPasswordFallback('adminsecret');
+      expect(user, isNotNull);
+      expect(user?.role, equals('admin'));
+      expect(authProvider.isAdmin, isTrue);
+      expect(authProvider.state, equals(AuthLifecycleState.authenticated));
+    });
+
+    test('verifyPasswordFallback with wrong password preserves passwordFallback state and displays error', () async {
+      when(() => mockRepo.verifyPasswordFallback('wrongpass')).thenThrow(
+        ApiException(
+          statusCode: 401,
+          code: 'WRONG_PASSWORD',
+          message: 'Kata sandi salah. Silakan coba lagi.',
+        ),
+      );
+
+      final user = await authProvider.verifyPasswordFallback('wrongpass');
+      expect(user, isNull);
+      expect(authProvider.state, equals(AuthLifecycleState.passwordFallback));
+      expect(authProvider.errorMessage, equals('Kata sandi salah. Silakan coba lagi.'));
+    });
+
+    test('verifyPasswordFallback with empty password rejects immediately without hitting repository', () async {
+      authProvider.switchToPasswordFallback();
+      final user = await authProvider.verifyPasswordFallback('   ');
+      expect(user, isNull);
+      expect(authProvider.state, equals(AuthLifecycleState.passwordFallback));
+      expect(authProvider.errorMessage, equals('Kata sandi wajib diisi.'));
+      verifyNever(() => mockRepo.verifyPasswordFallback(any()));
+    });
+
+    test('verifyPasswordFallback on session expired resets session and marks sessionExpired', () async {
+      when(() => mockRepo.verifyPasswordFallback('anypass')).thenThrow(
+        ApiException(
+          statusCode: 401,
+          code: 'SESSION_EXPIRED',
+          message: 'Sesi login telah berakhir. Silakan masuk kembali.',
+        ),
+      );
+
+      final user = await authProvider.verifyPasswordFallback('anypass');
+      expect(user, isNull);
+      expect(authProvider.state, equals(AuthLifecycleState.sessionExpired));
+      expect(authProvider.isLoggedIn, isFalse);
+    });
   });
 }

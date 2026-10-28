@@ -20,8 +20,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _fallbackPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureFallbackPassword = true;
   bool _rememberMe = true;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -43,6 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _fallbackPasswordController.dispose();
     super.dispose();
   }
 
@@ -51,6 +55,22 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await auth.authenticateWithBiometrics();
 
     if (user != null && mounted) {
+      _routePostLogin(user);
+    }
+  }
+
+  Future<void> _handlePasswordFallback() async {
+    final password = _fallbackPasswordController.text;
+    if (password.isEmpty) {
+      NeoSnackBars.error(context, 'Kata sandi wajib diisi.');
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    final user = await auth.verifyPasswordFallback(password);
+
+    if (user != null && mounted) {
+      _fallbackPasswordController.clear();
       _routePostLogin(user);
     }
   }
@@ -93,6 +113,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _routePostLogin(dynamic user) {
+    if (_isNavigating || !mounted) return;
+    _isNavigating = true;
+
     final auth = context.read<AuthProvider>();
     final isAdmin =
         user?.isAdmin == true ||
@@ -157,6 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLocked =
         auth.isBiometricLocked ||
         state == AuthLifecycleState.biometricAuthenticating;
+    final isFallback = auth.isPasswordFallback;
     final isAuthenticated = state == AuthLifecycleState.authenticated;
 
     return Scaffold(
@@ -200,92 +224,178 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: NeoTokens.space28),
 
-                  // Error Banner (if error message exists)
-                  if (auth.errorMessage != null &&
-                      auth.errorMessage!.isNotEmpty) ...[
-                    NeoCard(
-                      backgroundColor: NeoTokens.coralRed,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      shadowOffset: NeoTokens.shadowOffsetSmall,
-                      child: Row(
-                        children: [
-                          const Icon(
-                            AppIcons.error,
-                            color: NeoTokens.white,
-                            size: AppIcons.sizeToolbar,
-                          ),
-                          const SizedBox(width: NeoTokens.space12),
-                          Expanded(
-                            child: Text(
-                              auth.errorMessage!,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: NeoTokens.white,
-                                height: 1.3,
+                  // Error Banner with smooth entrance/exit
+                  AnimatedSwitcher(
+                    duration: NeoMotion.getDuration(
+                      context,
+                      NeoMotion.durationShort,
+                    ),
+                    switchInCurve: NeoMotion.curveDecelerate,
+                    switchOutCurve: NeoMotion.curveAccelerate,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SizeTransition(
+                          sizeFactor: animation,
+                          alignment: Alignment.topCenter,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child:
+                        (auth.errorMessage != null &&
+                            auth.errorMessage!.isNotEmpty)
+                        ? Padding(
+                            key: ValueKey(auth.errorMessage),
+                            padding: const EdgeInsets.only(
+                              bottom: NeoTokens.space20,
+                            ),
+                            child: NeoCard(
+                              backgroundColor: NeoTokens.coralRed,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              shadowOffset: NeoTokens.shadowOffsetSmall,
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    AppIcons.error,
+                                    color: NeoTokens.white,
+                                    size: AppIcons.sizeToolbar,
+                                  ),
+                                  const SizedBox(width: NeoTokens.space12),
+                                  Expanded(
+                                    child: Text(
+                                      auth.errorMessage!,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        color: NeoTokens.white,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('no_error_banner'),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: NeoTokens.space20),
-                  ],
+                  ),
 
                   // Conditional Card: Authenticated Transition vs Biometric Locked vs Standard Identity Login
-                  if (isAuthenticated)
-                    _buildAuthenticatedTransitionCard(auth)
-                  else if (isLocked)
-                    _buildBiometricLockedCard(auth)
-                  else
-                    _buildStandardLoginCard(auth),
+                  AnimatedSwitcher(
+                    duration: NeoMotion.getDuration(
+                      context,
+                      NeoMotion.durationMedium,
+                    ),
+                    switchInCurve: NeoMotion.curveDecelerate,
+                    switchOutCurve: NeoMotion.curveAccelerate,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.0, 0.04),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey(
+                        isAuthenticated
+                            ? 'auth_transition_subtree'
+                            : isLocked
+                            ? 'biometric_locked_subtree'
+                            : isFallback
+                            ? 'password_fallback_subtree'
+                            : 'standard_login_subtree',
+                      ),
+                      child: isAuthenticated
+                          ? _buildAuthenticatedTransitionCard(auth)
+                          : isLocked
+                          ? _buildBiometricLockedCard(auth)
+                          : isFallback
+                          ? _buildPasswordFallbackCard(auth)
+                          : _buildStandardLoginCard(auth),
+                    ),
+                  ),
 
                   // Registration CTA Card ONLY on normal unauthenticated login state
-                  if (!isLocked && !isAuthenticated) ...[
-                    const SizedBox(height: NeoTokens.space24),
-                    NeoCard(
-                      backgroundColor: NeoTokens.surfaceMuted,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shadowOffset: NeoTokens.shadowOffsetSmall,
-                      onTap: () {
-                        Navigator.pushNamed(context, AppRoutes.register);
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Belum punya akun? ',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: NeoTokens.textMuted,
-                            ),
-                          ),
-                          const Text(
-                            'Daftar Sekarang',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: NeoTokens.black,
-                              fontWeight: FontWeight.w900,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            AppIcons.arrowForward,
-                            size: AppIcons.sizeMedium,
-                            color: NeoTokens.black,
-                          ),
-                        ],
-                      ),
+                  AnimatedSwitcher(
+                    duration: NeoMotion.getDuration(
+                      context,
+                      NeoMotion.durationShort,
                     ),
-                  ],
+                    switchInCurve: NeoMotion.curveDecelerate,
+                    switchOutCurve: NeoMotion.curveAccelerate,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SizeTransition(
+                          sizeFactor: animation,
+                          alignment: Alignment.topCenter,
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: (!isLocked && !isFallback && !isAuthenticated)
+                        ? Padding(
+                            key: const ValueKey('registration_cta_card'),
+                            padding: const EdgeInsets.only(
+                              top: NeoTokens.space24,
+                            ),
+                            child: NeoCard(
+                              backgroundColor: NeoTokens.surfaceMuted,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shadowOffset: NeoTokens.shadowOffsetSmall,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.register,
+                                );
+                              },
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Belum punya akun? ',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: NeoTokens.textMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Daftar Sekarang',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: NeoTokens.black,
+                                      fontWeight: FontWeight.w900,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(
+                                    AppIcons.arrowForward,
+                                    size: AppIcons.sizeMedium,
+                                    color: NeoTokens.black,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(
+                            key: ValueKey('registration_cta_empty'),
+                          ),
+                  ),
                 ],
               ),
             ),
@@ -424,6 +534,7 @@ class _LoginScreenState extends State<LoginScreen> {
               : 'Buka dengan Biometrik');
 
     return NeoCard(
+      key: const Key('biometric_locked_card'),
       backgroundColor: NeoTokens.white,
       padding: const EdgeInsets.all(NeoTokens.space20),
       child: Column(
@@ -506,7 +617,10 @@ class _LoginScreenState extends State<LoginScreen> {
             variant: NeoButtonVariant.secondary,
             onPressed: auth.isLoading
                 ? null
-                : () => auth.unlockWithPasswordInstead(),
+                : () {
+                    _fallbackPasswordController.clear();
+                    auth.switchToPasswordFallback();
+                  },
           ),
           const SizedBox(height: NeoTokens.space12),
           Center(
@@ -531,9 +645,276 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  /// Card displayed when user chooses to unlock their existing biometric-protected session with password.
+  Widget _buildPasswordFallbackCard(AuthProvider auth) {
+    final knownName = auth.name.isNotEmpty ? auth.name : 'Pengguna';
+    final knownEmail = auth.email;
+
+    return NeoCard(
+      key: const Key('password_fallback_card'),
+      backgroundColor: NeoTokens.white,
+      padding: const EdgeInsets.all(NeoTokens.space20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: NeoTokens.hazard,
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                  border: Border.all(
+                    color: NeoTokens.black,
+                    width: NeoTokens.borderWidth,
+                  ),
+                ),
+                child: const Icon(
+                  AppIcons.lock,
+                  color: NeoTokens.black,
+                  size: AppIcons.sizeToolbar,
+                ),
+              ),
+              const SizedBox(width: NeoTokens.space12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Buka dengan Kata Sandi',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: NeoTokens.black,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Konfirmasi kata sandi untuk akun Anda',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: NeoTokens.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: NeoTokens.space16),
+
+          // Account context banner: Name & known email
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: NeoTokens.recess,
+              borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+              border: Border.all(
+                color: NeoTokens.black,
+                width: NeoTokens.borderWidthThin,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  AppIcons.person,
+                  size: AppIcons.sizeControl,
+                  color: NeoTokens.black,
+                ),
+                const SizedBox(width: NeoTokens.space10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        knownName,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: NeoTokens.black,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (knownEmail.isNotEmpty)
+                        Text(
+                          knownEmail,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: NeoTokens.textMuted,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NeoTokens.paper,
+                    borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                    border: Border.all(color: NeoTokens.black, width: 1.0),
+                  ),
+                  child: const Text(
+                    'SESI AKTIF',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: NeoTokens.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: NeoTokens.space16),
+
+          // Password field
+          TextFormField(
+            key: const Key('fallback_password_field'),
+            controller: _fallbackPasswordController,
+            obscureText: _obscureFallbackPassword,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _handlePasswordFallback(),
+            decoration: InputDecoration(
+              labelText: 'Kata Sandi',
+              hintText: 'Masukkan kata sandi akun',
+              prefixIcon: const Icon(
+                AppIcons.lock,
+                size: AppIcons.sizeControl,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureFallbackPassword
+                      ? AppIcons.visibilityOff
+                      : AppIcons.visibility,
+                  size: AppIcons.sizeControl,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureFallbackPassword = !_obscureFallbackPassword;
+                  });
+                },
+              ),
+              filled: true,
+              fillColor: NeoTokens.canvas,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                borderSide: const BorderSide(
+                  color: NeoTokens.black,
+                  width: NeoTokens.borderWidth,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                borderSide: const BorderSide(
+                  color: NeoTokens.black,
+                  width: NeoTokens.borderWidth,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                borderSide: const BorderSide(
+                  color: NeoTokens.black,
+                  width: NeoTokens.borderWidthThick,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: NeoTokens.space8),
+
+          // Forgot password link for fallback
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              key: const Key('fallback_forgot_password_button'),
+              onPressed: auth.isLoading
+                  ? null
+                  : () {
+                      ForgotPasswordModal.show(
+                        context,
+                        initialEmail: knownEmail,
+                      );
+                    },
+              child: const Text(
+                'Lupa Kata Sandi?',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: NeoTokens.black,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: NeoTokens.space12),
+
+          // Submit button
+          NeoButton(
+            key: const Key('verify_fallback_password_button'),
+            text: 'Verifikasi & Buka Sesi',
+            isLoading: auth.isLoading,
+            prefixIcon: AppIcons.login,
+            customBackgroundColor: NeoTokens.hazard,
+            onPressed: auth.isLoading ? null : _handlePasswordFallback,
+          ),
+          const SizedBox(height: NeoTokens.space12),
+
+          // Return to biometric button (if available)
+          if (auth.isBiometricEligible) ...[
+            NeoButton(
+              key: const Key('return_to_biometric_button'),
+              text: auth.hasFace
+                  ? 'Kembali ke Face Unlock'
+                  : 'Kembali ke Sidik Jari',
+              variant: NeoButtonVariant.secondary,
+              prefixIcon: auth.hasFace ? AppIcons.face : AppIcons.fingerprint,
+              onPressed: auth.isLoading
+                  ? null
+                  : () {
+                      _fallbackPasswordController.clear();
+                      auth.returnToBiometricLock();
+                    },
+            ),
+            const SizedBox(height: NeoTokens.space12),
+          ],
+
+          // Switch account
+          Center(
+            child: TextButton(
+              key: const Key('fallback_switch_account_button'),
+              onPressed: auth.isLoading
+                  ? null
+                  : () => _showSwitchAccountDialog(context, auth),
+              child: const Text(
+                'Bukan akun Anda? Ganti Akun',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: NeoTokens.textMuted,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Card displayed for standard identity login (Email/Password or Google).
   Widget _buildStandardLoginCard(AuthProvider auth) {
     return NeoCard(
+      key: const Key('standard_login_card'),
       backgroundColor: NeoTokens.white,
       padding: const EdgeInsets.all(NeoTokens.space20),
       child: Column(

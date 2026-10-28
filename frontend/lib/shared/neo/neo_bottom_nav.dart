@@ -161,7 +161,7 @@ class _NeoNavTabItemState extends State<_NeoNavTabItem> {
         child: Transform.translate(
           offset: translateOffset,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
+            duration: NeoMotion.getDuration(context, NeoMotion.durationFast),
             height: 48,
             padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
             decoration: BoxDecoration(
@@ -252,7 +252,7 @@ class _NeoNavScanButtonState extends State<_NeoNavScanButton> {
         child: Transform.translate(
           offset: translateOffset,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 80),
+            duration: NeoMotion.getDuration(context, NeoMotion.durationFast),
             height: 48,
             decoration: BoxDecoration(
               color: NeoTokens.lime,

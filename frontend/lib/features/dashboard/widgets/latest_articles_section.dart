@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/article.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/core/app_icons.dart';
 
-/// Overkill Neo-Brutalist Nutrition Field Notes & Articles Preview Section.
+/// Customer-First Nutrition Tips & Articles Preview Section for NutriView.
 class LatestArticlesSection extends StatelessWidget {
   final List<ArticleItem> articles;
   final ValueChanged<ArticleItem> onArticleTapped;
@@ -27,26 +27,32 @@ class LatestArticlesSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Row(
-              children: [
-                Icon(
-                  AppIcons.menuBook,
-                  color: NeoTokens.ink,
-                  size: AppIcons.sizeLarge,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  '[05] NUTRITION FIELD NOTES',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
+            const Expanded(
+              child: Row(
+                children: [
+                  Icon(
+                    AppIcons.menuBook,
                     color: NeoTokens.ink,
-                    letterSpacing: 0.5,
+                    size: AppIcons.sizeLarge,
                   ),
-                ),
-              ],
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Tips Nutrisi',
+                      style: TextStyle(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        color: NeoTokens.ink,
+                        letterSpacing: -0.3,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: onViewAllArticles,
               child: Container(
@@ -62,7 +68,7 @@ class LatestArticlesSection extends StatelessWidget {
                     BoxShadow(
                       color: NeoTokens.ink,
                       offset: Offset(1.5, 1.5),
-                      blurRadius: 0,
+                      blurRadius: NeoTokens.shadowBlurRadius,
                     ),
                   ],
                 ),
@@ -90,11 +96,11 @@ class LatestArticlesSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         const Text(
-          'Pengetahuan kecil, kebiasaan yang lebih baik.',
+          'Pelajari pola makan sehat dan gizi seimbang.',
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color: NeoTokens.inkSecondary,
           ),

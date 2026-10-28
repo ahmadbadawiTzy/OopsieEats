@@ -5,36 +5,45 @@ import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
 
 /// Explicit lifecycle states for the NutriView authentication engine.
+/// Explicit lifecycle states for the NutriView authentication engine.
 enum AuthLifecycleState {
-  /// Initialized state prior to verifying persisted tokens
-  uninitialized,
+  /// Firebase or local repository is initializing and restoring session
+  initializing,
 
   /// Clean state ready for identity login (Email/Password or Google)
   unauthenticated,
 
-  /// In-progress identity verification
-  authenticating,
-
-  /// User fully verified, authorized, and active
-  authenticated,
-
   /// Saved session detected on device, but locked behind biometric gatekeeper
-  biometricLocked,
+  biometricRequired,
 
   /// OS hardware biometric prompt currently presented
   biometricAuthenticating,
+
+  /// User opted to unlock their existing session using password instead of biometrics
+  passwordFallback,
+
+  /// Session validated, loading user profile and role from Firestore
+  loadingProfile,
+
+  /// User fully verified, authorized, and active
+  authenticated,
 
   /// Session invalidated by server or expired
   sessionExpired,
 
   /// Fatal unrecoverable auth error
-  error,
+  error;
+
+  /// Backward-compatibility aliases
+  static const AuthLifecycleState uninitialized = AuthLifecycleState.initializing;
+  static const AuthLifecycleState authenticating = AuthLifecycleState.loadingProfile;
+  static const AuthLifecycleState biometricLocked = AuthLifecycleState.biometricRequired;
 }
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _repository;
 
-  AuthLifecycleState _lifecycleState = AuthLifecycleState.uninitialized;
+  AuthLifecycleState _lifecycleState = AuthLifecycleState.initializing;
   bool _isLoggedIn = false;
   bool _isLoading = false;
   bool _isGoogleLoading = false;
@@ -58,11 +67,21 @@ class AuthProvider extends ChangeNotifier {
   // --- State Machine Getters ---
   AuthLifecycleState get lifecycleState => _lifecycleState;
   AuthLifecycleState get state => _lifecycleState;
-  bool get isBiometricLocked =>
-      _lifecycleState == AuthLifecycleState.biometricLocked ||
+  bool get isInitializing => _lifecycleState == AuthLifecycleState.initializing;
+  bool get isUnauthenticated =>
+      _lifecycleState == AuthLifecycleState.unauthenticated;
+  bool get isBiometricRequired =>
+      _lifecycleState == AuthLifecycleState.biometricRequired ||
       _lifecycleState == AuthLifecycleState.biometricAuthenticating;
+  bool get isBiometricLocked => isBiometricRequired;
   bool get isBiometricAuthenticating =>
       _lifecycleState == AuthLifecycleState.biometricAuthenticating;
+  bool get isPasswordFallback =>
+      _lifecycleState == AuthLifecycleState.passwordFallback;
+  bool get isLoadingProfile =>
+      _lifecycleState == AuthLifecycleState.loadingProfile;
+  bool get isAuthenticated =>
+      _lifecycleState == AuthLifecycleState.authenticated;
   bool get isBiometricEligible =>
       _isBiometricEnabled && _isBiometricAvailable && _isLoggedIn;
   bool get hasPromptedBiometric => _hasPromptedBiometric;
@@ -179,9 +198,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Allows user in `biometricLocked` mode to switch back to normal identity login.
+  /// Allows user in `biometricRequired` mode to switch to password fallback form.
   void unlockWithPasswordInstead() {
-    _lifecycleState = AuthLifecycleState.unauthenticated;
+    switchToPasswordFallback();
+  }
+
+  /// Explicit transition to contextual password fallback state.
+  void switchToPasswordFallback() {
+    _lifecycleState = AuthLifecycleState.passwordFallback;
     _errorMessage = null;
     notifyListeners();
   }
@@ -189,8 +213,54 @@ class AuthProvider extends ChangeNotifier {
   /// Returns to biometric locked mode if the session is eligible.
   void returnToBiometricLock() {
     if (isBiometricEligible) {
-      _lifecycleState = AuthLifecycleState.biometricLocked;
+      _lifecycleState = AuthLifecycleState.biometricRequired;
       _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
+  /// Verifies password for existing session during password fallback without requiring email re-entry.
+  Future<User?> verifyPasswordFallback(String password) async {
+    final cleanPassword = password.trim();
+    if (cleanPassword.isEmpty) {
+      _errorMessage = 'Kata sandi wajib diisi.';
+      notifyListeners();
+      return null;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final user = await _repository.verifyPasswordFallback(cleanPassword);
+      _lifecycleState = AuthLifecycleState.loadingProfile;
+      notifyListeners();
+
+      _isLoggedIn = true;
+      _currentUser = user;
+      _savedRole = user.role;
+      _savedName = user.fullName;
+      _savedEmail = user.email;
+
+      _lifecycleState = AuthLifecycleState.authenticated;
+      return user;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      if (e.code == 'SESSION_EXPIRED') {
+        _resetSessionState();
+        _lifecycleState = AuthLifecycleState.sessionExpired;
+      } else {
+        // Crucial: Stay in passwordFallback state so user can retry without losing context
+        _lifecycleState = AuthLifecycleState.passwordFallback;
+      }
+      return null;
+    } catch (_) {
+      _errorMessage = 'Verifikasi kata sandi gagal. Silakan coba lagi.';
+      _lifecycleState = AuthLifecycleState.passwordFallback;
+      return null;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

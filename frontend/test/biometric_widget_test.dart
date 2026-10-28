@@ -237,21 +237,153 @@ void main() {
         await tester.tap(fallbackBtn);
         await tester.pumpAndSettle();
 
-        expect(find.text('Masuk ke Akun'), findsOneWidget);
-        expect(find.widgetWithText(NeoButton, 'Masuk'), findsOneWidget);
-        expect(find.byType(TextFormField), findsNWidgets(2));
+        expect(find.byKey(const Key('password_fallback_card')), findsOneWidget);
+        expect(find.text('Buka dengan Kata Sandi'), findsOneWidget);
+        expect(find.text('budi@nutriview.com'), findsOneWidget);
+        expect(find.text('SESI AKTIF'), findsOneWidget);
+        expect(find.byKey(const Key('fallback_password_field')), findsOneWidget);
         expect(
-          find.byKey(const Key('return_to_biometric_card')),
+          find.byKey(const Key('verify_fallback_password_button')),
           findsOneWidget,
         );
-        expect(find.text('Belum punya akun? '), findsOneWidget);
+        expect(
+          find.byKey(const Key('return_to_biometric_button')),
+          findsOneWidget,
+        );
+        // Ensure no generic login or registration leak
+        expect(find.text('Masuk ke Akun'), findsNothing);
+        expect(find.text('Belum punya akun? '), findsNothing);
+        expect(find.text('Lanjutkan dengan Google'), findsNothing);
 
         // Tapping return to biometric shortcut returns to locked view
-        await tester.tap(find.byKey(const Key('return_to_biometric_card')));
+        await tester.tap(find.byKey(const Key('return_to_biometric_button')));
         await tester.pumpAndSettle();
 
+        expect(find.byKey(const Key('biometric_locked_card')), findsOneWidget);
         expect(find.text('Selamat Datang Kembali'), findsOneWidget);
         expect(find.byType(TextFormField), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'submitting valid password in password fallback unlocks session and navigates to dashboard',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        when(() => mockAuthRepo.isRememberMeEnabled())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
+        when(() => mockAuthRepo.getUserName())
+            .thenAnswer((_) async => 'Budi Santoso');
+        when(() => mockAuthRepo.getUserEmail())
+            .thenAnswer((_) async => 'budi@nutriview.com');
+        when(() => mockAuthRepo.isBiometricAvailable())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getAvailableBiometrics())
+            .thenAnswer((_) async => [BiometricType.fingerprint]);
+        when(() => mockAuthRepo.isBiometricEnabled())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.hasPromptedBiometric())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.verifyPasswordFallback('correct_password'))
+            .thenAnswer(
+          (_) async => User(
+            id: 1,
+            email: 'budi@nutriview.com',
+            fullName: 'Budi Santoso',
+            role: 'user',
+          ),
+        );
+
+        await authProvider.checkAuthStatus();
+        await tester.pumpWidget(wrapLogin(const LoginScreen()));
+        await tester.pumpAndSettle();
+
+        // Switch to password fallback
+        final fallbackBtn = find.widgetWithText(
+          NeoButton,
+          'Gunakan Kata Sandi',
+        );
+        await tester.ensureVisible(fallbackBtn);
+        await tester.tap(fallbackBtn);
+        await tester.pumpAndSettle();
+
+        // Enter password
+        await tester.enterText(
+          find.byKey(const Key('fallback_password_field')),
+          'correct_password',
+        );
+        final verifyBtn = find.byKey(const Key('verify_fallback_password_button'));
+        await tester.ensureVisible(verifyBtn);
+        await tester.tap(verifyBtn);
+        await tester.pumpAndSettle();
+
+        expect(find.text('DASHBOARD_SCREEN'), findsOneWidget);
+        expect(find.byType(LoginScreen), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'submitting wrong password in password fallback stays on card and displays error',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        when(() => mockAuthRepo.isRememberMeEnabled())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
+        when(() => mockAuthRepo.getUserName())
+            .thenAnswer((_) async => 'Budi Santoso');
+        when(() => mockAuthRepo.getUserEmail())
+            .thenAnswer((_) async => 'budi@nutriview.com');
+        when(() => mockAuthRepo.isBiometricAvailable())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getAvailableBiometrics())
+            .thenAnswer((_) async => [BiometricType.fingerprint]);
+        when(() => mockAuthRepo.isBiometricEnabled())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.hasPromptedBiometric())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.verifyPasswordFallback('wrong_pass')).thenThrow(
+          ApiException(
+            statusCode: 401,
+            code: 'WRONG_PASSWORD',
+            message: 'Kata sandi salah. Silakan coba lagi.',
+          ),
+        );
+
+        await authProvider.checkAuthStatus();
+        await tester.pumpWidget(wrapLogin(const LoginScreen()));
+        await tester.pumpAndSettle();
+
+        // Switch to password fallback
+        final fallbackBtn = find.widgetWithText(
+          NeoButton,
+          'Gunakan Kata Sandi',
+        );
+        await tester.ensureVisible(fallbackBtn);
+        await tester.tap(fallbackBtn);
+        await tester.pumpAndSettle();
+
+        // Enter wrong password
+        await tester.enterText(
+          find.byKey(const Key('fallback_password_field')),
+          'wrong_pass',
+        );
+        final verifyBtn = find.byKey(const Key('verify_fallback_password_button'));
+        await tester.ensureVisible(verifyBtn);
+        await tester.tap(verifyBtn);
+        await tester.pumpAndSettle();
+
+        // Remains on fallback card and displays error
+        expect(find.byKey(const Key('password_fallback_card')), findsOneWidget);
+        expect(find.text('Kata sandi salah. Silakan coba lagi.'), findsOneWidget);
+        expect(find.text('DASHBOARD_SCREEN'), findsNothing);
       },
     );
 

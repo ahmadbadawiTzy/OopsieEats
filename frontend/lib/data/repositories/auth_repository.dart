@@ -551,8 +551,8 @@ class AuthRepository {
     if (!authenticated) {
       throw ApiException(
         statusCode: 401,
-        code: 'BIOMETRIC_AUTH_FAILED',
-        message: 'Verifikasi biometrik dibatalkan atau tidak dikenali.',
+        code: 'BIOMETRIC_CANCELLED',
+        message: 'Verifikasi biometrik dibatalkan.',
       );
     }
 
@@ -603,6 +603,125 @@ class AuthRepository {
       fullName: fullName.isNotEmpty
           ? fullName
           : (fbUser.email ?? '').split('@').first,
+      role: role,
+      isActive: isActive,
+    );
+  }
+
+  /// Verifies password for an existing session during password fallback without requiring email re-entry.
+  Future<User> verifyPasswordFallback(String password) async {
+    final fbUser = _auth.currentUser;
+    final savedEmail = await _apiClient.getUserEmail() ??
+        await _apiClient.getBiometricEmail() ??
+        '';
+
+    if (fbUser == null && savedEmail.isEmpty) {
+      await _apiClient.clearBiometricPreference();
+      throw ApiException(
+        statusCode: 401,
+        code: 'SESSION_EXPIRED',
+        message: 'Sesi login telah berakhir. Silakan masuk kembali.',
+      );
+    }
+
+    final emailToVerify = (fbUser?.email ?? savedEmail).trim();
+    if (emailToVerify.isEmpty) {
+      throw ApiException(
+        statusCode: 400,
+        code: 'NO_EMAIL',
+        message: 'Akun tidak memiliki email terdaftar untuk verifikasi.',
+      );
+    }
+
+    if (fbUser != null) {
+      try {
+        final credential = fb.EmailAuthProvider.credential(
+          email: emailToVerify,
+          password: password,
+        );
+        await fbUser.reauthenticateWithCredential(credential);
+      } on fb.FirebaseAuthException catch (e) {
+        if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+          throw ApiException(
+            statusCode: 401,
+            code: 'WRONG_PASSWORD',
+            message: 'Kata sandi salah. Silakan coba lagi.',
+          );
+        } else if (e.code == 'user-mismatch') {
+          throw ApiException(
+            statusCode: 403,
+            code: 'USER_MISMATCH',
+            message: 'Kredensial tidak sesuai dengan akun aktif.',
+          );
+        } else if (e.code == 'too-many-requests') {
+          throw ApiException(
+            statusCode: 429,
+            code: 'TOO_MANY_REQUESTS',
+            message:
+                'Terlalu banyak percobaan gagal. Silakan tunggu beberapa saat.',
+          );
+        } else {
+          throw ApiException(
+            statusCode: 400,
+            code: e.code,
+            message: e.message ?? 'Verifikasi kata sandi gagal.',
+          );
+        }
+      }
+    } else {
+      // Session dropped: Fallback to direct sign-in with preserved email & password
+      return await login(
+        email: emailToVerify,
+        password: password,
+        rememberMe: true,
+      );
+    }
+
+    // Resolve user profile & role
+    final uid = fbUser.uid;
+    String role = 'user';
+    String fullName = fbUser.displayName ?? '';
+    bool isActive = true;
+
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        isActive = data['is_active'] as bool? ?? true;
+        if (!isActive) {
+          await _auth.signOut();
+          await _apiClient.clearBiometricPreference();
+          await _apiClient.clearToken();
+          throw ApiException(
+            statusCode: 403,
+            code: 'ACCOUNT_DEACTIVATED',
+            message: 'Akun Anda telah dinonaktifkan oleh administrator.',
+          );
+        }
+        role = (data['role'] as String?)?.toLowerCase().trim() ?? 'user';
+        final storedName = data['full_name'] as String?;
+        if (storedName != null && storedName.isNotEmpty) {
+          fullName = storedName;
+        }
+      }
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      // Resilient fallback to offline cached profile if Firestore query fails
+      role = (await _apiClient.getRole())?.toLowerCase().trim() ?? 'user';
+      fullName = await _apiClient.getUserName() ?? fullName;
+    }
+
+    await _apiClient.saveToken(uid);
+    await _apiClient.saveUserSession(
+      role: role,
+      name: fullName.isNotEmpty ? fullName : emailToVerify.split('@').first,
+      email: emailToVerify,
+    );
+
+    return User(
+      id: uid.hashCode.abs(),
+      email: emailToVerify,
+      fullName: fullName.isNotEmpty ? fullName : emailToVerify.split('@').first,
       role: role,
       isActive: isActive,
     );

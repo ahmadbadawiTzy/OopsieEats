@@ -5,6 +5,7 @@ import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
 import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/core/app_icons.dart';
+import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -29,11 +30,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _handleRegister() async {
+    final auth = context.read<AuthProvider>();
+    if (auth.isLoading) return;
     if (!_formKey.currentState!.validate()) return;
 
-    final auth = context.read<AuthProvider>();
     final user = await auth.register(
-      _emailController.text.trim(),
+      _emailController.text.trim().toLowerCase(),
       _passwordController.text,
       _nameController.text.trim(),
     );
@@ -51,11 +53,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        backgroundColor: NeoTokens.warmBackground,
+        elevation: 0,
         leading: NeoBackButton.leading(context),
-        title: const Text('Daftar Akun NutriView'),
+        title: const Text(
+          'Daftar Akun NutriView',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: NeoTokens.black,
+            letterSpacing: -0.3,
+          ),
+        ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(color: NeoTokens.black, height: 2),
+          preferredSize: const Size.fromHeight(NeoTokens.borderWidth),
+          child: Container(
+            color: NeoTokens.black,
+            height: NeoTokens.borderWidth,
+          ),
         ),
       ),
       body: SafeArea(
@@ -70,13 +85,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Center(
-                    child: NeoBadge(
-                      label: 'MEMULAI LANGKAH SEHAT',
-                      color: NeoBadgeColor.mint,
-                      hasShadow: true,
-                    ),
-                  ),
+                  // NutriView Brand Logo Mark
+                  const Center(child: NutriViewLogoMark(size: 64)),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
                     'Mulai Perjalanan Gizi Anda',
@@ -94,14 +104,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: NeoTokens.textMuted,
                       height: 1.3,
                     ),
                   ),
                   const SizedBox(height: NeoTokens.space24),
 
-                  if (auth.errorMessage != null) ...[
+                  // Error Banner (if error message exists)
+                  if (auth.errorMessage != null &&
+                      auth.errorMessage!.isNotEmpty) ...[
                     NeoCard(
                       backgroundColor: NeoTokens.coralRed,
                       padding: const EdgeInsets.symmetric(
@@ -124,6 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: NeoTokens.white,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
+                                height: 1.3,
                               ),
                             ),
                           ),
@@ -133,16 +146,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: NeoTokens.space16),
                   ],
 
+                  // Form Container Card
                   NeoCard(
                     backgroundColor: NeoTokens.white,
                     padding: const EdgeInsets.all(NeoTokens.space20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        const Text(
+                          'Data Akun',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: NeoTokens.black,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: NeoTokens.space4),
+                        const Text(
+                          'Lengkapi informasi berikut untuk memulai langkah sehat Anda.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: NeoTokens.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: NeoTokens.space20),
+
                         NeoInput(
                           label: 'Nama Lengkap',
                           controller: _nameController,
                           hintText: 'Masukkan nama lengkap',
+                          textInputAction: TextInputAction.next,
+                          textCapitalization: TextCapitalization.words,
+                          autofillHints: const [AutofillHints.name],
                           prefixIcon: const Icon(
                             AppIcons.personOutline,
                             size: AppIcons.sizeControl,
@@ -152,15 +189,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (val == null || val.trim().isEmpty) {
                               return 'Nama lengkap wajib diisi.';
                             }
+                            if (val.trim().length < 2) {
+                              return 'Nama lengkap minimal 2 karakter.';
+                            }
                             return null;
                           },
                         ),
                         const SizedBox(height: NeoTokens.space16),
+
                         NeoInput(
                           label: 'Email',
                           controller: _emailController,
                           hintText: 'nama@example.com',
                           keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.email],
                           prefixIcon: const Icon(
                             AppIcons.email,
                             size: AppIcons.sizeControl,
@@ -170,18 +213,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (val == null || val.trim().isEmpty) {
                               return 'Email wajib diisi.';
                             }
-                            if (!val.contains('@') || !val.contains('.')) {
+                            final cleanEmail = val.trim();
+                            if (!cleanEmail.contains('@') ||
+                                !cleanEmail.contains('.')) {
                               return 'Format email tidak valid.';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: NeoTokens.space16),
+
                         NeoInput(
                           label: 'Kata Sandi',
                           controller: _passwordController,
                           hintText: 'Minimal 8 karakter, huruf & angka',
                           obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.newPassword],
                           prefixIcon: const Icon(
                             AppIcons.lock,
                             size: AppIcons.sizeControl,
@@ -217,13 +265,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             }
                             return null;
                           },
+                          onFieldSubmitted: (_) => _handleRegister(),
+                        ),
+                        const SizedBox(height: NeoTokens.space6),
+
+                        const Padding(
+                          padding: EdgeInsets.only(left: NeoTokens.space4),
+                          child: Text(
+                            'Minimal 8 karakter dengan kombinasi huruf dan angka.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: NeoTokens.textMuted,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: NeoTokens.space24),
+
                         NeoButton(
                           text: 'Daftar Akun',
                           isLoading: auth.isLoading,
                           customBackgroundColor: NeoTokens.vividYellow,
-                          onPressed: _handleRegister,
+                          onPressed: auth.isLoading ? null : _handleRegister,
                         ),
                       ],
                     ),
@@ -231,6 +294,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: NeoTokens.space20),
 
+                  // Bottom Card to switch back to Login
                   NeoCard(
                     backgroundColor: NeoTokens.surfaceMuted,
                     padding: const EdgeInsets.symmetric(
@@ -238,13 +302,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       vertical: 12,
                     ),
                     shadowOffset: NeoTokens.shadowOffsetSmall,
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
+                    onTap: auth.isLoading
+                        ? null
+                        : () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            } else {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                AppRoutes.login,
+                              );
+                            }
+                          },
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: const [
+                        Text(
                           'Sudah memiliki akun? ',
                           style: TextStyle(
                             fontSize: 14,
@@ -252,7 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: NeoTokens.textMuted,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'Masuk',
                           style: TextStyle(
                             fontSize: 14,
@@ -261,8 +335,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             decoration: TextDecoration.underline,
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        const Icon(
+                        SizedBox(width: 4),
+                        Icon(
                           AppIcons.login,
                           size: AppIcons.sizeMedium,
                           color: NeoTokens.black,

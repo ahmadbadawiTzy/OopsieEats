@@ -1,21 +1,23 @@
 # NutriView
 
-Aplikasi mobile untuk **mengenali makanan secara offline dengan AI On-Device YOLO26n dan melacak asupan gizi harian berbasis Firebase**. Pengguna mengisi profil, sistem menghitung target gizi harian deterministik (Mifflin-St Jeor), lalu pengguna memotret makanan; model YOLO26n TensorFlow Lite berjalan secara lokal di perangkat mendeteksi objek makanan tanpa memerlukan koneksi internet, pengguna mengonfirmasi dan memasukkan porsi (gram), dan aplikasi menghitung nilai gizi presisi serta menyimpannya ke Cloud Firestore dengan persistensi offline penuh.
+NutriView is an offline-first mobile nutrition tracking application built with **Flutter**, featuring **on-device YOLO computer vision AI** and **Firebase**.
 
-> Proyek NutriView. Hasil aplikasi bersifat **estimasi** dan **bukan saran medis**.
+Users configure their personal physical profile, receive deterministic daily calorie and macronutrient targets calculated via the Mifflin-St Jeor equation, and log meals by capturing photos. An embedded **YOLO26n TensorFlow Lite** model classifies food items directly on the device without requiring an active internet connection. Users confirm portion weights, and nutrition metrics are computed with Atwater factor consistency before synchronizing with Cloud Firestore with full offline persistence.
+
+> **Disclaimer**: Nutritional values and recommendations provided by NutriView are algorithmic estimates intended for general health tracking and do not constitute professional medical advice or clinical diagnosis.
 
 ---
 
-## 🌟 Arsitektur Modern: Serverless Edge AI + Firebase Spark Tier
+## Architecture Overview
 
-Aplikasi NutriView telah dimigrasikan secara penuh ke **arsitektur modern Serverless + On-Device Edge ML**:
+NutriView employs a serverless edge-AI mobile architecture:
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        FLUTTER CLIENT APPLICATION                      │
 │                                                                        │
 │   ┌─────────────────────┐               ┌───────────────────────────┐  │
-│   │ On-Device YOLO26n   │               │   Nutrition Calculator    │  │
+│   │ On-Device YOLO26n   │               │   Nutrition Engine        │  │
 │   │ TFLite [1,3,640,640]│               │   Mifflin-St Jeor +       │  │
 │   │ (best.tflite 9.4MB) │               │   Atwater Validation      │  │
 │   └──────────┬──────────┘               └─────────────┬─────────────┘  │
@@ -23,136 +25,188 @@ Aplikasi NutriView telah dimigrasikan secara penuh ke **arsitektur modern Server
 │              ▼                                        ▼                │
 │   ┌─────────────────────────────────────────────────────────────────┐  │
 │   │        Data Repositories & Local Persistent Cache (Offline)     │  │
-│   │  (FoodRepository, MealRepository, ProfileRepo, AdminRepo)       │  │
+│   │  (FoodRepository, MealRepository, ProfileRepo, AuthRepo)        │  │
 │   └────────────────────────────────┬────────────────────────────────┘  │
 └────────────────────────────────────┼───────────────────────────────────┘
-                                     │ Direct SDK Connection
-                                     ▼ (Secure Rules & RBAC)
+                                     │ Direct Firebase SDK Connection
+                                     ▼ (Firestore Rules & Strict RBAC)
 ┌────────────────────────────────────────────────────────────────────────┐
-│                        FIREBASE SERVICES (SPARK TIER)                  │
+│                        FIREBASE BACKEND SERVICES                       │
 │                                                                        │
 │   ┌──────────────────────┐  ┌─────────────────┐  ┌──────────────────┐  │
 │   │ Firebase Auth        │  │ Cloud Firestore │  │ Firebase Storage │  │
-│   │ (Email/Password,     │  │ (Multi-tenant   │  │ (CMS Media &     │  │
-│   │  Session Cache)      │  │  Meals, Foods,  │  │  Assets, max 5MB)│  │
-│   │                      │  │  CMS, Audit)    │  │                  │  │
+│   │ (Email/Password,     │  │ (Multi-tenant   │  │ (Media Assets &  │  │
+│   │  Google Sign-In,     │  │  Meals, Foods,  │  │  Images, <= 5MB) │  │
+│   │  Biometric Session)  │  │  CMS, Audit)    │  │                  │  │
 │   └──────────────────────┘  └─────────────────┘  └──────────────────┘  │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Keunggulan Arsitektur:
-1. **100% On-Device AI:** Model YOLO26n (9.4 MB) dieksekusi langsung di CPU/GPU perangkat menggunakan `tflite_flutter`, tanpa latensi jaringan dan tanpa biaya server komputasi.
-2. **Zero Cloud Server Costs (Spark Tier):** Bebas biaya server bulanan, VPS, FastAPI instance, atau Cloud Functions berbayar.
-3. **Kerahasiaan & Keamanan Data:** Pengguna memiliki isolasi data multi-tenant di path `users/{uid}/meals/{mealId}` yang dijaga ketat oleh `firestore.rules` deklaratif.
-4. **Desain Neubrutalism Konsisten:** Antarmuka bergaya Neubrutalism dengan palet warna berani, border hitam tegas, dan bayangan tajam tetap terjaga 100%.
+### Key Architectural Characteristics
+1. **100% On-Device Food Inference**: The YOLO26n model (9.4 MB) executes on-device via `tflite_flutter` isolates with zero server round-trip latency, preserving user privacy.
+2. **Serverless Backend**: Relies exclusively on managed Firebase services (Authentication, Cloud Firestore, Firebase Storage) within free/Spark tier limits.
+3. **Data Isolation & Security**: User meal logs and private health records reside under `users/{uid}/meals/{mealId}`, strictly isolated by declarative `firestore.rules`.
+4. **Neo-Brutalism Overkill UI**: Bespoke design system with crisp high-contrast borders, solid shadows, integer spacing scale, and curated Material Symbols (`AppIcons`).
 
 ---
 
-## 📱 Alur Utama Aplikasi
+## Core Features
 
-```text
-Registrasi/Login → Profil Pengguna → Target Gizi Harian (BMR & TDEE)
-  → Kamera/Galeri → Deteksi On-Device YOLO26n (Zero Internet)
-  → Konfirmasi Pengguna → Input Porsi (gram)
-  → Snapshot Gizi Deterministik → Firestore Sync & Offline Cache
-  → Dashboard Progres Harian Makronutrien
-```
-
----
-
-## 🛠️ Daftar Fitur & Status Integrasi
-
-| Modul | Status | Keterangan |
-|---|---|---|
-| **Autentikasi** | ✅ Produksi | Firebase Auth + Session Caching + Role RBAC (`super_admin`, `dietitian`, `editor`, `user`) |
-| **Kalkulator Gizi** | ✅ Produksi | Formula Mifflin-St Jeor deterministik, Atwater factor consistency checking |
-| **On-Device Scanner** | ✅ Produksi | YOLO26n TFLite (Input `[1, 3, 640, 640]`, 29 kelas makanan khas Indonesia & global) |
-| **Basis Data Makanan** | ✅ Produksi | Cloud Firestore `foods` dengan fallback offline instan `seed_foods.json` |
-| **Pencatatan Makanan** | ✅ Produksi | Subkoleksi `users/{uid}/meals` dengan snapshot nilai gizi permanen (*immutable*) |
-| **Dashboard Harian** | ✅ Produksi | Agregasi harian real-time dan persentase capaian energi serta makronutrien |
-| **CMS Edukasi & Pengumuman** | ✅ Produksi | Artikel gizi, kategori, dan broadcast pengumuman sistem via Firestore |
-| **Panel Admin Neubrutalism** | ✅ Produksi | Manajemen makanan, audit log, simulasi energi, dan proteksi deaktivasi akun admin |
+- **On-Device Food Detection**: Real-time object recognition using a quantized YOLO26n model recognizing 29 distinct food classes.
+- **Biometric & Secure Authentication**: Multi-layered login flow supporting Email/Password, Google Sign-In, biometric authentication (fingerprint/face unlock) with encrypted session fallback.
+- **Deterministic Nutrition Engine**: BMR and TDEE calculations utilizing the Mifflin-St Jeor formula and macronutrient energy verification using 4-4-9 Atwater factors.
+- **Interactive Daily Dashboard**: Real-time calorie summary, macro breakdown bento cards (Protein, Carbohydrates, Fat), and intake logging.
+- **Offline Resilient Storage**: Offline food database fallback via `seed_foods.json` and Firestore offline persistence.
+- **Nutrition Educational CMS**: Curated nutrition articles and announcements with category filtering and offline caching.
+- **Administrative Control Panel**: Role-based administration for managing food databases, viewing system audit logs, and monitoring meal distribution.
 
 ---
 
-## 🚀 Panduan Setup Firebase & Menjalankan Aplikasi
+## Technology Stack
 
-### Prasyarat
-- Flutter SDK 3.x+ (Channel stable)
-- OpenJDK 17 atau 21 / Android SDK (minSdk 23)
+- **Framework**: Flutter 3.x (Dart 3.x)
+- **Computer Vision & ML**: TensorFlow Lite (`tflite_flutter`), custom YOLO26n float16/int8 model
+- **Authentication**: `firebase_auth`, `google_sign_in`, `local_auth`, `flutter_secure_storage`
+- **Database & Cloud**: `cloud_firestore`, `firebase_storage`, `firebase_core`
+- **State Management**: Provider architecture with layered Repository pattern
+- **Image Processing**: `image` package for camera frame transformations and letterbox padding
 
-### 1. Menghubungkan ke Proyek Firebase Console Anda
-Jika Anda menggunakan proyek Firebase baru di [Firebase Console](https://console.firebase.google.com):
-1. **Buat Proyek:** Buka Firebase Console, klik **Add project**, beri nama (misal: `nutriview-app`).
-2. **Aktifkan Authentication:**
-   - Masuk ke menu **Build** > **Authentication** > klik **Get Started**.
-   - Pada tab **Sign-in method**, pilih **Email/Password**, aktifkan toggle **Enable**, lalu klik **Save**.
-3. **Aktifkan Cloud Firestore:**
-   - Masuk ke menu **Build** > **Firestore Database** > klik **Create database**.
-   - Pilih lokasi server terdekat (misal `asia-southeast2` Jakarta), mulai dalam mode produksi (*production mode*).
-4. **Aktifkan Cloud Storage:**
-   - Masuk ke menu **Build** > **Storage** > klik **Get Started**.
-5. **Daftarkan Aplikasi Android di Firebase Console:**
-   - Tambahkan aplikasi Android dengan Package Name: `com.nutriview.nutriview`.
-   - Unduh berkas `google-services.json` dan letakkan di direktori:
-     ```text
-     frontend/android/app/google-services.json
-     ```
-   - Atau gunakan FlutterFire CLI di terminal:
-     ```bash
-     flutterfire configure
-     ```
+---
 
-### 2. Cara Membuat Akun Admin Pertama (Bootstrap Super Admin)
-Secara desain keamanan, Security Rules melarang pengguna aplikasi menetapkan `role: 'super_admin'` secara mandiri dari klien (*privilege escalation protection*). Untuk membuat admin pertama:
+## Development Prerequisites
 
-**Metode Rekomendasi (Melalui Firebase Console):**
-1. Buka aplikasi NutriView dan lakukan pendaftaran akun Anda sendiri melalui layar **Daftar Akun** (atau buat akun langsung di **Firebase Console** > **Authentication** > **Add user**).
-2. Di **Firebase Console** > **Authentication** > tab **Users**, salin **User UID** dari akun Anda (contoh: `abc123xyz456`).
-3. Buka **Firebase Console** > **Firestore Database** > pilih koleksi `users` > buka dokumen dengan ID yang sesuai dengan UID Anda (`users/{UID}`).
-4. Ubah nilai field:
-   - `role`: `"super_admin"`
-   - `is_active`: `true`
-5. Selesai! Sekarang Anda dapat langsung masuk melalui layar login utama (`/login`) menggunakan email dan kata sandi tersebut. Sistem akan secara otomatis mengarahkan akun administrator ke **Panel Admin Neubrutalism**, dengan opsi berpindah ke mode pengguna kapan saja.
+- **Flutter SDK**: 3.24.x or higher (Stable channel)
+- **Dart SDK**: 3.5.x or higher
+- **Android SDK**: `minSdkVersion 23`, `compileSdkVersion 34`
+- **Java Development Kit (JDK)**: OpenJDK 17 or 21
+- **Device / Emulator**: Physical device or emulator with camera/file picker support
 
-**Metode Skrip Otomatis (Menggunakan Service Account Admin):**
-Jika Anda memiliki berkas service account private key:
+---
+
+## Getting Started
+
+### 1. Clone the Repository
 ```bash
-export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
-python scripts/migrate_to_firestore.py
+git clone https://github.com/ahmadbadawiTzy/NutriView.git
+cd NutriView
 ```
 
-### 3. Menjalankan Aplikasi Flutter
+### 2. Install Dependencies
 ```bash
 cd frontend
 flutter pub get
-flutter run
 ```
 
-### 4. Menjalankan Pengujian Otomatis
+### 3. Machine Learning Model Setup
+The required model files are included in the repository:
+- Model Weights: `frontend/assets/models/best.tflite` (9.4 MB)
+- Label Map: `frontend/assets/models/classes.txt` (29 food labels)
+
+Ensure these are declared in `frontend/pubspec.yaml` under `flutter.assets`.
+
+### 4. Firebase Configuration
+NutriView connects to Firebase using standard configuration files:
+- Android: `frontend/android/app/google-services.json`
+- Flutter Options: `frontend/lib/firebase_options.dart`
+
+To configure your own Firebase project:
+1. Create a Firebase project in the [Firebase Console](https://console.firebase.google.com).
+2. Enable **Authentication** (Email/Password, Google Sign-In).
+3. Enable **Cloud Firestore** and deploy `firestore.rules` and `firestore.indexes.json` using the Firebase CLI:
+   ```bash
+   firebase deploy --only firestore
+   ```
+4. Generate platform configuration files using the FlutterFire CLI:
+   ```bash
+   flutterfire configure
+   ```
+
+---
+
+## Verification & Testing
+
+### Running Static Analysis
+Enforce Dart and Flutter code quality guidelines:
+```bash
+cd frontend
+flutter analyze
+```
+
+### Running Test Suite
+Execute unit tests, widget tests, and benchmark suites:
 ```bash
 cd frontend
 flutter test
 ```
-Seluruh 46 tes unit, widget, dan integrasi (meliputi inferensi model on-device, formula gizi Mifflin-St Jeor, Atwater, session caching, dan repositori) berjalan 100% lulus.
+All 251 test cases cover:
+- Mifflin-St Jeor formula and Atwater equation validation
+- YOLO26n scanner latency, isolate offloading, and memory stability
+- Biometric authentication fallback and secure storage
+- Overkill Neo-Brutalism UI components and responsive layout scaling
 
 ---
 
-## 🔒 Aturan Keamanan (Security Rules)
+## Building for Production
 
-- **Firestore (`firestore.rules`):**
-  - Pengguna hanya memiliki hak baca dan tulis pada data profil dan rekam makannya sendiri (`users/$(request.auth.uid)`).
-  - Koleksi `foods`, `cms_articles`, `cms_categories`, `cms_announcements` dapat dibaca publik.
-  - Perubahan data katalog makanan dan CMS dibatasi untuk staf berwenang (`super_admin`, `dietitian`, `editor`).
-  - Rekam jejak audit (`cms_audit_logs`) bersifat *append-only* dan tidak dapat diubah atau dihapus.
-  - Perlindungan *self-lockout*: Super admin tidak dapat menonaktifkan akunnya sendiri atau super admin terakhir.
-- **Storage (`storage.rules`):**
-  - Ukuran unggahan dibatasi maksimal 5 MB.
-  - Tipe berkas dibatasi pada citra yang valid (`image/jpeg`, `image/png`, `image/webp`).
+### Android Release APK
+```bash
+cd frontend
+flutter build apk --release
+```
+The output APK will be generated at `frontend/build/app/outputs/flutter-apk/app-release.apk`.
+
+### Android App Bundle (AAB)
+```bash
+cd frontend
+flutter build appbundle --release
+```
+The output bundle will be generated at `frontend/build/app/outputs/bundle/release/app-release.aab`.
+
+> **Note**: For Google Play Store deployment, configure release signing keys in `frontend/android/key.properties` (excluded from version control).
 
 ---
 
-## 📜 Lisensi & Atribusi
+## Project Structure
 
-- **Model YOLO26n:** Dilatih untuk 29 kelas makanan Indonesia & internasional. Bobot TFLite terpasang di `frontend/assets/models/best.tflite`.
-- **Data Nilai Gizi:** Tabel Komposisi Pangan Indonesia (TKPI 2020), Kementerian Kesehatan Republik Indonesia.
+```text
+NutriView/
+├── .agents/                    # Agent skills and engineering guides
+├── data/                       # Nutritional data references (e.g. foods.csv)
+├── docs/                       # Architecture decisions, benchmarks, and API guides
+├── firebase.json               # Firebase CLI configuration
+├── firestore.rules             # Cloud Firestore security rules & RBAC
+├── firestore.indexes.json      # Firestore composite indexes
+├── scripts/                    # Database seeding and migration utilities
+└── frontend/                   # Main Flutter application package
+    ├── assets/
+    │   ├── data/seed_foods.json    # Offline food database seed
+    │   ├── images/                 # Brand logos and illustration assets
+    │   └── models/
+    │       ├── best.tflite         # YOLO26n TFLite on-device model (9.4 MB)
+    │       └── classes.txt         # 29 Food classification labels
+    ├── lib/
+    │   ├── core/                   # Design tokens, theme, and utility functions
+    │   ├── data/                   # Models, repositories, and API clients
+    │   ├── features/               # Feature modules (Auth, Dashboard, Scan, CMS)
+    │   └── shared/                 # Reusable Neo-Brutalist UI widgets
+    └── test/                       # Unit, widget, and regression test suites
+```
+
+---
+
+## Development Status & Roadmap
+
+- [x] Complete Overkill Neo-Brutalism user and admin interfaces.
+- [x] On-device YOLO26n inference pipeline with camera feed integration.
+- [x] Multi-factor authentication with biometric fallback.
+- [x] Unit and widget test suite passing with 100% pass rate.
+- [ ] Multi-language localization (Indonesian / English).
+- [ ] Barcode scanning integration for packaged consumer food products.
+
+---
+
+## License & Attribution
+
+- **Nutritional Reference Data**: Tabel Komposisi Pangan Indonesia (TKPI 2020), Kementerian Kesehatan Republik Indonesia.
+- **YOLO Vision Model**: Custom YOLO26n architecture trained on annotated food datasets.
+- **Icons**: Material Symbols (`rounded` style).

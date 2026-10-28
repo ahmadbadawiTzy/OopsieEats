@@ -16,6 +16,10 @@ class NeoInput extends StatefulWidget {
   final bool enabled;
   final void Function(String)? onChanged;
   final void Function(String)? onFieldSubmitted;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final TextCapitalization textCapitalization;
+  final String? helperText;
 
   const NeoInput({
     super.key,
@@ -31,6 +35,10 @@ class NeoInput extends StatefulWidget {
     this.enabled = true,
     this.onChanged,
     this.onFieldSubmitted,
+    this.textInputAction,
+    this.autofillHints,
+    this.textCapitalization = TextCapitalization.none,
+    this.helperText,
   });
 
   @override
@@ -104,6 +112,9 @@ class _NeoInputState extends State<NeoInput> {
             enabled: widget.enabled,
             onChanged: widget.onChanged,
             onFieldSubmitted: widget.onFieldSubmitted,
+            textInputAction: widget.textInputAction,
+            autofillHints: widget.autofillHints,
+            textCapitalization: widget.textCapitalization,
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -111,6 +122,17 @@ class _NeoInputState extends State<NeoInput> {
             ),
             decoration: InputDecoration(
               hintText: widget.hintText,
+              helperText: widget.helperText,
+              helperStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: NeoTokens.textMuted,
+              ),
+              errorStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: NeoTokens.coralRed,
+              ),
               prefixIcon: widget.prefixIcon,
               suffixIcon: widget.suffixIcon,
               border: InputBorder.none,

@@ -71,8 +71,8 @@ class _NeoIconButtonState extends State<NeoIconButton> {
       onTapCancel: _onTapCancel,
       onTap: _isEnabled ? widget.onPressed : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 90),
-        curve: Curves.easeInOut,
+        duration: NeoMotion.getDuration(context, NeoMotion.durationFast),
+        curve: NeoMotion.curveStandard,
         transform: Matrix4.translationValues(
           translateOffset.dx,
           translateOffset.dy,

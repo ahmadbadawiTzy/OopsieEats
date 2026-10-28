@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/data/models/article.dart';
@@ -22,7 +23,6 @@ import 'package:nutriview/features/profile/screens/profile_screen.dart';
 import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/shared/widgets/error_view.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
-import 'package:nutriview/core/app_icons.dart';
 
 /// Main User Shell for NutriView.
 /// Hosts an [IndexedStack] with all 4 user tabs (Beranda, Artikel, Riwayat, Profil),
@@ -74,7 +74,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: IndexedStack(
           index: _currentTab.index,
           children: [
-            _DashboardHomeView(onNavigateToTab: _onTabSelected),
+            DashboardHomeView(onNavigateToTab: _onTabSelected),
             const ArticleListScreen(isTab: true),
             const MealHistoryScreen(isTab: true),
             const ProfileScreen(isTab: true),
@@ -90,17 +90,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-/// The Beranda / Dashboard content view redesigned with EXTREME NEO-BRUTALISM.
-class _DashboardHomeView extends StatefulWidget {
+/// The Beranda / Dashboard content view redesigned with Customer-First Neo-Brutalism.
+class DashboardHomeView extends StatefulWidget {
   final ValueChanged<NeoNavTab> onNavigateToTab;
 
-  const _DashboardHomeView({required this.onNavigateToTab});
+  const DashboardHomeView({super.key, required this.onNavigateToTab});
 
   @override
-  State<_DashboardHomeView> createState() => _DashboardHomeViewState();
+  State<DashboardHomeView> createState() => _DashboardHomeViewState();
 }
 
-class _DashboardHomeViewState extends State<_DashboardHomeView> {
+class _DashboardHomeViewState extends State<DashboardHomeView>
+    with SingleTickerProviderStateMixin {
   List<AnnouncementItem> _announcements = [];
   bool _dismissedAnnouncement = false;
   List<ArticleItem> _articles = [];
@@ -108,16 +109,51 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
   bool _isLoadingMeals = false;
   String? _mealsError;
 
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
   @override
   void initState() {
     super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.03),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final disableAnimations = MediaQuery.of(context).disableAnimations;
+        if (disableAnimations) {
+          _animController.value = 1.0;
+        } else {
+          _animController.forward();
+        }
+      }
+
       final dash = context.read<DashboardProvider>();
       dash.loadDashboard();
       context.read<ProfileProvider>().loadProfile();
       _loadAnnouncementsAndArticles();
       _loadTodayMeals(dash.selectedDate);
     });
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadAnnouncementsAndArticles() async {
@@ -209,7 +245,7 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
           child: Container(color: NeoTokens.ink, height: 1.5),
         ),
         actions: [
-          // Super Admin shortcut badge (if user has admin role)
+          // Admin shortcut badge (if user has admin role)
           Consumer<AuthProvider>(
             builder: (context, auth, _) {
               if (!auth.isAdmin) return const SizedBox.shrink();
@@ -241,7 +277,13 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                         color: NeoTokens.ink,
                         width: NeoTokens.borderWidthThin,
                       ),
-                      boxShadow: NeoTokens.neoBoxShadowSmall(),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: NeoTokens.ink,
+                          offset: Offset(2, 2),
+                          blurRadius: NeoTokens.shadowBlurRadius,
+                        ),
+                      ],
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -284,229 +326,240 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
             horizontal: NeoTokens.space16,
             vertical: NeoTokens.space12,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Editorial Hero Section (Avatar, Greeting, Dynamic Time, Headline)
-              Consumer2<AuthProvider, ProfileProvider>(
-                builder: (context, auth, profileProv, _) {
-                  final user = profileProv.user;
-                  final displayName = auth.name.isNotEmpty
-                      ? auth.name
-                      : (auth.email.isNotEmpty
-                            ? auth.email.split('@').first
-                            : 'Sobat Sehat');
-                  return DashboardHeroSection(
-                    userName: displayName,
-                    photoUrl: user?.photoUrl,
-                    avatarPreset: user?.avatarPreset,
-                    onAvatarTap: () =>
-                        widget.onNavigateToTab(NeoNavTab.profile),
-                  );
-                },
-              ),
-              const SizedBox(height: NeoTokens.space12),
-
-              // Active Announcement Banner
-              if (_announcements.isNotEmpty && !_dismissedAnnouncement) ...[
-                _buildAnnouncementBanner(),
-                const SizedBox(height: NeoTokens.space12),
-              ],
-
-              // Date Navigation NeoCard
-              NeoCard(
-                backgroundColor: NeoTokens.paper,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 6.0,
-                ),
-                shadowOffset: NeoTokens.shadowOffsetSmall,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    NeoIconButton(
-                      icon: AppIcons.chevronLeft,
-                      tooltip: 'Hari sebelumnya',
-                      size: 36,
-                      iconSize: AppIcons.sizeToolbar,
-                      shadowOffset: Offset.zero,
-                      onPressed: _previousDay,
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: dash.selectedDate,
-                            firstDate: DateTime(2020),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
-                          );
-                          if (picked != null) {
-                            dash.changeDate(picked);
-                            _loadTodayMeals(picked);
-                          }
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              AppIcons.calendarMonth,
-                              size: AppIcons.sizeMedium,
-                              color: NeoTokens.ink,
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                dateDisplay.toUpperCase(),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                  color: NeoTokens.ink,
-                                ),
-                              ),
-                            ),
-                            if (isToday) ...[
-                              const SizedBox(width: 8),
-                              const NeoBadge(
-                                label: 'HARI INI',
-                                color: NeoBadgeColor.yellow,
-                                fontSize: 10,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                    NeoIconButton(
-                      icon: AppIcons.chevronRight,
-                      tooltip: 'Hari berikutnya',
-                      size: 36,
-                      iconSize: AppIcons.sizeToolbar,
-                      shadowOffset: Offset.zero,
-                      onPressed: _nextDay,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: NeoTokens.space16),
-
-              // State Handling: loading / error / content
-              if (dash.isLoading)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: LoadingIndicator(message: 'Memuat data harian...'),
-                )
-              else if (dash.errorMessage != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: ErrorView(
-                    message: dash.errorMessage!,
-                    onRetry: () {
-                      dash.loadDashboard();
-                      _loadTodayMeals(dash.selectedDate);
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // A. Personal Greeting Hero Section
+                  Consumer2<AuthProvider, ProfileProvider>(
+                    builder: (context, auth, profileProv, _) {
+                      final user = profileProv.user;
+                      final displayName = auth.name.isNotEmpty
+                          ? auth.name
+                          : (auth.email.isNotEmpty
+                                ? auth.email.split('@').first
+                                : 'Sobat Sehat');
+                      return DashboardHeroSection(
+                        userName: displayName,
+                        photoUrl: user?.photoUrl,
+                        avatarPreset: user?.avatarPreset,
+                        onAvatarTap: () =>
+                            widget.onNavigateToTab(NeoNavTab.profile),
+                      );
                     },
                   ),
-                )
-              else if (dash.dashboard != null) ...[
-                // 1. Dominant Daily Calorie Bento Centerpiece
-                DailyCalorieHeroCard(
-                  progress: dash.dashboard!.progress.calories,
-                  isProfileIncomplete: dash.isProfileIncomplete,
-                  onCompleteProfile: () =>
-                      widget.onNavigateToTab(NeoNavTab.profile),
-                ),
-                const SizedBox(height: NeoTokens.space12),
+                  const SizedBox(height: NeoTokens.space12),
 
-                // 2. High-Voltage Primary Scan CTA
-                ScanCtaCard(
-                  onScanPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.scanner);
-                  },
-                ),
-                const SizedBox(height: NeoTokens.space16),
-
-                // 3. Macronutrient & Activity Bento Grid
-                MacroBentoGrid(
-                  progress: dash.dashboard!.progress,
-                  mealCount: dash.dashboard!.mealCount,
-                  onViewHistory: () =>
-                      widget.onNavigateToTab(NeoNavTab.history),
-                ),
-                const SizedBox(height: NeoTokens.space16),
-
-                // 4. Today's Intake Section
-                TodaysIntakeSection(
-                  meals: _todayMeals,
-                  isLoading: _isLoadingMeals,
-                  errorMessage: _mealsError,
-                  onRetry: () => _loadTodayMeals(dash.selectedDate),
-                  onScanPressed: () {
-                    Navigator.pushNamed(context, AppRoutes.scanner);
-                  },
-                  onMealTapped: (mealId) {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.mealDetail,
-                      arguments: mealId,
-                    );
-                  },
-                  onViewAllHistory: () =>
-                      widget.onNavigateToTab(NeoNavTab.history),
-                ),
-                const SizedBox(height: NeoTokens.space16),
-
-                // 5. Nutrition Field Notes & Articles Section
-                LatestArticlesSection(
-                  articles: _articles,
-                  onArticleTapped: (art) {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.articleDetail,
-                      arguments: art,
-                    );
-                  },
-                  onViewAllArticles: () =>
-                      widget.onNavigateToTab(NeoNavTab.article),
-                ),
-                const SizedBox(height: NeoTokens.space16),
-              ],
-
-              // Medical & Calculation Methodology Disclaimer
-              NeoCard(
-                backgroundColor: NeoTokens.recess,
-                padding: const EdgeInsets.all(NeoTokens.space12),
-                child: const Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      AppIcons.info,
-                      size: AppIcons.sizeMedium,
-                      color: NeoTokens.inkSecondary,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Target kalori dihitung menggunakan rumus Mifflin-St Jeor. Estimasi gizi didasarkan pada Tabel Komposisi Pangan Indonesia (TKPI). Konsultasikan dengan dokter atau ahli gizi untuk kebutuhan medis khusus.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: NeoTokens.inkSecondary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
+                  // Active Announcement Banner (if any)
+                  if (_announcements.isNotEmpty && !_dismissedAnnouncement) ...[
+                    _buildAnnouncementBanner(),
+                    const SizedBox(height: NeoTokens.space12),
                   ],
-                ),
+
+                  // Date Navigation NeoCard
+                  NeoCard(
+                    backgroundColor: NeoTokens.paper,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 6.0,
+                    ),
+                    shadowOffset: NeoTokens.shadowOffsetSmall,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        NeoIconButton(
+                          icon: AppIcons.chevronLeft,
+                          tooltip: 'Hari sebelumnya',
+                          size: 36,
+                          iconSize: AppIcons.sizeToolbar,
+                          shadowOffset: Offset.zero,
+                          onPressed: _previousDay,
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: dash.selectedDate,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime.now().add(
+                                  const Duration(days: 365),
+                                ),
+                              );
+                              if (picked != null) {
+                                dash.changeDate(picked);
+                                _loadTodayMeals(picked);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    AppIcons.calendarMonth,
+                                    size: AppIcons.sizeMedium,
+                                    color: NeoTokens.ink,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      dateDisplay.toUpperCase(),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        fontFamily: 'monospace',
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w900,
+                                        color: NeoTokens.ink,
+                                      ),
+                                    ),
+                                  ),
+                                  if (isToday) ...[
+                                    const SizedBox(width: 6),
+                                    const NeoBadge(
+                                      label: 'HARI INI',
+                                      color: NeoBadgeColor.yellow,
+                                      fontSize: 10,
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        NeoIconButton(
+                          icon: AppIcons.chevronRight,
+                          tooltip: 'Hari berikutnya',
+                          size: 36,
+                          iconSize: AppIcons.sizeToolbar,
+                          shadowOffset: Offset.zero,
+                          onPressed: _nextDay,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: NeoTokens.space16),
+
+                  // State Handling: loading / error / content
+                  if (dash.isLoading)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: LoadingIndicator(message: 'Memuat data harian...'),
+                    )
+                  else if (dash.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: ErrorView(
+                        message: dash.errorMessage!,
+                        onRetry: () {
+                          dash.loadDashboard();
+                          _loadTodayMeals(dash.selectedDate);
+                        },
+                      ),
+                    )
+                  else if (dash.dashboard != null) ...[
+                    // B. Primary Action: High-Voltage Scan CTA
+                    ScanCtaCard(
+                      onScanPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.scanner);
+                      },
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+
+                    // C. Ringkasan Nutrisi: Daily Calorie Centerpiece
+                    DailyCalorieHeroCard(
+                      progress: dash.dashboard!.progress.calories,
+                      isProfileIncomplete: dash.isProfileIncomplete,
+                      onCompleteProfile: () =>
+                          widget.onNavigateToTab(NeoNavTab.profile),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+
+                    // C.2 Makronutrien & Activity Bento Grid
+                    MacroBentoGrid(
+                      progress: dash.dashboard!.progress,
+                      mealCount: dash.dashboard!.mealCount,
+                      onViewHistory: () =>
+                          widget.onNavigateToTab(NeoNavTab.history),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+
+                    // D. Makanan Terakhir: Today's Intake Section
+                    TodaysIntakeSection(
+                      meals: _todayMeals,
+                      isLoading: _isLoadingMeals,
+                      errorMessage: _mealsError,
+                      onRetry: () => _loadTodayMeals(dash.selectedDate),
+                      onScanPressed: () {
+                        Navigator.pushNamed(context, AppRoutes.scanner);
+                      },
+                      onMealTapped: (mealId) {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.mealDetail,
+                          arguments: mealId,
+                        );
+                      },
+                      onViewAllHistory: () =>
+                          widget.onNavigateToTab(NeoNavTab.history),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+
+                    // E. Edukasi Nutrisi: Latest Articles Section
+                    LatestArticlesSection(
+                      articles: _articles,
+                      onArticleTapped: (art) {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.articleDetail,
+                          arguments: art,
+                        );
+                      },
+                      onViewAllArticles: () =>
+                          widget.onNavigateToTab(NeoNavTab.article),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+                  ],
+
+                  // Medical & Calculation Methodology Disclaimer
+                  NeoCard(
+                    backgroundColor: NeoTokens.recess,
+                    padding: const EdgeInsets.all(NeoTokens.space12),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          AppIcons.info,
+                          size: AppIcons.sizeMedium,
+                          color: NeoTokens.inkSecondary,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Target kalori dihitung menggunakan rumus Mifflin-St Jeor. Estimasi gizi didasarkan pada Tabel Komposisi Pangan Indonesia (TKPI). Konsultasikan dengan dokter atau ahli gizi untuk kebutuhan medis khusus.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: NeoTokens.inkSecondary,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Bottom padding ensuring bottom navigation bar never obscures content
+                  const SizedBox(height: 110),
+                ],
               ),
-              const SizedBox(height: 100),
-            ],
+            ),
           ),
         ),
       ),

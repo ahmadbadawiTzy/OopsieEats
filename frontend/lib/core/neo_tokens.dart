@@ -137,3 +137,38 @@ class NeoTokens {
   static const double breakpointDesktop = 1200.0;
   static const double sidebarWidth = 260.0;
 }
+
+/// Central motion tokens and animation utilities for the NutriView Neo-Brutalism Design System.
+/// Built according to standard animation principles:
+/// - Crisp, responsive micro-interactions (fast tactile feedback for button presses)
+/// - Predictable durations with distinct hierarchy (fast, short, medium, long)
+/// - Asymmetric easing curves (deceleration for entrance, acceleration for exit)
+/// - Strict accessibility compliance respecting system reduced-motion preferences
+class NeoMotion {
+  NeoMotion._();
+
+  // Durations
+  static const Duration durationInstant = Duration.zero;
+  static const Duration durationFast = Duration(milliseconds: 90);
+  static const Duration durationShort = Duration(milliseconds: 180);
+  static const Duration durationMedium = Duration(milliseconds: 280);
+  static const Duration durationLong = Duration(milliseconds: 450);
+
+  // Curves
+  static const Curve curveStandard = Curves.easeInOut;
+  static const Curve curveDecelerate = Curves.easeOutCubic;
+  static const Curve curveAccelerate = Curves.easeInCubic;
+  static const Curve curveBounce = Curves.easeOutBack;
+  static const Curve curveEmphasized = Curves.easeOutQuart;
+
+  /// Check whether the user has requested to disable or reduce animations in OS settings.
+  static bool isAnimationDisabled(BuildContext context) {
+    return MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+  }
+
+  /// Returns [baseDuration] if animations are enabled, or [Duration.zero] if the system
+  /// has reduced-motion or disabled animations enabled.
+  static Duration getDuration(BuildContext context, Duration baseDuration) {
+    return isAnimationDisabled(context) ? Duration.zero : baseDuration;
+  }
+}

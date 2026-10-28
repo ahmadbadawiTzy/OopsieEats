@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "animation-principles": {
+      "source": "owl-listener/designer-skills",
+      "sourceType": "github",
+      "skillPath": "interaction-design/skills/animation-principles/SKILL.md",
+      "computedHash": "56a82df54ca073b43ad69581793f1b2f34138242b97494c1a8c9fabd8cc2aed1"
+    },
+    "animations": {
+      "source": "verygoodopensource/vgv-ai-flutter-plugin",
+      "sourceType": "github",
+      "skillPath": "skills/animations/SKILL.md",
+      "computedHash": "80db767e49f4830cb63e00192ffe52bb1411b185ba894173d33ed0309bae6f45"
+    },
     "dart-add-unit-test": {
       "source": "flutter/agent-plugins",
       "sourceType": "github",
@@ -102,6 +114,18 @@
       "sourceType": "github",
       "skillPath": "SKILL.md",
       "computedHash": "6f21040938c7f9f38facd1cee4b7fe968e852d3db5fdd929b1284006f952e8ef"
+    },
+    "flutter-animation": {
+      "source": "thienqo/flutter-skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-animation/SKILL.md",
+      "computedHash": "9a03bf954841a4031888044332b93e09fa7b2010d284f06b3ec64cef02b4e12b"
+    },
+    "flutter-animations": {
+      "source": "madteacher/mad-agents-skills",
+      "sourceType": "github",
+      "skillPath": "flutter-animations/SKILL.md",
+      "computedHash": "a0f81c4bbff81b43be42cd11ebf33b6a4e50e2f94134d3071e441785fc4872e8"
     },
     "flutter-apply-architecture-best-practices": {
       "source": "flutter/agent-plugins",

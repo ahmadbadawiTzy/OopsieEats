@@ -36,9 +36,16 @@ class NeoDialog extends StatelessWidget {
     Color confirmColor = NeoTokens.vividYellow,
     IconData? icon,
   }) {
-    return showDialog<bool>(
+    final disableAnimations = NeoMotion.isAnimationDisabled(context);
+    return showGeneralDialog<bool>(
       context: context,
-      builder: (ctx) => NeoDialog(
+      barrierDismissible: true,
+      barrierLabel: 'Tutup Dialog',
+      barrierColor: Colors.black54,
+      transitionDuration: disableAnimations
+          ? Duration.zero
+          : NeoMotion.durationShort,
+      pageBuilder: (ctx, anim1, anim2) => NeoDialog(
         title: title,
         message: message,
         confirmText: confirmText,
@@ -48,6 +55,16 @@ class NeoDialog extends StatelessWidget {
         onConfirm: () => Navigator.of(ctx).pop(true),
         onCancel: () => Navigator.of(ctx).pop(false),
       ),
+      transitionBuilder: (ctx, anim, secondaryAnim, child) {
+        final curved = CurvedAnimation(
+          parent: anim,
+          curve: NeoMotion.curveDecelerate,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.94, end: 1.0).animate(curved),
+          child: FadeTransition(opacity: curved, child: child),
+        );
+      },
     );
   }
 

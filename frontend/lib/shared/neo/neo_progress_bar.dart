@@ -79,8 +79,11 @@ class NeoProgressBar extends StatelessWidget {
           return Stack(
             children: [
               AnimatedContainer(
-                duration: const Duration(milliseconds: 350),
-                curve: Curves.easeOutCubic,
+                duration: NeoMotion.getDuration(
+                  context,
+                  NeoMotion.durationMedium,
+                ),
+                curve: NeoMotion.curveDecelerate,
                 width: barWidth,
                 height: height,
                 decoration: BoxDecoration(color: fillColor),

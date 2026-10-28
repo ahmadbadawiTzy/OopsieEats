@@ -48,19 +48,32 @@ frontend/.flutter-plugins
 frontend/.flutter-plugins-dependencies
 frontend/.packages
 *.log
+*.apk
+*.aab
 
 # Android build outputs & local config
 frontend/android/.gradle/
 frontend/android/local.properties
 frontend/android/app/release/
+frontend/android/app/debug/
+frontend/android/app/profile/
 symbols/
 
-# IDE
+# IDE & Editor buffers
 .vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.freebuff/
+
+# Symbolication & Obfuscation
+*.symbols
+*.map.json
 
 # Operating System
 .DS_Store
 Thumbs.db
 
-# Backups
+# Backups & Data Dumps
 scripts/backups/

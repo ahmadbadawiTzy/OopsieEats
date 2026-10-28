@@ -42,25 +42,53 @@ void main() {
     await initializeDateFormatting('id_ID', null);
   });
 
-  group('Extreme Neo-Brutalism Dashboard Components Unit & Widget Tests', () {
+  group('Customer-First Neo-Brutalism Dashboard Components Unit & Widget Tests', () {
     testWidgets(
-      'DashboardHeroSection renders headline, Indonesian subtitle and protocol tag',
+      'DashboardHeroSection renders personal greeting, subtext, and handles avatar tap',
       (tester) async {
+        bool tapped = false;
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: DashboardHeroSection(userName: 'Ahmad')),
+          MaterialApp(
+            home: Scaffold(
+              body: DashboardHeroSection(
+                userName: 'Ahmad Badawi',
+                onAvatarTap: () => tapped = true,
+              ),
+            ),
           ),
         );
 
-        expect(find.text('PANTAU NUTRISI HARI INI'), findsOneWidget);
+        expect(find.text('Halo, Ahmad Badawi'), findsOneWidget);
         expect(
-          find.text(
-            'Pindai foto makanan atau cari menu untuk mencatat kalori dan makronutrisi harianmu secara akurat.',
-          ),
+          find.text('Yuk, pahami asupanmu dan bangun kebiasaan makan yang lebih seimbang.'),
           findsOneWidget,
         );
-        expect(find.text('HALO, AHMAD!'), findsOneWidget);
-        expect(find.text('NV // PROTOKOL GIZI'), findsNothing);
+
+        await tester.tap(find.byType(DashboardHeroSection));
+        expect(tapped, isTrue);
+      },
+    );
+
+    testWidgets(
+      'DashboardHeroSection falls back gracefully when userName is empty or email',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: DashboardHeroSection(userName: ''),
+            ),
+          ),
+        );
+        expect(find.text('Halo, Sobat Sehat'), findsOneWidget);
+
+        await tester.pumpWidget(
+          const MaterialApp(
+            home: Scaffold(
+              body: DashboardHeroSection(userName: 'budi123@gmail.com'),
+            ),
+          ),
+        );
+        expect(find.text('Halo, Budi'), findsOneWidget);
       },
     );
 
@@ -84,7 +112,7 @@ void main() {
           ),
         );
 
-        expect(find.text('[01] KEBUTUHAN KALORI'), findsOneWidget);
+        expect(find.text('Ringkasan Hari Ini'), findsOneWidget);
         expect(find.text('TARGET HARIAN'), findsOneWidget);
         expect(find.text('2200'), findsOneWidget);
         expect(find.text('SUDAH MASUK'), findsOneWidget);
@@ -153,7 +181,7 @@ void main() {
     );
 
     testWidgets(
-      'ScanCtaCard renders SCAN YOUR MEAL, YOLO26N chip and responds to tap',
+      'ScanCtaCard renders Scan Makanan and responds to tap',
       (tester) async {
         bool tapped = false;
 
@@ -165,22 +193,21 @@ void main() {
           ),
         );
 
-        expect(find.text('PINDAI MAKANAN'), findsNWidgets(2));
+        expect(find.text('Scan Makanan'), findsOneWidget);
         expect(
-          find.text('Kenali makanan dari foto dan catat nutrisinya.'),
+          find.text('Pindai makananmu untuk mencatat kalori dan nutrisi otomatis.'),
           findsOneWidget,
         );
-        expect(find.text('FOTO'), findsOneWidget);
         expect(find.text('YOLO26N'), findsNothing);
-        expect(find.text('[02] ON-DEVICE AI DETECTOR'), findsNothing);
+        expect(find.text('AI Powered'), findsNothing);
 
-        await tester.tap(find.text('PINDAI MAKANAN').first);
+        await tester.tap(find.text('Scan Makanan'));
         expect(tapped, isTrue);
       },
     );
 
     testWidgets(
-      'MacroBentoGrid renders Protein, Carbs, Fat and activity count',
+      'MacroBentoGrid renders Protein, Karbohidrat, Lemak and activity count',
       (tester) async {
         bool historyTapped = false;
         final progress = DashboardProgress(
@@ -214,12 +241,12 @@ void main() {
           ),
         );
 
-        expect(find.text('[03] RINGKASAN MAKRONUTRIEN'), findsOneWidget);
-        expect(find.text('PROTEIN'), findsOneWidget);
+        expect(find.text('Keseimbangan Nutrisi'), findsOneWidget);
+        expect(find.text('Protein'), findsOneWidget);
         expect(find.text('75.5g'), findsOneWidget);
-        expect(find.text('KARBOHIDRAT'), findsOneWidget);
+        expect(find.text('Karbohidrat'), findsOneWidget);
         expect(find.text('180.2g'), findsOneWidget);
-        expect(find.text('LEMAK'), findsOneWidget);
+        expect(find.text('Lemak'), findsOneWidget);
         expect(find.text('45.0g'), findsOneWidget);
         expect(find.text('3 KALI'), findsOneWidget);
 
@@ -303,6 +330,7 @@ void main() {
           ),
         );
 
+        expect(find.text('Makanan Hari Ini'), findsOneWidget);
         expect(find.text('MAKAN SIANG'), findsOneWidget);
         expect(find.text('Nasi Putih'), findsOneWidget);
         expect(find.text('+195 kkal'), findsOneWidget);
@@ -344,6 +372,7 @@ void main() {
           ),
         );
 
+        expect(find.text('Tips Nutrisi'), findsOneWidget);
         expect(
           find.text('Nutrisi Harian untuk Energi Maksimal'),
           findsOneWidget,
@@ -360,7 +389,7 @@ void main() {
     );
   });
 
-  group('Overkill Neo-Brutalism DashboardScreen Full Integration Tests', () {
+  group('Customer-First Neo-Brutalism DashboardScreen Full Integration Tests', () {
     late MockAuthRepository mockAuthRepo;
     late MockProfileRepository mockProfileRepo;
     late MockMealRepository mockMealRepo;
@@ -552,53 +581,49 @@ void main() {
     }
 
     testWidgets(
-      'DashboardScreen renders all Overkill Neo-Brutalism sections with real data',
+      'DashboardScreen renders all Customer-First Neo-Brutalism sections with real data',
       (tester) async {
         await authProvider.checkAuthStatus();
 
         await tester.pumpWidget(buildApp());
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 150));
+        await tester.pump(const Duration(milliseconds: 500));
 
-        // 1. Header & Identity
-        expect(find.textContaining('Halo, Ahmad Badawi'), findsOneWidget);
+        // 1. Header & Identity: Clean Greeting and Avatar
+        expect(find.text('Halo, Ahmad Badawi'), findsOneWidget);
         expect(find.byType(NeoAvatar), findsWidgets);
-        expect(find.text('CATATAN GIZI HARIAN'), findsWidgets);
-        expect(find.text('NUTRIVIEW // PROTOKOL GIZI'), findsNothing);
+        expect(
+          find.text('Yuk, pahami asupanmu dan bangun kebiasaan makan yang lebih seimbang.'),
+          findsOneWidget,
+        );
 
-        // 2. Hero Section Headline
-        expect(find.text('PANTAU NUTRISI HARI INI'), findsOneWidget);
-        expect(find.text('HALO, AHMAD!'), findsOneWidget);
+        // 2. Primary Scan CTA Card
+        expect(find.text('Scan Makanan'), findsOneWidget);
 
         // 3. Daily Calorie Hero Bento Card
-        expect(find.text('[01] KEBUTUHAN KALORI'), findsOneWidget);
+        expect(find.text('Ringkasan Hari Ini'), findsOneWidget);
         expect(find.text('2200'), findsOneWidget);
         expect(
           find.text('1100'),
           findsWidgets,
         ); // Both consumed and remaining are 1100
 
-        // 4. Primary Scan CTA Card
-        expect(find.text('PINDAI MAKANAN'), findsWidgets);
-        expect(find.text('FOTO'), findsOneWidget);
-        expect(find.text('YOLO26N'), findsNothing);
+        // 4. Macro Bento Grid
+        expect(find.text('Keseimbangan Nutrisi'), findsOneWidget);
+        expect(find.text('Protein'), findsOneWidget);
+        expect(find.text('Karbohidrat'), findsOneWidget);
+        expect(find.text('Lemak'), findsOneWidget);
 
-        // 5. Macro Bento Grid
-        expect(find.text('[03] RINGKASAN MAKRONUTRIEN'), findsOneWidget);
-        expect(find.text('PROTEIN'), findsOneWidget);
-        expect(find.text('KARBOHIDRAT'), findsOneWidget);
-        expect(find.text('LEMAK'), findsOneWidget);
-
-        // 6. Today's Intake Section
-        expect(find.text('[04] TODAY\'S INTAKE'), findsOneWidget);
+        // 5. Today's Intake Section
+        expect(find.text('Makanan Hari Ini'), findsOneWidget);
         expect(find.text('Oatmeal & Pisang'), findsOneWidget);
         expect(find.text('+320 kkal'), findsOneWidget);
 
-        // 7. Nutrition Field Notes Section
-        expect(find.text('[05] NUTRITION FIELD NOTES'), findsOneWidget);
+        // 6. Nutrition Field Notes Section
+        expect(find.text('Tips Nutrisi'), findsOneWidget);
         expect(find.text('Tips Sarapan Tinggi Protein'), findsOneWidget);
 
-        // 8. Medical Methodology Disclaimer
+        // 7. Medical Methodology Disclaimer
         expect(find.textContaining('Mifflin-St Jeor'), findsOneWidget);
       },
     );
