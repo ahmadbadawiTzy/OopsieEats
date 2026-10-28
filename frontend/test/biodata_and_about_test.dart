@@ -24,10 +24,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AboutScreen(),
-        ),
+        MaterialApp(theme: AppTheme.lightTheme, home: const AboutScreen()),
       );
       await tester.pumpAndSettle();
 
@@ -50,12 +47,11 @@ void main() {
       expect(find.text(CreatorConfig.instagramHandle), findsOneWidget);
     });
 
-    testWidgets('tapping social links copies link to clipboard', (tester) async {
+    testWidgets('tapping social links copies link to clipboard', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const AboutScreen(),
-        ),
+        MaterialApp(theme: AppTheme.lightTheme, home: const AboutScreen()),
       );
       await tester.pumpAndSettle();
 
@@ -109,13 +105,17 @@ void main() {
       );
     });
 
-    testWidgets('renders biodata fields with dynamic age badge', (tester) async {
+    testWidgets('renders biodata fields with dynamic age badge', (
+      tester,
+    ) async {
       await profileProvider.loadProfile();
 
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider<ProfileProvider>.value(value: profileProvider),
+            ChangeNotifierProvider<ProfileProvider>.value(
+              value: profileProvider,
+            ),
             Provider<ProfileRepository>.value(value: mockProfileRepo),
           ],
           child: MaterialApp(

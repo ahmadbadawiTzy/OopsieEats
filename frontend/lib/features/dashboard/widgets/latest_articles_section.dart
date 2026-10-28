@@ -3,6 +3,7 @@ import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/article.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Nutrition Field Notes & Articles Preview Section.
 class LatestArticlesSection extends StatelessWidget {
@@ -28,7 +29,11 @@ class LatestArticlesSection extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(Icons.menu_book_rounded, color: NeoTokens.ink, size: 18),
+                Icon(
+                  AppIcons.menuBook,
+                  color: NeoTokens.ink,
+                  size: AppIcons.sizeLarge,
+                ),
                 SizedBox(width: 6),
                 Text(
                   '[05] NUTRITION FIELD NOTES',
@@ -68,15 +73,15 @@ class LatestArticlesSection extends StatelessWidget {
                       'LIHAT SEMUA',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 9.5,
+                        fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.ink,
                       ),
                     ),
                     SizedBox(width: 4),
                     Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 11,
+                      AppIcons.arrowForward,
+                      size: AppIcons.sizeMicro,
                       color: NeoTokens.ink,
                     ),
                   ],
@@ -89,7 +94,7 @@ class LatestArticlesSection extends StatelessWidget {
         const Text(
           'Pengetahuan kecil, kebiasaan yang lebih baik.',
           style: TextStyle(
-            fontSize: 12.5,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: NeoTokens.inkSecondary,
           ),
@@ -187,7 +192,7 @@ class LatestArticlesSection extends StatelessWidget {
                           Text(
                             art.excerpt!,
                             style: const TextStyle(
-                              fontSize: 11.5,
+                              fontSize: 12,
                               color: NeoTokens.inkSecondary,
                               height: 1.3,
                             ),
@@ -200,8 +205,8 @@ class LatestArticlesSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 13,
+                    AppIcons.arrowForwardIos,
+                    size: AppIcons.sizeSmall,
                     color: NeoTokens.inkSecondary,
                   ),
                 ],
@@ -223,12 +228,16 @@ class LatestArticlesSection extends StatelessWidget {
               'NV.EDUKASI',
               style: TextStyle(
                 fontFamily: 'monospace',
-                fontSize: 7.5,
+                fontSize: 8,
                 fontWeight: FontWeight.w900,
                 color: NeoTokens.ink,
               ),
             ),
-            Icon(Icons.menu_book_rounded, color: NeoTokens.ink, size: 16),
+            Icon(
+              AppIcons.menuBook,
+              color: NeoTokens.ink,
+              size: AppIcons.sizeMedium,
+            ),
           ],
         ),
       ),

@@ -22,6 +22,7 @@ import 'package:nutriview/features/profile/screens/profile_screen.dart';
 import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/shared/widgets/error_view.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Main User Shell for NutriView.
 /// Hosts an [IndexedStack] with all 4 user tabs (Beranda, Artikel, Riwayat, Profil),
@@ -246,8 +247,8 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.admin_panel_settings_rounded,
-                          size: 15,
+                          AppIcons.adminPanelSettings,
+                          size: AppIcons.sizeMedium,
                           color: NeoTokens.ink,
                         ),
                         SizedBox(width: 4),
@@ -324,9 +325,10 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     NeoIconButton(
-                      icon: Icons.chevron_left_rounded,
+                      icon: AppIcons.chevronLeft,
+                      tooltip: 'Hari sebelumnya',
                       size: 36,
-                      iconSize: 22,
+                      iconSize: AppIcons.sizeToolbar,
                       shadowOffset: Offset.zero,
                       onPressed: _previousDay,
                     ),
@@ -350,8 +352,8 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(
-                              Icons.calendar_month_rounded,
-                              size: 15,
+                              AppIcons.calendarMonth,
+                              size: AppIcons.sizeMedium,
                               color: NeoTokens.ink,
                             ),
                             const SizedBox(width: 6),
@@ -384,9 +386,10 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                       ),
                     ),
                     NeoIconButton(
-                      icon: Icons.chevron_right_rounded,
+                      icon: AppIcons.chevronRight,
+                      tooltip: 'Hari berikutnya',
                       size: 36,
-                      iconSize: 22,
+                      iconSize: AppIcons.sizeToolbar,
                       shadowOffset: Offset.zero,
                       onPressed: _nextDay,
                     ),
@@ -484,8 +487,8 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      Icons.info_outline_rounded,
-                      size: 16,
+                      AppIcons.info,
+                      size: AppIcons.sizeMedium,
                       color: NeoTokens.inkSecondary,
                     ),
                     SizedBox(width: 8),
@@ -521,11 +524,9 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            ann.type == 'warning'
-                ? Icons.warning_rounded
-                : Icons.campaign_rounded,
+            ann.type == 'warning' ? AppIcons.warning : AppIcons.campaign,
             color: NeoTokens.ink,
-            size: 24,
+            size: AppIcons.sizeHeader,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -537,7 +538,7 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                     const NeoBadge(
                       label: 'PENGUMUMAN',
                       color: NeoBadgeColor.dark,
-                      fontSize: 9.5,
+                      fontSize: 10,
                       padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     ),
                     const SizedBox(width: 6),
@@ -558,7 +559,7 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
                 Text(
                   ann.message,
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: NeoTokens.ink,
                     height: 1.3,
@@ -571,8 +572,8 @@ class _DashboardHomeViewState extends State<_DashboardHomeView> {
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             icon: const Icon(
-              Icons.close_rounded,
-              size: 18,
+              AppIcons.close,
+              size: AppIcons.sizeLarge,
               color: NeoTokens.ink,
             ),
             tooltip: 'Tutup Pengumuman',

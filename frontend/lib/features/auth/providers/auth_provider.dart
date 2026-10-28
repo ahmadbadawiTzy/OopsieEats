@@ -1,72 +1,383 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:nutriview/core/error_handler.dart';
 import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
 
+/// Explicit lifecycle states for the NutriView authentication engine.
+enum AuthLifecycleState {
+  /// Initialized state prior to verifying persisted tokens
+  uninitialized,
+
+  /// Clean state ready for identity login (Email/Password or Google)
+  unauthenticated,
+
+  /// In-progress identity verification
+  authenticating,
+
+  /// User fully verified, authorized, and active
+  authenticated,
+
+  /// Saved session detected on device, but locked behind biometric gatekeeper
+  biometricLocked,
+
+  /// OS hardware biometric prompt currently presented
+  biometricAuthenticating,
+
+  /// Session invalidated by server or expired
+  sessionExpired,
+
+  /// Fatal unrecoverable auth error
+  error,
+}
+
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _repository;
 
+  AuthLifecycleState _lifecycleState = AuthLifecycleState.uninitialized;
   bool _isLoggedIn = false;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   String? _errorMessage;
+  String? _errorCode;
   User? _currentUser;
   String? _savedRole;
   String? _savedName;
   String? _savedEmail;
+  VoidCallback? onLogout;
+
+  bool _isResetPasswordLoading = false;
+  bool _isBiometricLoading = false;
+  bool _isBiometricAvailable = false;
+  bool _isBiometricEnabled = false;
+  bool _hasPromptedBiometric = false;
+  List<BiometricType> _availableBiometrics = const [];
 
   AuthProvider(this._repository);
 
+  // --- State Machine Getters ---
+  AuthLifecycleState get lifecycleState => _lifecycleState;
+  AuthLifecycleState get state => _lifecycleState;
+  bool get isBiometricLocked =>
+      _lifecycleState == AuthLifecycleState.biometricLocked ||
+      _lifecycleState == AuthLifecycleState.biometricAuthenticating;
+  bool get isBiometricAuthenticating =>
+      _lifecycleState == AuthLifecycleState.biometricAuthenticating;
+  bool get isBiometricEligible =>
+      _isBiometricEnabled && _isBiometricAvailable && _isLoggedIn;
+  bool get hasPromptedBiometric => _hasPromptedBiometric;
+
+  // --- Backward Compatible Getters ---
   bool get isLoggedIn => _isLoggedIn;
-  bool get isLoading => _isLoading;
+  bool get isLoading =>
+      _isLoading ||
+      _isGoogleLoading ||
+      _isResetPasswordLoading ||
+      _isBiometricLoading;
+  bool get isEmailLoading => _isLoading;
+  bool get isGoogleLoading => _isGoogleLoading;
+  bool get isResetPasswordLoading => _isResetPasswordLoading;
+  bool get isBiometricLoading => _isBiometricLoading;
+  bool get isBiometricAvailable => _isBiometricAvailable;
+  bool get isBiometricEnabled => _isBiometricEnabled;
+  List<BiometricType> get availableBiometrics => _availableBiometrics;
+  bool get hasFingerprint =>
+      _availableBiometrics.contains(BiometricType.fingerprint) ||
+      _availableBiometrics.contains(BiometricType.strong);
+  bool get hasFace => _availableBiometrics.contains(BiometricType.face);
   String? get errorMessage => _errorMessage;
+  String? get errorCode => _errorCode;
   User? get currentUser => _currentUser;
 
   String get role => _currentUser?.role ?? _savedRole ?? 'user';
   String get name => _currentUser?.fullName ?? _savedName ?? 'User';
   String get email => _currentUser?.email ?? _savedEmail ?? '';
 
-  bool get isAdmin =>
-      role == 'super_admin' || role == 'dietitian' || role == 'editor';
+  bool get isAdmin => role.toLowerCase().trim() == 'admin';
 
+  /// Evaluates authentication state on app launch.
   Future<void> checkAuthStatus() async {
     _isLoading = true;
+    _lifecycleState = AuthLifecycleState.authenticating;
     notifyListeners();
+
     try {
+      bool rememberMe = true;
+      try {
+        rememberMe = await _repository.isRememberMeEnabled();
+      } catch (_) {
+        rememberMe = true;
+      }
+
+      if (!rememberMe) {
+        // Ephemeral session: User opted out of Remember Me on their last session
+        await _repository.logout();
+        _resetSessionState();
+        _lifecycleState = AuthLifecycleState.unauthenticated;
+        return;
+      }
+
       _isLoggedIn = await _repository.isLoggedIn();
       if (_isLoggedIn) {
         _savedRole = await _repository.getRole();
         _savedName = await _repository.getUserName();
         _savedEmail = await _repository.getUserEmail();
+
+        // Check if session is protected by biometric gatekeeper
+        try {
+          _isBiometricAvailable = await _repository.isBiometricAvailable();
+          if (_isBiometricAvailable) {
+            _availableBiometrics = await _repository.getAvailableBiometrics();
+          } else {
+            _availableBiometrics = const [];
+          }
+          _isBiometricEnabled = await _repository.isBiometricEnabled();
+          _hasPromptedBiometric = await _repository.hasPromptedBiometric();
+        } catch (_) {
+          _isBiometricAvailable = false;
+          _availableBiometrics = const [];
+          _isBiometricEnabled = false;
+          _hasPromptedBiometric = false;
+        }
+
+        if (_isBiometricEnabled && _isBiometricAvailable) {
+          // Protected session: Gate behind Biometric Unlock
+          _lifecycleState = AuthLifecycleState.biometricLocked;
+        } else {
+          // Unprotected session: Direct access
+          _lifecycleState = AuthLifecycleState.authenticated;
+        }
+      } else {
+        _resetSessionState();
+        _lifecycleState = AuthLifecycleState.unauthenticated;
       }
     } catch (_) {
-      _isLoggedIn = false;
+      _resetSessionState();
+      _lifecycleState = AuthLifecycleState.unauthenticated;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<User?> login(String email, String password) async {
-    _isLoading = true;
+  /// Refreshes device biometric sensor capability and user enrollment status.
+  Future<void> checkBiometricAvailability() async {
+    try {
+      _isBiometricAvailable = await _repository.isBiometricAvailable();
+      if (_isBiometricAvailable) {
+        _availableBiometrics = await _repository.getAvailableBiometrics();
+      } else {
+        _availableBiometrics = const [];
+      }
+      _isBiometricEnabled = await _repository.isBiometricEnabled();
+      _hasPromptedBiometric = await _repository.hasPromptedBiometric();
+    } catch (_) {
+      _isBiometricAvailable = false;
+      _isBiometricEnabled = false;
+      _availableBiometrics = const [];
+    }
+    notifyListeners();
+  }
+
+  /// Allows user in `biometricLocked` mode to switch back to normal identity login.
+  void unlockWithPasswordInstead() {
+    _lifecycleState = AuthLifecycleState.unauthenticated;
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  /// Returns to biometric locked mode if the session is eligible.
+  void returnToBiometricLock() {
+    if (isBiometricEligible) {
+      _lifecycleState = AuthLifecycleState.biometricLocked;
+      _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
+  /// Safely switches accounts by signing out, clearing tokens & biometric preferences,
+  /// and transitioning cleanly to unauthenticated normal login state.
+  Future<void> switchAccount() async {
+    _isLoading = true;
+    _lifecycleState = AuthLifecycleState.authenticating;
     notifyListeners();
 
     try {
-      final user = await _repository.login(email: email, password: password);
+      await _repository.logout();
+    } catch (_) {}
+
+    _resetSessionState();
+    _lifecycleState = AuthLifecycleState.unauthenticated;
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Sets whether the first-time biometric enrollment prompt has been offered.
+  Future<void> setBiometricPrompted(bool prompted) async {
+    _hasPromptedBiometric = prompted;
+    await _repository.setBiometricPrompted(prompted);
+    notifyListeners();
+  }
+
+  /// Opt-in / opt-out user for biometric unlock.
+  Future<bool> setBiometricEnabled(bool enabled) async {
+    try {
+      await _repository.setBiometricEnabled(enabled);
+      _isBiometricEnabled = enabled;
+      _hasPromptedBiometric = true;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal memperbarui preferensi biometrik.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Normal email/password identity login.
+  Future<User?> login(
+    String email,
+    String password, {
+    bool rememberMe = true,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _lifecycleState = AuthLifecycleState.authenticating;
+    notifyListeners();
+
+    try {
+      final user = await _repository.login(
+        email: email,
+        password: password,
+        rememberMe: rememberMe,
+      );
       _isLoggedIn = true;
       _currentUser = user;
       _savedRole = user.role;
       _savedName = user.fullName;
       _savedEmail = user.email;
+
+      // Check biometric environment for post-login enrollment check
+      await checkBiometricAvailability();
+
+      _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
+      _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } catch (e) {
       _errorMessage = 'Gagal terhubung ke server.';
+      _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Google identity login.
+  Future<User?> loginWithGoogle({bool rememberMe = true}) async {
+    _isGoogleLoading = true;
+    _errorMessage = null;
+    _lifecycleState = AuthLifecycleState.authenticating;
+    notifyListeners();
+
+    try {
+      final user = await _repository.loginWithGoogle(rememberMe: rememberMe);
+      if (user == null) {
+        // User intentionally cancelled Google sign in dialog
+        _lifecycleState = AuthLifecycleState.unauthenticated;
+        return null;
+      }
+      _isLoggedIn = true;
+      _currentUser = user;
+      _savedRole = user.role;
+      _savedName = user.fullName;
+      _savedEmail = user.email;
+
+      // Check biometric environment for post-login enrollment check
+      await checkBiometricAvailability();
+
+      _lifecycleState = AuthLifecycleState.authenticated;
+      return user;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      _lifecycleState = AuthLifecycleState.unauthenticated;
+      return null;
+    } catch (_) {
+      _errorMessage = 'Gagal terhubung ke layanan Google.';
+      _lifecycleState = AuthLifecycleState.unauthenticated;
+      return null;
+    } finally {
+      _isGoogleLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Biometric unlock for existing valid sessions.
+  Future<User?> authenticateWithBiometrics({String? localizedReason}) async {
+    _isBiometricLoading = true;
+    _errorMessage = null;
+    _lifecycleState = AuthLifecycleState.biometricAuthenticating;
+    notifyListeners();
+
+    try {
+      final user = await _repository.authenticateWithBiometrics(
+        localizedReason: localizedReason,
+      );
+      _isLoggedIn = true;
+      _currentUser = user;
+      _savedRole = user.role;
+      _savedName = user.fullName;
+      _savedEmail = user.email;
+      _lifecycleState = AuthLifecycleState.authenticated;
+      return user;
+    } on ApiException catch (e) {
+      if (e.code == 'BIOMETRIC_CANCELLED') {
+        // User quietly dismissed dialog, stay in locked state calmly without red banner
+        _errorMessage = null;
+      } else {
+        _errorMessage = e.friendlyMessage;
+      }
+
+      if (e.code == 'SESSION_EXPIRED') {
+        _resetSessionState();
+        _lifecycleState = AuthLifecycleState.sessionExpired;
+      } else {
+        _lifecycleState = AuthLifecycleState.biometricLocked;
+      }
+      return null;
+    } catch (_) {
+      _errorMessage = 'Verifikasi biometrik gagal.';
+      _lifecycleState = AuthLifecycleState.biometricLocked;
+      return null;
+    } finally {
+      _isBiometricLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> sendPasswordResetEmail(String email) async {
+    _isResetPasswordLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.sendPasswordResetEmail(email);
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal terhubung ke server pemulihan kata sandi.';
+      return false;
+    } finally {
+      _isResetPasswordLoading = false;
       notifyListeners();
     }
   }
@@ -74,6 +385,7 @@ class AuthProvider extends ChangeNotifier {
   Future<User?> register(String email, String password, String fullName) async {
     _isLoading = true;
     _errorMessage = null;
+    _lifecycleState = AuthLifecycleState.authenticating;
     notifyListeners();
 
     try {
@@ -82,19 +394,24 @@ class AuthProvider extends ChangeNotifier {
         password: password,
         fullName: fullName,
       );
-      // Auto-login after registration (Strictly user role)
       final user = await _repository.login(email: email, password: password);
       _isLoggedIn = true;
       _currentUser = user;
       _savedRole = user.role;
       _savedName = user.fullName;
       _savedEmail = user.email;
+
+      await checkBiometricAvailability();
+
+      _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
+      _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } catch (e) {
       _errorMessage = 'Gagal terhubung ke server.';
+      _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } finally {
       _isLoading = false;
@@ -106,32 +423,30 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _repository.logout();
     } catch (_) {}
-    _isLoggedIn = false;
-    _currentUser = null;
-    _savedRole = null;
-    _savedName = null;
-    _savedEmail = null;
-    _errorMessage = null;
+    _resetSessionState();
+    _lifecycleState = AuthLifecycleState.unauthenticated;
+    onLogout?.call();
     notifyListeners();
   }
 
-  Future<bool> deleteAccount() async {
+  Future<bool> deleteAccount({String? password}) async {
     _isLoading = true;
     _errorMessage = null;
+    _errorCode = null;
     notifyListeners();
 
     try {
-      await _repository.deleteAccount();
-      _isLoggedIn = false;
-      _currentUser = null;
-      _savedRole = null;
-      _savedName = null;
-      _savedEmail = null;
+      await _repository.deleteAccount(password: password);
+      _resetSessionState();
+      _lifecycleState = AuthLifecycleState.unauthenticated;
+      onLogout?.call();
       return true;
     } on ApiException catch (e) {
+      _errorCode = e.code;
       _errorMessage = e.friendlyMessage;
       return false;
     } catch (_) {
+      _errorCode = 'UNKNOWN_ERROR';
       _errorMessage = 'Gagal menghapus akun.';
       return false;
     } finally {
@@ -141,12 +456,21 @@ class AuthProvider extends ChangeNotifier {
   }
 
   void handleSessionExpired() {
+    _resetSessionState();
+    _errorMessage = 'Sesi Anda telah kedaluwarsa. Silakan login kembali.';
+    _lifecycleState = AuthLifecycleState.sessionExpired;
+    onLogout?.call();
+    notifyListeners();
+  }
+
+  void _resetSessionState() {
     _isLoggedIn = false;
     _currentUser = null;
     _savedRole = null;
     _savedName = null;
     _savedEmail = null;
-    _errorMessage = 'Sesi Anda telah kedaluwarsa. Silakan login kembali.';
-    notifyListeners();
+    _isBiometricEnabled = false;
+    _errorMessage = null;
+    _errorCode = null;
   }
 }

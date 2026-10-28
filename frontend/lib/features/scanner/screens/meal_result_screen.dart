@@ -4,10 +4,12 @@ import 'package:nutriview/core/config.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
+import 'package:nutriview/shared/neo/neo_back_button.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class MealResultScreen extends StatelessWidget {
   const MealResultScreen({super.key});
@@ -21,6 +23,7 @@ class MealResultScreen extends StatelessWidget {
       return Scaffold(
         backgroundColor: NeoTokens.warmBackground,
         appBar: AppBar(
+          leading: NeoBackButton.leading(context),
           title: const Text('Hasil Analisis'),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(2),
@@ -100,9 +103,9 @@ class MealResultScreen extends StatelessWidget {
                   ],
                 ),
                 child: const Icon(
-                  Icons.check_circle_rounded,
+                  AppIcons.checkCircle,
                   color: NeoTokens.black,
-                  size: 46,
+                  size: AppIcons.sizeBrand,
                 ),
               ),
             ),
@@ -276,8 +279,8 @@ class MealResultScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.info_outline_rounded,
-                    size: 18,
+                    AppIcons.info,
+                    size: AppIcons.sizeLarge,
                     color: NeoTokens.black,
                   ),
                   SizedBox(width: 10),
@@ -285,7 +288,7 @@ class MealResultScreen extends StatelessWidget {
                     child: Text(
                       AppConfig.disclaimerText,
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: NeoTokens.textMuted,
                         height: 1.4,
@@ -299,7 +302,7 @@ class MealResultScreen extends StatelessWidget {
 
             NeoButton(
               text: 'Selesai & Ke Dashboard',
-              prefixIcon: Icons.check_circle_outline_rounded,
+              prefixIcon: AppIcons.checkCircleOutline,
               variant: NeoButtonVariant.primary,
               onPressed: () {
                 flow.reset();

@@ -34,8 +34,19 @@ class ApiException implements Exception {
         return 'Berkas yang diunggah bukan gambar yang valid.';
       case 'TOKEN_EXPIRED':
       case 'TOKEN_REVOKED':
+      case 'SESSION_EXPIRED':
       case 'UNAUTHORIZED':
         return 'Sesi login telah berakhir. Silakan login kembali.';
+      case 'BIOMETRIC_UNAVAILABLE':
+        return 'Sensor biometrik tidak tersedia pada perangkat ini.';
+      case 'BIOMETRIC_NOT_ENABLED':
+        return 'Kunci biometrik belum diaktifkan pada akun ini.';
+      case 'BIOMETRIC_CANCELLED':
+        return 'Verifikasi biometrik dibatalkan.';
+      case 'BIOMETRIC_AUTH_FAILED':
+        return 'Verifikasi biometrik tidak cocok. Coba lagi atau gunakan kata sandi.';
+      case 'BIOMETRIC_ACCOUNT_MISMATCH':
+        return 'Biometrik terdaftar untuk akun berbeda. Silakan masuk dengan kata sandi.';
       case 'VALIDATION_ERROR':
         if (details != null && details!.isNotEmpty) {
           final first = details!.first;

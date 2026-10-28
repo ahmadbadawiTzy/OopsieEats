@@ -6,6 +6,7 @@ import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/data/models/article.dart';
 import 'package:nutriview/data/repositories/article_repository.dart';
 import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class ArticleListScreen extends StatefulWidget {
   final bool isTab;
@@ -138,15 +139,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
         elevation: 0,
         backgroundColor: NeoTokens.warmBackground,
         titleSpacing: NeoTokens.space16,
-        leading: widget.isTab
-            ? null
-            : IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: NeoTokens.ink,
-                ),
-                onPressed: () => Navigator.maybePop(context),
-              ),
+        leading: widget.isTab ? null : const NeoBackButton(),
         title: const Text(
           'Artikel Nutrisi',
           style: TextStyle(
@@ -194,8 +187,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                         const Padding(
                           padding: EdgeInsets.only(left: 14, right: 10),
                           child: Icon(
-                            Icons.search_rounded,
-                            size: 22,
+                            AppIcons.search,
+                            size: AppIcons.sizeToolbar,
                             color: NeoTokens.ink,
                           ),
                         ),
@@ -212,14 +205,14 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                             },
                             textInputAction: TextInputAction.search,
                             style: const TextStyle(
-                              fontSize: 14.5,
+                              fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: NeoTokens.ink,
                             ),
                             decoration: const InputDecoration(
                               hintText: 'Cari artikel nutrisi...',
                               hintStyle: TextStyle(
-                                fontSize: 14.5,
+                                fontSize: 15,
                                 color: NeoTokens.inkMuted,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -239,8 +232,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                             padding: const EdgeInsets.only(right: 6),
                             child: IconButton(
                               icon: const Icon(
-                                Icons.close_rounded,
-                                size: 20,
+                                AppIcons.close,
+                                size: AppIcons.sizeControl,
                                 color: NeoTokens.ink,
                               ),
                               onPressed: _clearSearch,
@@ -327,7 +320,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 12.5,
+              fontSize: 13,
               fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
               color: isSelected ? NeoTokens.ink : NeoTokens.inkSecondary,
             ),
@@ -357,8 +350,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(
-                  Icons.error_outline_rounded,
-                  size: 40,
+                  AppIcons.error,
+                  size: AppIcons.sizeFeature,
                   color: NeoTokens.alert,
                 ),
                 const SizedBox(height: NeoTokens.space12),
@@ -375,7 +368,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                   _errorMessage!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     color: NeoTokens.inkSecondary,
                     height: 1.3,
                   ),
@@ -449,10 +442,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                     boxShadow: NeoTokens.neoBoxShadowSmall(),
                   ),
                   child: Icon(
-                    isSearching
-                        ? Icons.search_off_rounded
-                        : Icons.article_outlined,
-                    size: 28,
+                    isSearching ? AppIcons.searchOff : AppIcons.article,
+                    size: AppIcons.sizeState,
                     color: NeoTokens.ink,
                   ),
                 ),
@@ -461,7 +452,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 16.5,
+                    fontSize: 17,
                     fontWeight: FontWeight.w900,
                     color: NeoTokens.ink,
                   ),
@@ -471,7 +462,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                   description,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 13,
                     color: NeoTokens.inkSecondary,
                     height: 1.35,
                   ),
@@ -560,7 +551,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                 Text(
                   formattedDate,
                   style: const TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: NeoTokens.inkSecondary,
                   ),
@@ -612,8 +603,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.person_outline_rounded,
-                        size: 15,
+                        AppIcons.personOutline,
+                        size: AppIcons.sizeMedium,
                         color: NeoTokens.inkSecondary,
                       ),
                       const SizedBox(width: 4),
@@ -660,15 +651,15 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                     Text(
                       'Baca Artikel',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 12,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.ink,
                       ),
                     ),
                     SizedBox(width: 4),
                     Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 14,
+                      AppIcons.arrowForward,
+                      size: AppIcons.sizeSmall,
                       color: NeoTokens.ink,
                     ),
                   ],
@@ -747,7 +738,11 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
-            Icon(Icons.menu_book_rounded, size: 36, color: NeoTokens.ink),
+            Icon(
+              AppIcons.menuBook,
+              size: AppIcons.sizeEmpty,
+              color: NeoTokens.ink,
+            ),
             SizedBox(height: 8),
             Text(
               'Panduan Gizi & Nutrisi',

@@ -162,7 +162,7 @@ void main() {
         when(() => mockAuthRepository.isLoggedIn())
             .thenAnswer((_) async => true);
         when(() => mockAuthRepository.getRole())
-            .thenAnswer((_) async => 'super_admin');
+            .thenAnswer((_) async => 'admin');
         when(() => mockAuthRepository.getUserName())
             .thenAnswer((_) async => 'Admin NutriView');
         when(() => mockAuthRepository.getUserEmail())

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class AtwaterCheckerWidget extends StatelessWidget {
   final double calories;
@@ -37,27 +38,27 @@ class AtwaterCheckerWidget extends StatelessWidget {
       statusTitle = 'TOTAL MAKRO MELEBIHI 100G';
       statusDesc =
           'Jumlah protein, karbohidrat, dan lemak (${totalMacros.toStringAsFixed(1)}g) tidak logis per 100g.';
-      statusIcon = Icons.error_outline;
+      statusIcon = AppIcons.error;
     } else if (calories <= 0 && calcCals <= 0) {
       statusColor = NeoTokens.inkSecondary;
       statusTitle = 'MENUNGGU INPUT NILAI GIZI';
       statusDesc = 'Masukkan angka kalori dan makronutrien per 100g.';
-      statusIcon = Icons.info_outline;
+      statusIcon = AppIcons.info;
     } else if (deviationPercent <= 15.0) {
       statusColor = NeoTokens.lime;
       statusTitle = 'AKURAT & KONSISTEN (≤ 15%)';
       statusDesc = 'Nilai kalori selaras dengan formula deterministik Atwater.';
-      statusIcon = Icons.check_circle_outline;
+      statusIcon = AppIcons.checkCircleOutline;
     } else if (deviationPercent <= 30.0) {
       statusColor = NeoTokens.hazard;
       statusTitle = 'PERINGATAN DEVIASI (15% - 30%)';
       statusDesc = 'Deviasi wajar akibat kadar air, serat larut, atau abu. Pastikan sumber data benar.';
-      statusIcon = Icons.warning_amber_rounded;
+      statusIcon = AppIcons.warningAmber;
     } else {
       statusColor = NeoTokens.alert;
       statusTitle = 'KOREKSI MUTLAK (> 30%)';
       statusDesc = 'Kalori input berbeda drastis dari estimasi makro. Validasi akan menolak jika disimpan.';
-      statusIcon = Icons.cancel_outlined;
+      statusIcon = AppIcons.cancel;
     }
 
     return Container(
@@ -65,10 +66,7 @@ class AtwaterCheckerWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: NeoTokens.paper,
         borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
-        border: Border.all(
-          color: NeoTokens.ink,
-          width: NeoTokens.borderWidth,
-        ),
+        border: Border.all(color: NeoTokens.ink, width: NeoTokens.borderWidth),
         boxShadow: NeoTokens.neoBoxShadow(),
       ),
       child: Column(
@@ -86,7 +84,11 @@ class AtwaterCheckerWidget extends StatelessWidget {
                     width: NeoTokens.borderWidthThin,
                   ),
                 ),
-                child: Icon(statusIcon, color: NeoTokens.ink, size: 20),
+                child: Icon(
+                  statusIcon,
+                  color: NeoTokens.ink,
+                  size: AppIcons.sizeControl,
+                ),
               ),
               const SizedBox(width: NeoTokens.space10),
               Expanded(
@@ -160,7 +162,7 @@ class AtwaterCheckerWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Icon(Icons.compare_arrows, size: 16),
+                const Icon(AppIcons.compareArrows, size: AppIcons.sizeMedium),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

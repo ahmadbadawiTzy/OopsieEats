@@ -6,11 +6,13 @@ import 'package:nutriview/data/models/food.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
 import 'package:nutriview/features/scanner/screens/food_search_modal.dart';
+import 'package:nutriview/shared/neo/neo_back_button.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_icon_button.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class DetectionConfirmationScreen extends StatelessWidget {
   const DetectionConfirmationScreen({super.key});
@@ -51,6 +53,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Konfirmasi Makanan'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -120,15 +123,15 @@ class DetectionConfirmationScreen extends StatelessWidget {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.auto_awesome_rounded,
-                            size: 20,
+                            AppIcons.autoAwesome,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           const SizedBox(width: 10),
                           Text(
                             'Ditemukan ${flow.rawDetections.isNotEmpty ? flow.rawDetections.length : items.length} makanan dari foto',
                             style: const TextStyle(
-                              fontSize: 13.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
                               color: NeoTokens.black,
                             ),
@@ -174,8 +177,8 @@ class DetectionConfirmationScreen extends StatelessWidget {
                               ),
                             ),
                             child: const Icon(
-                              Icons.search_off_rounded,
-                              size: 32,
+                              AppIcons.searchOff,
+                              size: AppIcons.sizeStateLarge,
                               color: NeoTokens.black,
                             ),
                           ),
@@ -205,7 +208,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                             width: 230,
                             child: NeoButton(
                               text: 'Pilih Makanan Manual',
-                              prefixIcon: Icons.add_rounded,
+                              prefixIcon: AppIcons.add,
                               variant: NeoButtonVariant.primary,
                               onPressed: () => _openManualAdd(context),
                             ),
@@ -242,9 +245,9 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                   ),
                                 ),
                                 child: const Icon(
-                                  Icons.restaurant_rounded,
+                                  AppIcons.restaurant,
                                   color: NeoTokens.black,
-                                  size: 22,
+                                  size: AppIcons.sizeToolbar,
                                 ),
                               ),
                               const SizedBox(width: NeoTokens.space12),
@@ -275,7 +278,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                             label:
                                                 'Deteksi ${(detectedItem.detectionConfidence! * 100).toInt()}%',
                                             color: NeoBadgeColor.white,
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 6,
                                               vertical: 2,
@@ -284,9 +287,9 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                           if (detectedItem.lowConfidence)
                                             const NeoBadge(
                                               label: 'Perlu dicek',
-                                              icon: Icons.warning_amber_rounded,
+                                              icon: AppIcons.warningAmber,
                                               color: NeoBadgeColor.yellow,
-                                              fontSize: 10.5,
+                                              fontSize: 11,
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 6,
                                                 vertical: 2,
@@ -295,9 +298,9 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                           if (detectedItem.isUnmapped)
                                             const NeoBadge(
                                               label: 'Belum Terdaftar',
-                                              icon: Icons.help_outline_rounded,
+                                              icon: AppIcons.helpOutline,
                                               color: NeoBadgeColor.coral,
-                                              fontSize: 10.5,
+                                              fontSize: 11,
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 6,
                                                 vertical: 2,
@@ -308,7 +311,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                           const NeoBadge(
                                             label: 'Hasil Koreksi',
                                             color: NeoBadgeColor.sky,
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             padding: EdgeInsets.symmetric(
                                               horizontal: 6,
                                               vertical: 2,
@@ -318,7 +321,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                           const NeoBadge(
                                             label: 'Manual',
                                             color: NeoBadgeColor.white,
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             padding: EdgeInsets.symmetric(
                                               horizontal: 6,
                                               vertical: 2,
@@ -375,7 +378,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                         child: const Text(
                                           'Gizi belum tersedia · Ketuk ganti untuk memilih dari database',
                                           style: TextStyle(
-                                            fontSize: 10.5,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w700,
                                             color: NeoTokens.coralRed,
                                           ),
@@ -386,19 +389,19 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                 ),
                               ),
                               NeoIconButton(
-                                icon: Icons.edit_outlined,
+                                icon: AppIcons.edit,
                                 tooltip: 'Ganti makanan',
                                 size: 36,
-                                iconSize: 18,
+                                iconSize: AppIcons.sizeLarge,
                                 shadowOffset: Offset.zero,
                                 onPressed: () => _openReplace(context, index),
                               ),
                               const SizedBox(width: 6),
                               NeoIconButton(
-                                icon: Icons.delete_outline_rounded,
+                                icon: AppIcons.delete,
                                 tooltip: 'Hapus makanan',
                                 size: 36,
-                                iconSize: 18,
+                                iconSize: AppIcons.sizeLarge,
                                 iconColor: NeoTokens.coralRed,
                                 shadowOffset: Offset.zero,
                                 onPressed: () => flow.removeItem(index),
@@ -418,8 +421,8 @@ class DetectionConfirmationScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            Icons.info_outline_rounded,
-                            size: 20,
+                            AppIcons.info,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           SizedBox(width: NeoTokens.space12),
@@ -427,7 +430,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                             child: Text(
                               'Catatan: Pemindai mengenali jenis makanan dari foto. Porsi dan gramatur dapat disesuaikan pada langkah berikutnya agar perhitungan gizi lebih akurat.',
                               style: TextStyle(
-                                fontSize: 12.5,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w600,
                                 color: NeoTokens.textDark,
                                 height: 1.35,
@@ -451,7 +454,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
             child: SafeArea(
               child: NeoButton(
                 text: 'Lanjut ke Input Porsi',
-                suffixIcon: Icons.arrow_forward_rounded,
+                suffixIcon: AppIcons.arrowForward,
                 variant: NeoButtonVariant.primary,
                 onPressed: items.isEmpty
                     ? null

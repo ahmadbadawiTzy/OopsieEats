@@ -4,10 +4,12 @@ import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
+import 'package:nutriview/shared/neo/neo_back_button.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class PortionInputScreen extends StatefulWidget {
   const PortionInputScreen({super.key});
@@ -29,9 +31,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
       if (items[i].portionGrams == null) {
         items[i].portionGrams = 150.0;
       }
-      _controllers[i] = TextEditingController(
-        text: portion.toInt().toString(),
-      );
+      _controllers[i] = TextEditingController(text: portion.toInt().toString());
     }
   }
 
@@ -140,7 +140,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
             Text(
               label,
               style: const TextStyle(
-                fontSize: 10.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: NeoTokens.textMuted,
               ),
@@ -206,6 +206,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Input Porsi Makanan'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -229,7 +230,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                     const Text(
                       'Jenis Waktu Makan',
                       style: TextStyle(
-                        fontSize: 13.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: NeoTokens.textDark,
                         letterSpacing: -0.2,
@@ -263,12 +264,12 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                           isExpanded: true,
                           value: flow.mealType,
                           icon: const Icon(
-                            Icons.arrow_drop_down_rounded,
+                            AppIcons.arrowDropDown,
                             color: NeoTokens.black,
-                            size: 26,
+                            size: AppIcons.sizeHeader,
                           ),
                           style: const TextStyle(
-                            fontSize: 14.5,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: NeoTokens.textDark,
                           ),
@@ -309,9 +310,9 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                         child: Row(
                           children: [
                             const Icon(
-                              Icons.error_outline_rounded,
+                              AppIcons.error,
                               color: NeoTokens.white,
-                              size: 22,
+                              size: AppIcons.sizeToolbar,
                             ),
                             const SizedBox(width: NeoTokens.space12),
                             Expanded(
@@ -332,8 +333,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
 
                     const NeoSectionHeader(
                       title: 'Atur Porsi Makanan (gram)',
-                      subtitle:
-                          'Pilih preset porsi cepat atau ketik gramatur manual untuk melihat estimasi gizi langsung.',
+                      subtitle: 'Pilih preset porsi cepat atau ketik gramatur manual untuk melihat estimasi gizi langsung.',
                       accentColor: NeoTokens.mintGreen,
                     ),
                     const SizedBox(height: NeoTokens.space8),
@@ -374,8 +374,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                       ),
                                     ),
                                     child: const Icon(
-                                      Icons.restaurant_rounded,
-                                      size: 22,
+                                      AppIcons.restaurant,
+                                      size: AppIcons.sizeToolbar,
                                       color: NeoTokens.black,
                                     ),
                                   ),
@@ -388,7 +388,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                         Text(
                                           confirmedItem.foodName,
                                           style: const TextStyle(
-                                            fontSize: 15.5,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.w900,
                                             color: NeoTokens.textDark,
                                             letterSpacing: -0.2,
@@ -583,8 +583,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                             const Row(
                               children: [
                                 Icon(
-                                  Icons.calculate_rounded,
-                                  size: 20,
+                                  AppIcons.calculate,
+                                  size: AppIcons.sizeControl,
                                   color: NeoTokens.black,
                                 ),
                                 SizedBox(width: 8),
@@ -642,7 +642,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
             child: SafeArea(
               child: NeoButton(
                 text: 'Simpan & Catat Makanan',
-                prefixIcon: Icons.check_circle_outline_rounded,
+                prefixIcon: AppIcons.checkCircleOutline,
                 variant: NeoButtonVariant.primary,
                 isLoading: flow.isProcessing,
                 onPressed: _handleSave,

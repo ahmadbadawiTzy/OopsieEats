@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Primary Call-To-Action Card for On-Device Food Scanning.
 /// High voltage Acid Lime background with bold typography, camera badge, and hard shadows.
@@ -26,8 +27,8 @@ class ScanCtaCard extends StatelessWidget {
             child: Opacity(
               opacity: 0.12,
               child: const Icon(
-                Icons.center_focus_strong_rounded,
-                size: 110,
+                AppIcons.centerFocusStrong,
+                size: AppIcons.sizeIllustration,
                 color: NeoTokens.ink,
               ),
             ),
@@ -58,8 +59,8 @@ class ScanCtaCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.camera_alt_rounded,
-                          size: 13,
+                          AppIcons.cameraAlt,
+                          size: AppIcons.sizeSmall,
                           color: NeoTokens.lime,
                         ),
                         SizedBox(width: 4),
@@ -95,7 +96,7 @@ class ScanCtaCard extends StatelessWidget {
                       'FOTO',
                       style: TextStyle(
                         fontFamily: 'monospace',
-                        fontSize: 9.5,
+                        fontSize: 10,
                         fontWeight: FontWeight.w900,
                         color: NeoTokens.ink,
                       ),
@@ -159,9 +160,9 @@ class ScanCtaCard extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Icon(
-                        Icons.camera_alt_rounded,
+                        AppIcons.cameraAlt,
                         color: NeoTokens.ink,
-                        size: 28,
+                        size: AppIcons.sizeState,
                       ),
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 enum NeoNavTab { home, article, history, profile }
 
@@ -59,7 +60,7 @@ class NeoBottomNav extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: _NeoNavTabItem(
                     label: 'BERANDA',
-                    icon: Icons.grid_view_rounded,
+                    icon: AppIcons.gridView,
                     isActive: activeTab == NeoNavTab.home,
                     onTap: () => onTabSelected(NeoNavTab.home),
                   ),
@@ -72,7 +73,7 @@ class NeoBottomNav extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: _NeoNavTabItem(
                     label: 'ARTIKEL',
-                    icon: Icons.article_rounded,
+                    icon: AppIcons.article,
                     isActive: activeTab == NeoNavTab.article,
                     onTap: () => onTabSelected(NeoNavTab.article),
                   ),
@@ -93,7 +94,7 @@ class NeoBottomNav extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: _NeoNavTabItem(
                     label: 'RIWAYAT',
-                    icon: Icons.receipt_long_rounded,
+                    icon: AppIcons.receiptLong,
                     isActive: activeTab == NeoNavTab.history,
                     onTap: () => onTabSelected(NeoNavTab.history),
                   ),
@@ -106,7 +107,7 @@ class NeoBottomNav extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 2.0),
                   child: _NeoNavTabItem(
                     label: 'PROFIL',
-                    icon: Icons.person_rounded,
+                    icon: AppIcons.person,
                     isActive: activeTab == NeoNavTab.profile,
                     onTap: () => onTabSelected(NeoNavTab.profile),
                   ),
@@ -186,7 +187,7 @@ class _NeoNavTabItemState extends State<_NeoNavTabItem> {
               children: [
                 Icon(
                   widget.icon,
-                  size: 20,
+                  size: AppIcons.sizeControl,
                   color: widget.isActive
                       ? NeoTokens.ink
                       : NeoTokens.inkSecondary,
@@ -199,7 +200,7 @@ class _NeoNavTabItemState extends State<_NeoNavTabItem> {
                     maxLines: 1,
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 8.5,
+                      fontSize: 9,
                       fontWeight: widget.isActive
                           ? FontWeight.w900
                           : FontWeight.w700,
@@ -270,8 +271,8 @@ class _NeoNavScanButtonState extends State<_NeoNavScanButton> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.qr_code_scanner_rounded,
-                  size: 21,
+                  AppIcons.qrCodeScanner,
+                  size: AppIcons.sizeControl,
                   color: NeoTokens.ink,
                 ),
                 SizedBox(height: 1),
@@ -280,7 +281,7 @@ class _NeoNavScanButtonState extends State<_NeoNavScanButton> {
                   maxLines: 1,
                   style: TextStyle(
                     fontFamily: 'monospace',
-                    fontSize: 8.5,
+                    fontSize: 9,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.2,
                     color: NeoTokens.ink,

@@ -66,7 +66,7 @@ class _NeoInputState extends State<NeoInput> {
           Text(
             widget.label,
             style: const TextStyle(
-              fontSize: 13.5,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               color: NeoTokens.textDark,
               letterSpacing: -0.2,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -27,6 +28,59 @@ class RawDetection {
     'bbox': boundingBox.toJson(),
     'bounding_box': boundingBox.toJson(),
   };
+}
+
+class _PreprocessedData {
+  final int origW;
+  final int origH;
+  final List<List<List<Float32List>>> input;
+
+  const _PreprocessedData(this.origW, this.origH, this.input);
+}
+
+/// Standalone top-level function executed inside background isolate
+_PreprocessedData _preprocessImage(Uint8List imageBytes) {
+  img.Image? decoded = img.decodeImage(imageBytes);
+  if (decoded == null) {
+    throw const FormatException('Gambar tidak valid atau rusak.');
+  }
+
+  // Handle EXIF orientation
+  decoded = img.bakeOrientation(decoded);
+  final origW = decoded.width;
+  final origH = decoded.height;
+
+  // Resize to 640x640
+  final resized = img.copyResize(
+    decoded,
+    width: YoloDetector.inputSize,
+    height: YoloDetector.inputSize,
+    interpolation: img.Interpolation.linear,
+  );
+
+  // Prepare input tensor: [1, 3, 640, 640] float32
+  final input = List.generate(
+    1,
+    (_) => List.generate(
+      3,
+      (_) => List.generate(
+        YoloDetector.inputSize,
+        (_) => Float32List(YoloDetector.inputSize),
+      ),
+    ),
+  );
+
+  for (int y = 0; y < YoloDetector.inputSize; y++) {
+    for (int x = 0; x < YoloDetector.inputSize; x++) {
+      final pixel = resized.getPixel(x, y);
+      // Channels first: 0=R, 1=G, 2=B, normalized 0.0 to 1.0
+      input[0][0][y][x] = pixel.r / 255.0;
+      input[0][1][y][x] = pixel.g / 255.0;
+      input[0][2][y][x] = pixel.b / 255.0;
+    }
+  }
+
+  return _PreprocessedData(origW, origH, input);
 }
 
 class YoloDetector {
@@ -76,9 +130,11 @@ class YoloDetector {
   Future<void> initialize({
     String modelAssetPath = 'assets/models/best.tflite',
     String labelsAssetPath = 'assets/models/classes.txt',
-    int numThreads = 2,
+    int? numThreads,
   }) async {
     if (_isInitialized && _interpreter != null) return;
+
+    final threads = numThreads ?? (Platform.numberOfProcessors >= 4 ? 4 : 2);
 
     try {
       // 1. Load labels
@@ -108,7 +164,7 @@ class YoloDetector {
       }
 
       // 2. Load Interpreter
-      final options = InterpreterOptions()..threads = numThreads;
+      final options = InterpreterOptions()..threads = threads;
       try {
         _interpreter = await Interpreter.fromAsset(
           modelAssetPath,
@@ -167,42 +223,12 @@ class YoloDetector {
       throw StateError('YOLO interpreter is not initialized.');
     }
 
-    img.Image? decoded = img.decodeImage(imageBytes);
-    if (decoded == null) {
-      throw const FormatException('Gambar tidak valid atau rusak.');
-    }
-
-    // Handle EXIF orientation
-    decoded = img.bakeOrientation(decoded);
-    final origW = decoded.width;
-    final origH = decoded.height;
-
-    // Resize to 640x640
-    final resized = img.copyResize(
-      decoded,
-      width: inputSize,
-      height: inputSize,
-      interpolation: img.Interpolation.linear,
-    );
-
-    // Prepare input tensor: [1, 3, 640, 640] float32
-    final input = List.generate(
-      1,
-      (_) => List.generate(
-        3,
-        (_) => List.generate(inputSize, (_) => Float32List(inputSize)),
-      ),
-    );
-
-    for (int y = 0; y < inputSize; y++) {
-      for (int x = 0; x < inputSize; x++) {
-        final pixel = resized.getPixel(x, y);
-        // Channels first: 0=R, 1=G, 2=B, normalized 0.0 to 1.0
-        input[0][0][y][x] = pixel.r / 255.0;
-        input[0][1][y][x] = pixel.g / 255.0;
-        input[0][2][y][x] = pixel.b / 255.0;
-      }
-    }
+    // Heavy preprocessing (image decode, orientation baking, resize, tensor generation)
+    // runs in a dedicated background isolate so UI thread remains silky smooth (60/120 fps)
+    final preprocessed = await Isolate.run(() => _preprocessImage(imageBytes));
+    final origW = preprocessed.origW;
+    final origH = preprocessed.origH;
+    final input = preprocessed.input;
 
     // Prepare output tensor: [1, 33, 8400] float32
     // 33 = 4 (cx, cy, w, h) + 29 class scores
@@ -216,7 +242,19 @@ class YoloDetector {
 
     _interpreter!.run(input, output);
 
-    // Parse detections
+    // Optimized parsing: Hoist channel arrays to eliminate 730,000 bounds checks
+    final List<List<double>> outputChannels = output[0];
+    final List<double> cxList = outputChannels[0];
+    final List<double> cyList = outputChannels[1];
+    final List<double> wList = outputChannels[2];
+    final List<double> hList = outputChannels[3];
+
+    final List<List<double>> classScoreLists = List<List<double>>.generate(
+      numClasses,
+      (c) => outputChannels[4 + c],
+      growable: false,
+    );
+
     final List<_CandidateBox> candidates = [];
 
     for (int i = 0; i < numAnchors; i++) {
@@ -225,7 +263,7 @@ class YoloDetector {
       int bestClassId = -1;
 
       for (int c = 0; c < numClasses; c++) {
-        final score = output[0][4 + c][i];
+        final score = classScoreLists[c][i];
         if (score > maxScore) {
           maxScore = score;
           bestClassId = c;
@@ -233,10 +271,10 @@ class YoloDetector {
       }
 
       if (maxScore >= confidenceThreshold && bestClassId >= 0) {
-        final cx = output[0][0][i];
-        final cy = output[0][1][i];
-        final w = output[0][2][i];
-        final h = output[0][3][i];
+        final cx = cxList[i];
+        final cy = cyList[i];
+        final w = wList[i];
+        final h = hList[i];
 
         // Normalized coords to original image pixels
         final x1 = ((cx - (w / 2.0)) * origW).clamp(0.0, origW.toDouble());

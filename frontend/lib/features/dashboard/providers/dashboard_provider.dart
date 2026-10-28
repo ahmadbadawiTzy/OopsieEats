@@ -48,4 +48,13 @@ class DashboardProvider extends ChangeNotifier {
     _selectedDate = newDate;
     loadDashboard(date: newDate);
   }
+
+  void clear() {
+    _dashboard = null;
+    _selectedDate = DateTime.now();
+    _isLoading = false;
+    _errorMessage = null;
+    _isProfileIncomplete = false;
+    notifyListeners();
+  }
 }

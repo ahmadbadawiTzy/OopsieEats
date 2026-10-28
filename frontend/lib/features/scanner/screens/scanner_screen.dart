@@ -8,6 +8,7 @@ import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
 import 'package:nutriview/features/scanner/screens/food_search_modal.dart';
 import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Clean, honest Neo-Brutalist Food Scanner & Intake Hub.
 /// Replaces misleading fake optical viewfinder with clear, functional action paths:
@@ -56,10 +57,10 @@ class ScannerScreen extends StatelessWidget {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: NeoIconButton(
-            icon: Icons.arrow_back_rounded,
+            icon: AppIcons.arrowBack,
             tooltip: 'Kembali',
-            size: 38,
-            iconSize: 20,
+            size: 40,
+            iconSize: AppIcons.sizeControl,
             shadowOffset: const Offset(2, 2),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
@@ -125,7 +126,7 @@ class ScannerScreen extends StatelessWidget {
                           'Model AI sedang memindai foto di perangkat Anda secara aman & privat.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 12.5,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: NeoTokens.ink,
                             height: 1.35,
@@ -137,7 +138,7 @@ class ScannerScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 9.5,
+                            fontSize: 10,
                             fontWeight: FontWeight.w800,
                             color: NeoTokens.hud,
                             letterSpacing: 0.5,
@@ -174,9 +175,9 @@ class ScannerScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             const Icon(
-                              Icons.error_outline_rounded,
+                              AppIcons.error,
                               color: NeoTokens.paper,
-                              size: 22,
+                              size: AppIcons.sizeToolbar,
                             ),
                             const SizedBox(width: NeoTokens.space10),
                             Expanded(
@@ -233,7 +234,7 @@ class ScannerScreen extends StatelessWidget {
                                   'PILIH CARA PENCATATAN',
                                   style: TextStyle(
                                     fontFamily: 'monospace',
-                                    fontSize: 9.5,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w900,
                                     color: NeoTokens.paper,
                                     letterSpacing: 0.6,
@@ -260,7 +261,7 @@ class ScannerScreen extends StatelessWidget {
                                   'AI + TKPI',
                                   style: TextStyle(
                                     fontFamily: 'monospace',
-                                    fontSize: 9.5,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w900,
                                     color: NeoTokens.ink,
                                     letterSpacing: 0.5,
@@ -299,11 +300,10 @@ class ScannerScreen extends StatelessWidget {
                     _ScanActionCard(
                       badge: 'REKOMENDASI',
                       badgeColor: NeoTokens.lime,
-                      icon: Icons.camera_alt_rounded,
+                      icon: AppIcons.cameraAlt,
                       iconBg: NeoTokens.lime,
                       title: 'Potret dengan Kamera',
-                      description:
-                          'Buka kamera ponsel untuk memotret makanan di depanmu. Model AI akan mendeteksi makanan secara otomatis.',
+                      description: 'Buka kamera ponsel untuk memotret makanan di depanmu. Model AI akan mendeteksi makanan secara otomatis.',
                       buttonText: 'Buka Kamera Ponsel',
                       buttonVariant: NeoButtonVariant.primary,
                       onPressed: () => _pickImage(context, ImageSource.camera),
@@ -314,11 +314,10 @@ class ScannerScreen extends StatelessWidget {
                     _ScanActionCard(
                       badge: 'DARI GALERI',
                       badgeColor: NeoTokens.cyan,
-                      icon: Icons.photo_library_rounded,
+                      icon: AppIcons.photoLibrary,
                       iconBg: NeoTokens.cyan,
                       title: 'Pilih dari Galeri Foto',
-                      description:
-                          'Gunakan foto makanan yang sudah tersimpan di album ponsel Anda untuk dipindai oleh AI.',
+                      description: 'Gunakan foto makanan yang sudah tersimpan di album ponsel Anda untuk dipindai oleh AI.',
                       buttonText: 'Pilih Foto dari Galeri',
                       buttonVariant: NeoButtonVariant.secondary,
                       onPressed: () => _pickImage(context, ImageSource.gallery),
@@ -329,11 +328,10 @@ class ScannerScreen extends StatelessWidget {
                     _ScanActionCard(
                       badge: 'TANPA FOTO',
                       badgeColor: NeoTokens.hazard,
-                      icon: Icons.search_rounded,
+                      icon: AppIcons.search,
                       iconBg: NeoTokens.hazard,
                       title: 'Cari Manual di Database',
-                      description:
-                          'Ketik nama makanan atau minuman untuk memilih langsung dari ribuan database gizi resmi TKPI.',
+                      description: 'Ketik nama makanan atau minuman untuk memilih langsung dari ribuan database gizi resmi TKPI.',
                       buttonText: 'Cari Menu Makanan',
                       buttonVariant: NeoButtonVariant.hazard,
                       onPressed: () => _manualAdd(context),
@@ -350,8 +348,8 @@ class ScannerScreen extends StatelessWidget {
                           Row(
                             children: const [
                               Icon(
-                                Icons.lightbulb_outline_rounded,
-                                size: 20,
+                                AppIcons.lightbulbOutline,
+                                size: AppIcons.sizeControl,
                                 color: NeoTokens.ink,
                               ),
                               SizedBox(width: 8),
@@ -370,20 +368,17 @@ class ScannerScreen extends StatelessWidget {
                           const SizedBox(height: NeoTokens.space10),
                           _buildTipItem(
                             number: '1',
-                            text:
-                                'Posisikan piring terlihat utuh dari sudut 45 derajat atau dari atas.',
+                            text: 'Posisikan piring terlihat utuh dari sudut 45 derajat atau dari atas.',
                           ),
                           const SizedBox(height: 8),
                           _buildTipItem(
                             number: '2',
-                            text:
-                                'Pastikan pencahayaan terang agar warna dan tekstur makanan jelas.',
+                            text: 'Pastikan pencahayaan terang agar warna dan tekstur makanan jelas.',
                           ),
                           const SizedBox(height: 8),
                           _buildTipItem(
                             number: '3',
-                            text:
-                                'Foto diproses langsung di ponsel Anda. Data makanan tetap privat.',
+                            text: 'Foto diproses langsung di ponsel Anda. Data makanan tetap privat.',
                           ),
                         ],
                       ),
@@ -413,7 +408,7 @@ class ScannerScreen extends StatelessWidget {
             style: const TextStyle(
               color: NeoTokens.paper,
               fontWeight: FontWeight.w900,
-              fontSize: 10.5,
+              fontSize: 11,
             ),
           ),
         ),
@@ -422,7 +417,7 @@ class ScannerScreen extends StatelessWidget {
           child: Text(
             text,
             style: const TextStyle(
-              fontSize: 12.5,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: NeoTokens.inkSecondary,
               height: 1.35,
@@ -486,7 +481,11 @@ class _ScanActionCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Icon(icon, color: NeoTokens.ink, size: 24),
+                child: Icon(
+                  icon,
+                  color: NeoTokens.ink,
+                  size: AppIcons.sizeHeader,
+                ),
               ),
               const SizedBox(width: NeoTokens.space12),
               Expanded(
@@ -538,7 +537,7 @@ class _ScanActionCard extends StatelessWidget {
           Text(
             description,
             style: const TextStyle(
-              fontSize: 12.5,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: NeoTokens.inkSecondary,
               height: 1.35,

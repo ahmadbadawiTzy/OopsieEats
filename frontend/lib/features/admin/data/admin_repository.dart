@@ -99,7 +99,7 @@ class AdminRepository {
         );
       }
 
-      if (role != 'super_admin' && role != 'dietitian' && role != 'editor') {
+      if (role != 'admin') {
         await auth.signOut();
         throw ApiException(
           statusCode: 403,
@@ -353,6 +353,25 @@ class AdminRepository {
     return {'id': id, 'is_active': isActive, 'reason': reason};
   }
 
+  Future<void> deleteFood(int id) async {
+    final db = _firestore;
+    if (db == null) {
+      throw ApiException(
+        statusCode: 500,
+        code: 'FIREBASE_NOT_INITIALIZED',
+        message: 'Firebase belum terinisialisasi.',
+      );
+    }
+
+    await db.collection('foods').doc(id.toString()).delete();
+    await _recordAuditLog(
+      action: 'delete',
+      entityType: 'food',
+      entityId: id.toString(),
+      details: 'Deleted food ID: $id',
+    );
+  }
+
   // --- Articles ---
   Future<Map<String, dynamic>> getArticles({
     String? status,
@@ -518,6 +537,53 @@ class AdminRepository {
     return catData;
   }
 
+  Future<Map<String, dynamic>> updateCategory(
+    int id,
+    Map<String, dynamic> body,
+  ) async {
+    final db = _firestore;
+    if (db == null) {
+      throw ApiException(
+        statusCode: 500,
+        code: 'FIREBASE_NOT_INITIALIZED',
+        message: 'Firebase belum terinisialisasi.',
+      );
+    }
+
+    final updates = Map<String, dynamic>.from(body);
+    updates['updated_at'] = DateTime.now().toIso8601String();
+
+    await db.collection('cms_categories').doc(id.toString()).update(updates);
+    await _recordAuditLog(
+      action: 'update',
+      entityType: 'category',
+      entityId: id.toString(),
+      details: 'Updated category ID: $id',
+    );
+
+    final doc = await db.collection('cms_categories').doc(id.toString()).get();
+    return Map<String, dynamic>.from(doc.data() ?? updates);
+  }
+
+  Future<void> deleteCategory(int id) async {
+    final db = _firestore;
+    if (db == null) {
+      throw ApiException(
+        statusCode: 500,
+        code: 'FIREBASE_NOT_INITIALIZED',
+        message: 'Firebase belum terinisialisasi.',
+      );
+    }
+
+    await db.collection('cms_categories').doc(id.toString()).delete();
+    await _recordAuditLog(
+      action: 'delete',
+      entityType: 'category',
+      entityId: id.toString(),
+      details: 'Deleted category ID: $id',
+    );
+  }
+
   // --- Announcements ---
   Future<Map<String, dynamic>> createAnnouncement(
     Map<String, dynamic> body,
@@ -603,7 +669,13 @@ class AdminRepository {
 
   Future<void> deleteMedia(int id) async {
     final db = _firestore;
-    if (db == null) return;
+    if (db == null) {
+      throw ApiException(
+        statusCode: 500,
+        code: 'FIREBASE_NOT_INITIALIZED',
+        message: 'Firebase belum terinisialisasi.',
+      );
+    }
 
     await db.collection('cms_media').doc(id.toString()).delete();
     await _recordAuditLog(
@@ -708,6 +780,18 @@ class AdminRepository {
     bool isActive, {
     String? reason,
   }) async {
+    final callerRole = await _client.getRole() ?? '';
+
+    // Enforce role authorization: Only admin can activate or deactivate accounts
+    if (callerRole != 'admin') {
+      throw ApiException(
+        statusCode: 403,
+        code: 'FORBIDDEN',
+        message:
+            'Hanya Administrator yang berhak mengubah status akun pengguna.',
+      );
+    }
+
     final db = _firestore;
     if (db == null) {
       throw ApiException(
@@ -749,12 +833,12 @@ class AdminRepository {
         );
       }
 
-      // 2. Last super-admin protection
+      // 2. Last admin protection
       final targetRole = targetData['role'] as String? ?? 'user';
-      if (targetRole == 'super_admin' && !isActive) {
+      if (targetRole == 'admin' && !isActive) {
         final adminsSnapshot = await db
             .collection('users')
-            .where('role', isEqualTo: 'super_admin')
+            .where('role', isEqualTo: 'admin')
             .where('is_active', isEqualTo: true)
             .get();
 
@@ -762,7 +846,7 @@ class AdminRepository {
           throw ApiException(
             statusCode: 400,
             code: 'LAST_ADMIN_PROTECTION',
-            message: 'Tidak dapat menonaktifkan super admin terakhir.',
+            message: 'Tidak dapat menonaktifkan admin terakhir.',
           );
         }
       }

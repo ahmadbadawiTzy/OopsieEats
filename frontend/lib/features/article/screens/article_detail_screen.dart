@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/article.dart';
 import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class ArticleDetailScreen extends StatelessWidget {
   final ArticleItem article;
@@ -13,6 +14,7 @@ class ArticleDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Artikel Nutrisi'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -70,8 +72,8 @@ class ArticleDetailScreen extends StatelessWidget {
               Row(
                 children: [
                   const Icon(
-                    Icons.person_pin_rounded,
-                    size: 16,
+                    AppIcons.personPin,
+                    size: AppIcons.sizeMedium,
                     color: NeoTokens.inkSecondary,
                   ),
                   const SizedBox(width: 6),
@@ -124,8 +126,8 @@ class ArticleDetailScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.image_not_supported_outlined,
-                              size: 20,
+                              AppIcons.imageNotSupported,
+                              size: AppIcons.sizeControl,
                               color: NeoTokens.inkSecondary,
                             ),
                             SizedBox(width: 8),
@@ -191,7 +193,7 @@ class ArticleDetailScreen extends StatelessWidget {
                   Text(
                     article.contentMarkdown ?? 'Konten artikel belum tersedia.',
                     style: const TextStyle(
-                      fontSize: 14.5,
+                      fontSize: 15,
                       color: NeoTokens.ink,
                       height: 1.6,
                     ),

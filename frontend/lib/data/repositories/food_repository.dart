@@ -62,25 +62,50 @@ class FoodRepository {
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> _getAllFoods() async {
+  List<Map<String, dynamic>>? _cachedAllFoods;
+  DateTime? _foodsCacheTime;
+  static const Duration _foodsCacheTtl = Duration(minutes: 10);
+
+  void invalidateCache() {
+    _cachedAllFoods = null;
+    _foodsCacheTime = null;
+    _cachedSeedFoods = null;
+  }
+
+  Future<List<Map<String, dynamic>>> _getAllFoods({
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh &&
+        _cachedAllFoods != null &&
+        _cachedAllFoods!.isNotEmpty &&
+        _foodsCacheTime != null &&
+        DateTime.now().difference(_foodsCacheTime!) < _foodsCacheTtl) {
+      return _cachedAllFoods!;
+    }
+
     final db = _firestore;
     if (db != null) {
       try {
         final snapshot = await db.collection('foods').get();
         if (snapshot.docs.isNotEmpty) {
-          return snapshot.docs.map((doc) {
+          _cachedAllFoods = snapshot.docs.map((doc) {
             final data = Map<String, dynamic>.from(doc.data());
             if (!data.containsKey('id')) {
               data['id'] = int.tryParse(doc.id) ?? doc.id.hashCode.abs();
             }
             return data;
           }).toList();
+          _foodsCacheTime = DateTime.now();
+          return _cachedAllFoods!;
         }
       } catch (_) {
         // Fallback to local seeds if Firestore is unavailable
       }
     }
-    return _loadSeedFoods();
+    final seeds = await _loadSeedFoods();
+    _cachedAllFoods = seeds;
+    _foodsCacheTime = DateTime.now();
+    return seeds;
   }
 
   Future<List<FoodItem>> searchFoods({

@@ -17,7 +17,8 @@ class ConfirmedFoodItem {
   double? detectionConfidence;
   bool lowConfidence;
   BoundingBox? boundingBox;
-  String status; // 'mapped', 'unmapped', 'food_unavailable', 'nutrition_unavailable'
+  String
+  status; // 'mapped', 'unmapped', 'food_unavailable', 'nutrition_unavailable'
   String? error;
 
   // Real nutritional metrics per 100g
@@ -170,8 +171,7 @@ class ScanFlowProvider extends ChangeNotifier {
       return true;
     } on PlatformException catch (e) {
       if (e.code == 'camera_access_denied') {
-        _errorMessage =
-            'Akses kamera ditolak. Silakan izinkan akses kamera pada Pengaturan perangkat untuk memindai makanan.';
+        _errorMessage = 'Akses kamera ditolak. Silakan izinkan akses kamera pada Pengaturan perangkat untuk memindai makanan.';
       } else {
         _errorMessage = 'Gagal mengakses kamera atau galeri: ${e.message}';
       }
@@ -259,8 +259,7 @@ class ScanFlowProvider extends ChangeNotifier {
 
   Future<bool> submitMeal() async {
     if (_confirmedItems.any((i) => i.foodId == null)) {
-      _errorMessage =
-          'Harap pilih atau ganti makanan yang belum terdaftar di database sebelum menyimpan.';
+      _errorMessage = 'Harap pilih atau ganti makanan yang belum terdaftar di database sebelum menyimpan.';
       notifyListeners();
       return false;
     }

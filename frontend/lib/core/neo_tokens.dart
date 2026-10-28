@@ -130,4 +130,10 @@ class NeoTokens {
   static const double space48 = 48.0;
   static const double space56 = 56.0;
   static const double space64 = 64.0;
+
+  // Responsive Breakpoints & Shell Dimensions
+  static const double breakpointMobile = 768.0;
+  static const double breakpointTablet = 900.0;
+  static const double breakpointDesktop = 1200.0;
+  static const double sidebarWidth = 260.0;
 }

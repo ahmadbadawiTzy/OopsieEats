@@ -37,22 +37,21 @@ void main() {
   });
 
   group('NeoAvatar Component Tests', () {
-    testWidgets(
-      'renders game avatar character when photoUrl is null',
-      (tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: NeoAvatar(name: 'Ahmad Badawi', size: 40)),
-          ),
-        );
+    testWidgets('renders game avatar character when photoUrl is null', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: NeoAvatar(name: 'Ahmad Badawi', size: 40)),
+        ),
+      );
 
-        expect(find.byType(CustomPaint), findsWidgets);
-        expect(
-          find.bySemanticsLabel(RegExp(r'Avatar Master Koki')),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.byType(CustomPaint), findsWidgets);
+      expect(
+        find.bySemanticsLabel(RegExp(r'Avatar Master Koki')),
+        findsOneWidget,
+      );
+    });
 
     testWidgets(
       'renders specific game character when avatarPreset is specified',

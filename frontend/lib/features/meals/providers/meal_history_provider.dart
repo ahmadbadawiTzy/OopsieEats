@@ -44,4 +44,12 @@ class MealHistoryProvider extends ChangeNotifier {
   void clearFilter() {
     loadMeals(date: null);
   }
+
+  void clear() {
+    _meals = [];
+    _isLoading = false;
+    _errorMessage = null;
+    _filterDate = null;
+    notifyListeners();
+  }
 }

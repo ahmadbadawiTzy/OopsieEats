@@ -48,21 +48,20 @@ void main() {
 
     test('saveUserSession saves role, name, and email', () async {
       when(() => mockStorage.read(key: 'nutriview_user_role'))
-          .thenAnswer((_) async => 'super_admin');
+          .thenAnswer((_) async => 'admin');
       when(() => mockStorage.read(key: 'nutriview_user_name'))
           .thenAnswer((_) async => 'Ahmad Badawi');
       when(() => mockStorage.read(key: 'nutriview_user_email'))
           .thenAnswer((_) async => 'ahmadbadawi.biu.si@gmail.com');
 
       await apiClient.saveUserSession(
-        role: 'super_admin',
+        role: 'admin',
         name: 'Ahmad Badawi',
         email: 'ahmadbadawi.biu.si@gmail.com',
       );
 
       verify(
-        () =>
-            mockStorage.write(key: 'nutriview_user_role', value: 'super_admin'),
+        () => mockStorage.write(key: 'nutriview_user_role', value: 'admin'),
       ).called(1);
       verify(
         () => mockStorage.write(
@@ -77,7 +76,7 @@ void main() {
         ),
       ).called(1);
 
-      expect(await apiClient.getRole(), 'super_admin');
+      expect(await apiClient.getRole(), 'admin');
       expect(await apiClient.getUserName(), 'Ahmad Badawi');
       expect(await apiClient.getUserEmail(), 'ahmadbadawi.biu.si@gmail.com');
     });

@@ -141,4 +141,13 @@ class ProfileProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clear() {
+    _user = null;
+    _profile = null;
+    _dailyTarget = null;
+    _errorMessage = null;
+    _isLoading = false;
+    notifyListeners();
+  }
 }

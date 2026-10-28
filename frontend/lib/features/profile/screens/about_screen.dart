@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:nutriview/core/config/creator_config.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
+import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
 
 /// Dedicated "Tentang Aplikasi" screen showcasing NutriView consumer identity
 /// and the authentic creator profile for Ahmad Badawi.
@@ -11,23 +13,9 @@ class AboutScreen extends StatelessWidget {
 
   void _copyLink(BuildContext context, String title, String url) {
     Clipboard.setData(ClipboardData(text: url));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: NeoTokens.black,
-        duration: const Duration(seconds: 2),
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_rounded, color: NeoTokens.mintGreen, size: 20),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Tautan $title berhasil disalin ke papan klip!',
-                style: const TextStyle(color: NeoTokens.white, fontWeight: FontWeight.w700),
-              ),
-            ),
-          ],
-        ),
-      ),
+    NeoSnackBars.success(
+      context,
+      'Tautan $title berhasil disalin ke papan klip!',
     );
   }
 
@@ -36,6 +24,7 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Tentang NutriView'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -58,27 +47,7 @@ class AboutScreen extends StatelessWidget {
               padding: const EdgeInsets.all(NeoTokens.space20),
               child: Column(
                 children: [
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: NeoTokens.vividYellow,
-                      borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
-                      border: Border.all(color: NeoTokens.black, width: NeoTokens.borderWidth),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: NeoTokens.black,
-                          offset: Offset(3, 3),
-                          blurRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.restaurant_rounded,
-                      color: NeoTokens.black,
-                      size: 38,
-                    ),
-                  ),
+                  const NutriViewLogoMark(size: 64),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
                     CreatorConfig.appName,
@@ -104,7 +73,7 @@ class AboutScreen extends StatelessWidget {
                     CreatorConfig.appDescription,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 14,
                       color: NeoTokens.textDark,
                       height: 1.45,
                     ),
@@ -122,25 +91,25 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: NeoTokens.space8),
 
             _buildPillarTile(
-              icon: Icons.camera_alt_rounded,
+              icon: AppIcons.cameraAlt,
               iconColor: NeoTokens.vividYellow,
               title: 'Pemindai Makanan Praktis',
               subtitle: 'Kenali jenis makanan dari foto kamera atau galeri untuk pencatatan gizi harian yang cepat.',
             ),
             _buildPillarTile(
-              icon: Icons.fact_check_rounded,
+              icon: AppIcons.factCheck,
               iconColor: NeoTokens.mintGreen,
               title: 'Data Gizi Terverifikasi',
               subtitle: 'Estimasi nilai kalori dan makronutrien merujuk pada Tabel Komposisi Pangan Indonesia (TKPI).',
             ),
             _buildPillarTile(
-              icon: Icons.calculate_rounded,
+              icon: AppIcons.calculate,
               iconColor: NeoTokens.skyBlue,
               title: 'Kebutuhan Kalori Personal',
               subtitle: 'Target dihitung akurat berdasarkan umur dari tanggal lahir, tinggi badan, berat badan, dan aktivitas.',
             ),
             _buildPillarTile(
-              icon: Icons.menu_book_rounded,
+              icon: AppIcons.menuBook,
               iconColor: NeoTokens.lavender,
               title: 'Artikel & Panduan Gizi Seimbang',
               subtitle: 'Wawasan nutrisi terpercaya yang mudah dipahami untuk mendukung pola hidup sehat.',
@@ -172,7 +141,9 @@ class AboutScreen extends StatelessWidget {
                         height: 94,
                         decoration: BoxDecoration(
                           color: NeoTokens.mintGreen,
-                          borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                          borderRadius: BorderRadius.circular(
+                            NeoTokens.radiusMedium,
+                          ),
                           border: Border.all(
                             color: NeoTokens.black,
                             width: NeoTokens.borderWidth,
@@ -243,7 +214,9 @@ class AboutScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: NeoTokens.white,
-                      borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        NeoTokens.radiusSmall,
+                      ),
                       border: Border.all(
                         color: NeoTokens.black,
                         width: NeoTokens.borderWidthThin,
@@ -252,7 +225,7 @@ class AboutScreen extends StatelessWidget {
                     child: const Text(
                       CreatorConfig.creatorBio,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 13,
                         color: NeoTokens.textDark,
                         height: 1.45,
                         fontStyle: FontStyle.italic,
@@ -266,7 +239,7 @@ class AboutScreen extends StatelessWidget {
                     'TAUTAN RESMI PENGEMBANG:',
                     style: TextStyle(
                       fontFamily: 'monospace',
-                      fontSize: 10.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w900,
                       color: NeoTokens.textMuted,
                       letterSpacing: 0.5,
@@ -279,7 +252,7 @@ class AboutScreen extends StatelessWidget {
                     label: 'GitHub',
                     value: 'github.com/ahmadbadawiTzy',
                     fullUrl: CreatorConfig.githubUrl,
-                    icon: Icons.code_rounded,
+                    icon: AppIcons.code,
                     color: NeoTokens.white,
                   ),
                   const SizedBox(height: 8),
@@ -288,7 +261,7 @@ class AboutScreen extends StatelessWidget {
                     label: 'LinkedIn',
                     value: 'Ahmad Badawi',
                     fullUrl: CreatorConfig.linkedinUrl,
-                    icon: Icons.business_center_rounded,
+                    icon: AppIcons.businessCenter,
                     color: NeoTokens.white,
                   ),
                   const SizedBox(height: 8),
@@ -297,7 +270,7 @@ class AboutScreen extends StatelessWidget {
                     label: 'Instagram',
                     value: CreatorConfig.instagramHandle,
                     fullUrl: CreatorConfig.instagramUrl,
-                    icon: Icons.camera_alt_outlined,
+                    icon: AppIcons.cameraAlt,
                     color: NeoTokens.white,
                   ),
                 ],
@@ -310,7 +283,7 @@ class AboutScreen extends StatelessWidget {
               child: Text(
                 '© 2026 ${CreatorConfig.creatorName} · NutriView',
                 style: const TextStyle(
-                  fontSize: 11.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: NeoTokens.textMuted,
                 ),
@@ -329,7 +302,11 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Icon(Icons.person_rounded, size: 40, color: NeoTokens.black),
+          Icon(
+            AppIcons.person,
+            size: AppIcons.sizeFeature,
+            color: NeoTokens.black,
+          ),
           SizedBox(height: 2),
           Text(
             'AB',
@@ -387,7 +364,11 @@ class AboutScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
                 border: Border.all(color: NeoTokens.black, width: 1.5),
               ),
-              child: Icon(icon, color: NeoTokens.black, size: 20),
+              child: Icon(
+                icon,
+                color: NeoTokens.black,
+                size: AppIcons.sizeControl,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -406,7 +387,7 @@ class AboutScreen extends StatelessWidget {
                   Text(
                     subtitle,
                     style: const TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 12,
                       color: NeoTokens.textMuted,
                       height: 1.3,
                     ),
@@ -446,12 +427,12 @@ class AboutScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: NeoTokens.black),
+            Icon(icon, size: AppIcons.sizeLarge, color: NeoTokens.black),
             const SizedBox(width: 10),
             Text(
               label,
               style: const TextStyle(
-                fontSize: 12.5,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: NeoTokens.black,
               ),
@@ -469,7 +450,11 @@ class AboutScreen extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Icon(Icons.copy_rounded, size: 16, color: NeoTokens.black),
+            const Icon(
+              AppIcons.copy,
+              size: AppIcons.sizeMedium,
+              color: NeoTokens.black,
+            ),
           ],
         ),
       ),

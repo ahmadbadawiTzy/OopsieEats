@@ -154,10 +154,7 @@ class _ChefAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _ChefPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _ChefPainter());
   }
 }
 
@@ -172,10 +169,18 @@ class _ChefPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillWhite = Paint()..color = Colors.white..style = PaintingStyle.fill;
-    final fillSkin = Paint()..color = const Color(0xFFFCD34D)..style = PaintingStyle.fill;
-    final fillRed = Paint()..color = const Color(0xFFEF4444)..style = PaintingStyle.fill;
-    final fillBlack = Paint()..color = NeoTokens.black..style = PaintingStyle.fill;
+    final fillWhite = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFCD34D)
+      ..style = PaintingStyle.fill;
+    final fillRed = Paint()
+      ..color = const Color(0xFFEF4444)
+      ..style = PaintingStyle.fill;
+    final fillBlack = Paint()
+      ..color = NeoTokens.black
+      ..style = PaintingStyle.fill;
 
     // Body / Outfit (White double-breasted chef coat)
     final coatPath = Path()
@@ -202,20 +207,45 @@ class _ChefPainter extends CustomPainter {
       width: 44 * scale,
       height: 38 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(10 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(10 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(10 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(10 * scale)),
+      stroke,
+    );
 
     // Chef Hat Top Puffs
     final hatPath = Path()
       ..moveTo(28 * scale, 38 * scale)
-      ..cubicTo(20 * scale, 16 * scale, 42 * scale, 10 * scale, 50 * scale, 20 * scale)
-      ..cubicTo(58 * scale, 10 * scale, 80 * scale, 16 * scale, 72 * scale, 38 * scale)
+      ..cubicTo(
+        20 * scale,
+        16 * scale,
+        42 * scale,
+        10 * scale,
+        50 * scale,
+        20 * scale,
+      )
+      ..cubicTo(
+        58 * scale,
+        10 * scale,
+        80 * scale,
+        16 * scale,
+        72 * scale,
+        38 * scale,
+      )
       ..close();
     canvas.drawPath(hatPath, fillWhite);
     canvas.drawPath(hatPath, stroke);
 
     // Chef Hat Band
-    final hatBand = Rect.fromLTWH(26 * scale, 34 * scale, 48 * scale, 10 * scale);
+    final hatBand = Rect.fromLTWH(
+      26 * scale,
+      34 * scale,
+      48 * scale,
+      10 * scale,
+    );
     canvas.drawRect(hatBand, fillWhite);
     canvas.drawRect(hatBand, stroke);
 
@@ -242,10 +272,7 @@ class _RunnerAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _RunnerPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _RunnerPainter());
   }
 }
 
@@ -260,11 +287,21 @@ class _RunnerPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillSkin = Paint()..color = const Color(0xFFFDBA74)..style = PaintingStyle.fill;
-    final fillShirt = Paint()..color = const Color(0xFF10B981)..style = PaintingStyle.fill;
-    final fillBand = Paint()..color = const Color(0xFFEF4444)..style = PaintingStyle.fill;
-    final fillVisor = Paint()..color = const Color(0xFF1E293B)..style = PaintingStyle.fill;
-    final fillHair = Paint()..color = const Color(0xFF334155)..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFDBA74)
+      ..style = PaintingStyle.fill;
+    final fillShirt = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.fill;
+    final fillBand = Paint()
+      ..color = const Color(0xFFEF4444)
+      ..style = PaintingStyle.fill;
+    final fillVisor = Paint()
+      ..color = const Color(0xFF1E293B)
+      ..style = PaintingStyle.fill;
+    final fillHair = Paint()
+      ..color = const Color(0xFF334155)
+      ..style = PaintingStyle.fill;
 
     // Athletic Jersey
     final jerseyPath = Path()
@@ -277,9 +314,20 @@ class _RunnerPainter extends CustomPainter {
     canvas.drawPath(jerseyPath, stroke);
 
     // Jersey collar racing stripes
-    final stripe = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 3 * scale;
-    canvas.drawLine(Offset(44 * scale, 74 * scale), Offset(44 * scale, 100 * scale), stripe);
-    canvas.drawLine(Offset(56 * scale, 74 * scale), Offset(56 * scale, 100 * scale), stripe);
+    final stripe = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3 * scale;
+    canvas.drawLine(
+      Offset(44 * scale, 74 * scale),
+      Offset(44 * scale, 100 * scale),
+      stripe,
+    );
+    canvas.drawLine(
+      Offset(56 * scale, 74 * scale),
+      Offset(56 * scale, 100 * scale),
+      stripe,
+    );
 
     // Spiky Hair in background
     final hairPath = Path()
@@ -300,25 +348,58 @@ class _RunnerPainter extends CustomPainter {
       width: 42 * scale,
       height: 38 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      stroke,
+    );
 
     // Athletic Headband
-    final bandRect = Rect.fromLTWH(26 * scale, 30 * scale, 48 * scale, 9 * scale);
+    final bandRect = Rect.fromLTWH(
+      26 * scale,
+      30 * scale,
+      48 * scale,
+      9 * scale,
+    );
     canvas.drawRect(bandRect, fillBand);
     canvas.drawRect(bandRect, stroke);
 
     // Sporty Sunglasses / Visor
-    final glassesRect = Rect.fromLTWH(30 * scale, 46 * scale, 40 * scale, 12 * scale);
-    canvas.drawRRect(RRect.fromRectAndRadius(glassesRect, Radius.circular(3 * scale)), fillVisor);
-    canvas.drawRRect(RRect.fromRectAndRadius(glassesRect, Radius.circular(3 * scale)), stroke);
+    final glassesRect = Rect.fromLTWH(
+      30 * scale,
+      46 * scale,
+      40 * scale,
+      12 * scale,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(glassesRect, Radius.circular(3 * scale)),
+      fillVisor,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(glassesRect, Radius.circular(3 * scale)),
+      stroke,
+    );
 
     // Visor reflection line
-    final refl = Paint()..color = const Color(0xFF38BDF8)..style = PaintingStyle.stroke..strokeWidth = 2 * scale;
-    canvas.drawLine(Offset(34 * scale, 52 * scale), Offset(46 * scale, 52 * scale), refl);
+    final refl = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2 * scale;
+    canvas.drawLine(
+      Offset(34 * scale, 52 * scale),
+      Offset(46 * scale, 52 * scale),
+      refl,
+    );
 
     // Determined grin
-    canvas.drawLine(Offset(44 * scale, 65 * scale), Offset(56 * scale, 65 * scale), stroke);
+    canvas.drawLine(
+      Offset(44 * scale, 65 * scale),
+      Offset(56 * scale, 65 * scale),
+      stroke,
+    );
   }
 
   @override
@@ -331,10 +412,7 @@ class _CyberAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _CyberPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _CyberPainter());
   }
 }
 
@@ -349,10 +427,18 @@ class _CyberPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillHoodie = Paint()..color = const Color(0xFF3B82F6)..style = PaintingStyle.fill;
-    final fillSkin = Paint()..color = const Color(0xFFFED7AA)..style = PaintingStyle.fill;
-    final fillCyberVisor = Paint()..color = const Color(0xFF10B981)..style = PaintingStyle.fill;
-    final fillHeadset = Paint()..color = const Color(0xFF1E1E2E)..style = PaintingStyle.fill;
+    final fillHoodie = Paint()
+      ..color = const Color(0xFF3B82F6)
+      ..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFED7AA)
+      ..style = PaintingStyle.fill;
+    final fillCyberVisor = Paint()
+      ..color = const Color(0xFF10B981)
+      ..style = PaintingStyle.fill;
+    final fillHeadset = Paint()
+      ..color = const Color(0xFF1E1E2E)
+      ..style = PaintingStyle.fill;
 
     // Hoodie
     final hoodie = Path()
@@ -370,8 +456,14 @@ class _CyberPainter extends CustomPainter {
       width: 40 * scale,
       height: 38 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      stroke,
+    );
 
     // Headset band over head
     final headBand = Path()
@@ -384,12 +476,32 @@ class _CyberPainter extends CustomPainter {
     canvas.drawPath(headBand, bandStroke);
 
     // Ear cups
-    final leftCup = Rect.fromCenter(center: Offset(26 * scale, 52 * scale), width: 10 * scale, height: 22 * scale);
-    final rightCup = Rect.fromCenter(center: Offset(74 * scale, 52 * scale), width: 10 * scale, height: 22 * scale);
-    canvas.drawRRect(RRect.fromRectAndRadius(leftCup, Radius.circular(4 * scale)), fillHeadset);
-    canvas.drawRRect(RRect.fromRectAndRadius(leftCup, Radius.circular(4 * scale)), stroke);
-    canvas.drawRRect(RRect.fromRectAndRadius(rightCup, Radius.circular(4 * scale)), fillHeadset);
-    canvas.drawRRect(RRect.fromRectAndRadius(rightCup, Radius.circular(4 * scale)), stroke);
+    final leftCup = Rect.fromCenter(
+      center: Offset(26 * scale, 52 * scale),
+      width: 10 * scale,
+      height: 22 * scale,
+    );
+    final rightCup = Rect.fromCenter(
+      center: Offset(74 * scale, 52 * scale),
+      width: 10 * scale,
+      height: 22 * scale,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(leftCup, Radius.circular(4 * scale)),
+      fillHeadset,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(leftCup, Radius.circular(4 * scale)),
+      stroke,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rightCup, Radius.circular(4 * scale)),
+      fillHeadset,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rightCup, Radius.circular(4 * scale)),
+      stroke,
+    );
 
     // Cyber visor
     final visor = Rect.fromLTWH(32 * scale, 44 * scale, 36 * scale, 12 * scale);
@@ -397,12 +509,24 @@ class _CyberPainter extends CustomPainter {
     canvas.drawRect(visor, stroke);
 
     // Visor HUD text
-    final hudP = Paint()..color = Colors.black..style = PaintingStyle.fill;
-    canvas.drawRect(Rect.fromLTWH(36 * scale, 48 * scale, 8 * scale, 4 * scale), hudP);
-    canvas.drawRect(Rect.fromLTWH(48 * scale, 48 * scale, 12 * scale, 4 * scale), hudP);
+    final hudP = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(36 * scale, 48 * scale, 8 * scale, 4 * scale),
+      hudP,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(48 * scale, 48 * scale, 12 * scale, 4 * scale),
+      hudP,
+    );
 
     // Smirk
-    canvas.drawLine(Offset(45 * scale, 64 * scale), Offset(55 * scale, 62 * scale), stroke);
+    canvas.drawLine(
+      Offset(45 * scale, 64 * scale),
+      Offset(55 * scale, 62 * scale),
+      stroke,
+    );
   }
 
   @override
@@ -415,10 +539,7 @@ class _ScholarAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _ScholarPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _ScholarPainter());
   }
 }
 
@@ -433,10 +554,18 @@ class _ScholarPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillLab = Paint()..color = Colors.white..style = PaintingStyle.fill;
-    final fillSkin = Paint()..color = const Color(0xFFFDE68A)..style = PaintingStyle.fill;
-    final fillHair = Paint()..color = const Color(0xFF475569)..style = PaintingStyle.fill;
-    final fillTie = Paint()..color = const Color(0xFF7C3AED)..style = PaintingStyle.fill;
+    final fillLab = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFDE68A)
+      ..style = PaintingStyle.fill;
+    final fillHair = Paint()
+      ..color = const Color(0xFF475569)
+      ..style = PaintingStyle.fill;
+    final fillTie = Paint()
+      ..color = const Color(0xFF7C3AED)
+      ..style = PaintingStyle.fill;
 
     // Lab Coat
     final coat = Path()
@@ -461,7 +590,14 @@ class _ScholarPainter extends CustomPainter {
     // Hair base
     final hair = Path()
       ..moveTo(24 * scale, 46 * scale)
-      ..cubicTo(20 * scale, 20 * scale, 80 * scale, 20 * scale, 76 * scale, 46 * scale)
+      ..cubicTo(
+        20 * scale,
+        20 * scale,
+        80 * scale,
+        20 * scale,
+        76 * scale,
+        46 * scale,
+      )
       ..close();
     canvas.drawPath(hair, fillHair);
     canvas.drawPath(hair, stroke);
@@ -472,18 +608,36 @@ class _ScholarPainter extends CustomPainter {
       width: 42 * scale,
       height: 36 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      stroke,
+    );
 
     // Round Glasses
-    final leftGlass = Rect.fromCircle(center: Offset(41 * scale, 50 * scale), radius: 7 * scale);
-    final rightGlass = Rect.fromCircle(center: Offset(59 * scale, 50 * scale), radius: 7 * scale);
+    final leftGlass = Rect.fromCircle(
+      center: Offset(41 * scale, 50 * scale),
+      radius: 7 * scale,
+    );
+    final rightGlass = Rect.fromCircle(
+      center: Offset(59 * scale, 50 * scale),
+      radius: 7 * scale,
+    );
     canvas.drawOval(leftGlass, stroke);
     canvas.drawOval(rightGlass, stroke);
-    canvas.drawLine(Offset(48 * scale, 50 * scale), Offset(52 * scale, 50 * scale), stroke);
+    canvas.drawLine(
+      Offset(48 * scale, 50 * scale),
+      Offset(52 * scale, 50 * scale),
+      stroke,
+    );
 
     // Eyes inside glasses
-    final fillB = Paint()..color = NeoTokens.black..style = PaintingStyle.fill;
+    final fillB = Paint()
+      ..color = NeoTokens.black
+      ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(41 * scale, 50 * scale), 2 * scale, fillB);
     canvas.drawCircle(Offset(59 * scale, 50 * scale), 2 * scale, fillB);
 
@@ -504,10 +658,7 @@ class _BotanistAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _BotanistPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _BotanistPainter());
   }
 }
 
@@ -522,10 +673,18 @@ class _BotanistPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillSkin = Paint()..color = const Color(0xFFFDBA74)..style = PaintingStyle.fill;
-    final fillHat = Paint()..color = const Color(0xFFF59E0B)..style = PaintingStyle.fill;
-    final fillShirt = Paint()..color = const Color(0xFF059669)..style = PaintingStyle.fill;
-    final fillLeaf = Paint()..color = const Color(0xFF84CC16)..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFDBA74)
+      ..style = PaintingStyle.fill;
+    final fillHat = Paint()
+      ..color = const Color(0xFFF59E0B)
+      ..style = PaintingStyle.fill;
+    final fillShirt = Paint()
+      ..color = const Color(0xFF059669)
+      ..style = PaintingStyle.fill;
+    final fillLeaf = Paint()
+      ..color = const Color(0xFF84CC16)
+      ..style = PaintingStyle.fill;
 
     // Outdoor Shirt
     final shirt = Path()
@@ -543,8 +702,14 @@ class _BotanistPainter extends CustomPainter {
       width: 42 * scale,
       height: 36 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      stroke,
+    );
 
     // Bucket Hat Crown
     final hatCrown = Path()
@@ -557,9 +722,20 @@ class _BotanistPainter extends CustomPainter {
     canvas.drawPath(hatCrown, stroke);
 
     // Bucket Hat Brim
-    final hatBrim = Rect.fromLTWH(20 * scale, 38 * scale, 60 * scale, 10 * scale);
-    canvas.drawRRect(RRect.fromRectAndRadius(hatBrim, Radius.circular(4 * scale)), fillHat);
-    canvas.drawRRect(RRect.fromRectAndRadius(hatBrim, Radius.circular(4 * scale)), stroke);
+    final hatBrim = Rect.fromLTWH(
+      20 * scale,
+      38 * scale,
+      60 * scale,
+      10 * scale,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(hatBrim, Radius.circular(4 * scale)),
+      fillHat,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(hatBrim, Radius.circular(4 * scale)),
+      stroke,
+    );
 
     // Leaf decoration on hat
     final leaf = Path()
@@ -570,7 +746,9 @@ class _BotanistPainter extends CustomPainter {
     canvas.drawPath(leaf, stroke);
 
     // Eyes
-    final fillB = Paint()..color = NeoTokens.black..style = PaintingStyle.fill;
+    final fillB = Paint()
+      ..color = NeoTokens.black
+      ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(42 * scale, 55 * scale), 2.5 * scale, fillB);
     canvas.drawCircle(Offset(58 * scale, 55 * scale), 2.5 * scale, fillB);
 
@@ -591,10 +769,7 @@ class _RetroAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _RetroPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _RetroPainter());
   }
 }
 
@@ -609,10 +784,18 @@ class _RetroPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillSkin = Paint()..color = const Color(0xFFFDE68A)..style = PaintingStyle.fill;
-    final fillBandana = Paint()..color = const Color(0xFFDC2626)..style = PaintingStyle.fill;
-    final fillJacket = Paint()..color = const Color(0xFF1E293B)..style = PaintingStyle.fill;
-    final fillHair = Paint()..color = const Color(0xFF0F172A)..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFDE68A)
+      ..style = PaintingStyle.fill;
+    final fillBandana = Paint()
+      ..color = const Color(0xFFDC2626)
+      ..style = PaintingStyle.fill;
+    final fillJacket = Paint()
+      ..color = const Color(0xFF1E293B)
+      ..style = PaintingStyle.fill;
+    final fillHair = Paint()
+      ..color = const Color(0xFF0F172A)
+      ..style = PaintingStyle.fill;
 
     // Leather Jacket
     final jacket = Path()
@@ -643,11 +826,22 @@ class _RetroPainter extends CustomPainter {
       width: 42 * scale,
       height: 36 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(8 * scale)),
+      stroke,
+    );
 
     // Red Bandana
-    final bandana = Rect.fromLTWH(26 * scale, 34 * scale, 48 * scale, 10 * scale);
+    final bandana = Rect.fromLTWH(
+      26 * scale,
+      34 * scale,
+      48 * scale,
+      10 * scale,
+    );
     canvas.drawRect(bandana, fillBandana);
     canvas.drawRect(bandana, stroke);
 
@@ -661,12 +855,24 @@ class _RetroPainter extends CustomPainter {
     canvas.drawPath(knot, stroke);
 
     // Angular eyes
-    final fillB = Paint()..color = NeoTokens.black..style = PaintingStyle.fill;
-    canvas.drawRect(Rect.fromLTWH(38 * scale, 52 * scale, 6 * scale, 3 * scale), fillB);
-    canvas.drawRect(Rect.fromLTWH(56 * scale, 52 * scale, 6 * scale, 3 * scale), fillB);
+    final fillB = Paint()
+      ..color = NeoTokens.black
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(
+      Rect.fromLTWH(38 * scale, 52 * scale, 6 * scale, 3 * scale),
+      fillB,
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(56 * scale, 52 * scale, 6 * scale, 3 * scale),
+      fillB,
+    );
 
     // Confident smirk
-    canvas.drawLine(Offset(44 * scale, 64 * scale), Offset(56 * scale, 62 * scale), stroke);
+    canvas.drawLine(
+      Offset(44 * scale, 64 * scale),
+      Offset(56 * scale, 62 * scale),
+      stroke,
+    );
   }
 
   @override
@@ -679,10 +885,7 @@ class _ZenAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _ZenPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _ZenPainter());
   }
 }
 
@@ -697,9 +900,15 @@ class _ZenPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillSkin = Paint()..color = const Color(0xFFFDBA74)..style = PaintingStyle.fill;
-    final fillRobe = Paint()..color = const Color(0xFFF97316)..style = PaintingStyle.fill;
-    final fillBand = Paint()..color = Colors.white..style = PaintingStyle.fill;
+    final fillSkin = Paint()
+      ..color = const Color(0xFFFDBA74)
+      ..style = PaintingStyle.fill;
+    final fillRobe = Paint()
+      ..color = const Color(0xFFF97316)
+      ..style = PaintingStyle.fill;
+    final fillBand = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
 
     // Zen Robe
     final robe = Path()
@@ -717,8 +926,14 @@ class _ZenPainter extends CustomPainter {
       width: 44 * scale,
       height: 42 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(12 * scale)), fillSkin);
-    canvas.drawRRect(RRect.fromRectAndRadius(faceRect, Radius.circular(12 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(12 * scale)),
+      fillSkin,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(faceRect, Radius.circular(12 * scale)),
+      stroke,
+    );
 
     // Meditation headband
     final band = Rect.fromLTWH(26 * scale, 30 * scale, 48 * scale, 8 * scale);
@@ -752,10 +967,7 @@ class _SpaceAvatarPainterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _SpacePainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _SpacePainter());
   }
 }
 
@@ -770,9 +982,15 @@ class _SpacePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillSuit = Paint()..color = Colors.white..style = PaintingStyle.fill;
-    final fillVisor = Paint()..color = const Color(0xFFFBBF24)..style = PaintingStyle.fill;
-    final fillCollar = Paint()..color = const Color(0xFF6366F1)..style = PaintingStyle.fill;
+    final fillSuit = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final fillVisor = Paint()
+      ..color = const Color(0xFFFBBF24)
+      ..style = PaintingStyle.fill;
+    final fillCollar = Paint()
+      ..color = const Color(0xFF6366F1)
+      ..style = PaintingStyle.fill;
 
     // Space suit shoulders
     final suit = Path()
@@ -786,8 +1004,14 @@ class _SpacePainter extends CustomPainter {
 
     // Space Collar
     final collar = Rect.fromLTWH(30 * scale, 70 * scale, 40 * scale, 8 * scale);
-    canvas.drawRRect(RRect.fromRectAndRadius(collar, Radius.circular(4 * scale)), fillCollar);
-    canvas.drawRRect(RRect.fromRectAndRadius(collar, Radius.circular(4 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(collar, Radius.circular(4 * scale)),
+      fillCollar,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(collar, Radius.circular(4 * scale)),
+      stroke,
+    );
 
     // Astronaut Helmet Dome
     final helmet = Rect.fromCenter(
@@ -795,8 +1019,14 @@ class _SpacePainter extends CustomPainter {
       width: 52 * scale,
       height: 48 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(helmet, Radius.circular(16 * scale)), fillSuit);
-    canvas.drawRRect(RRect.fromRectAndRadius(helmet, Radius.circular(16 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(helmet, Radius.circular(16 * scale)),
+      fillSuit,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(helmet, Radius.circular(16 * scale)),
+      stroke,
+    );
 
     // Golden reflective visor
     final visor = Rect.fromCenter(
@@ -804,12 +1034,25 @@ class _SpacePainter extends CustomPainter {
       width: 38 * scale,
       height: 28 * scale,
     );
-    canvas.drawRRect(RRect.fromRectAndRadius(visor, Radius.circular(10 * scale)), fillVisor);
-    canvas.drawRRect(RRect.fromRectAndRadius(visor, Radius.circular(10 * scale)), stroke);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(visor, Radius.circular(10 * scale)),
+      fillVisor,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(visor, Radius.circular(10 * scale)),
+      stroke,
+    );
 
     // Visor gleam
-    final gleam = Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 3 * scale;
-    canvas.drawLine(Offset(40 * scale, 38 * scale), Offset(46 * scale, 44 * scale), gleam);
+    final gleam = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3 * scale;
+    canvas.drawLine(
+      Offset(40 * scale, 38 * scale),
+      Offset(46 * scale, 44 * scale),
+      gleam,
+    );
   }
 
   @override

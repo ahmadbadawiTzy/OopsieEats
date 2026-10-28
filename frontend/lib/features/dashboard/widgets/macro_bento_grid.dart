@@ -6,6 +6,7 @@ import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_progress_bar.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Bento Grid for Macronutrient Ratios and Daily Meal Tracking.
 class MacroBentoGrid extends StatelessWidget {
@@ -28,7 +29,11 @@ class MacroBentoGrid extends StatelessWidget {
         // Section Header
         const Row(
           children: [
-            Icon(Icons.pie_chart_rounded, color: NeoTokens.ink, size: 18),
+            Icon(
+              AppIcons.pieChart,
+              color: NeoTokens.ink,
+              size: AppIcons.sizeLarge,
+            ),
             SizedBox(width: 6),
             Text(
               '[03] RINGKASAN MAKRONUTRIEN',
@@ -55,7 +60,7 @@ class MacroBentoGrid extends StatelessWidget {
                 accentColor: NeoTokens.cobalt,
                 accentTextColor: NeoTokens.paper,
                 progress: progress.protein,
-                icon: Icons.fitness_center_rounded,
+                icon: AppIcons.fitnessCenter,
               ),
             ),
             const SizedBox(width: NeoTokens.space10),
@@ -66,7 +71,7 @@ class MacroBentoGrid extends StatelessWidget {
                 accentColor: NeoTokens.tangerine,
                 accentTextColor: NeoTokens.ink,
                 progress: progress.carbs,
-                icon: Icons.grain_rounded,
+                icon: AppIcons.grain,
               ),
             ),
           ],
@@ -84,7 +89,7 @@ class MacroBentoGrid extends StatelessWidget {
                 accentColor: NeoTokens.lilac,
                 accentTextColor: NeoTokens.ink,
                 progress: progress.fat,
-                icon: Icons.water_drop_rounded,
+                icon: AppIcons.waterDrop,
               ),
             ),
             const SizedBox(width: NeoTokens.space10),
@@ -123,8 +128,8 @@ class MacroBentoGrid extends StatelessWidget {
                           ),
                         ),
                         const Icon(
-                          Icons.fastfood_rounded,
-                          size: 16,
+                          AppIcons.fastfood,
+                          size: AppIcons.sizeMedium,
                           color: NeoTokens.ink,
                         ),
                       ],
@@ -175,15 +180,15 @@ class MacroBentoGrid extends StatelessWidget {
                               'RIWAYAT',
                               style: TextStyle(
                                 fontFamily: 'monospace',
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w900,
                                 color: NeoTokens.ink,
                               ),
                             ),
                             SizedBox(width: 4),
                             Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 11,
+                              AppIcons.arrowForward,
+                              size: AppIcons.sizeMicro,
                               color: NeoTokens.ink,
                             ),
                           ],
@@ -263,7 +268,7 @@ class _MacroBentoCard extends StatelessWidget {
                     ? NeoTokens.alert
                     : NeoTokens.paper,
                 customTextColor: isOver ? NeoTokens.paper : NeoTokens.ink,
-                fontSize: 9.5,
+                fontSize: 10,
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               ),
             ],

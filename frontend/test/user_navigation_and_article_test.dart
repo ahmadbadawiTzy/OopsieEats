@@ -99,7 +99,8 @@ void main() {
     when(() => mockAuthRepo.getUserEmail())
         .thenAnswer((_) async => 'ahmadbadawi@example.com');
     when(() => mockAuthRepo.logout()).thenAnswer((_) async {});
-    when(() => mockAuthRepo.deleteAccount()).thenAnswer((_) async {});
+    when(() => mockAuthRepo.deleteAccount(password: any(named: 'password')))
+        .thenAnswer((_) async {});
 
     when(() => mockArticleRepo.getCategories())
         .thenAnswer((_) async => sampleCategories);
@@ -431,7 +432,9 @@ void main() {
         // Verify dialog dismissed and user remains logged in
         expect(find.text('Hapus Akun & Data?'), findsNothing);
         expect(authProvider.isLoggedIn, isTrue);
-        verifyNever(() => mockAuthRepo.deleteAccount());
+        verifyNever(
+          () => mockAuthRepo.deleteAccount(password: any(named: 'password')),
+        );
 
         // 3. Click Delete Account again -> Confirm "Hapus Akun"
         await tester.tap(deleteButton);
@@ -441,7 +444,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify deleteAccount repository called and redirected to Login
-        verify(() => mockAuthRepo.deleteAccount()).called(1);
+        verify(
+          () => mockAuthRepo.deleteAccount(password: any(named: 'password')),
+        ).called(1);
         expect(find.text('Login Screen Mock'), findsOneWidget);
       },
     );

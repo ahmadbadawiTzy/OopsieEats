@@ -129,27 +129,59 @@ class ArticleRepository {
     );
   }
 
-  Future<List<CategoryItem>> getCategories() async {
+  List<CategoryItem>? _cachedCategories;
+  DateTime? _categoriesCacheTime;
+
+  List<AnnouncementItem>? _cachedAnnouncements;
+  DateTime? _announcementsCacheTime;
+  static const Duration _cmsCacheTtl = Duration(minutes: 5);
+
+  void invalidateCache() {
+    _cachedCategories = null;
+    _categoriesCacheTime = null;
+    _cachedAnnouncements = null;
+    _announcementsCacheTime = null;
+  }
+
+  Future<List<CategoryItem>> getCategories({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _cachedCategories != null &&
+        _categoriesCacheTime != null &&
+        DateTime.now().difference(_categoriesCacheTime!) < _cmsCacheTtl) {
+      return _cachedCategories!;
+    }
+
     final db = _firestore;
-    if (db == null) return [];
+    if (db == null) return _cachedCategories ?? [];
 
     try {
       final snapshot = await db.collection('cms_categories').get();
-      return snapshot.docs.map((doc) {
+      _cachedCategories = snapshot.docs.map((doc) {
         final data = Map<String, dynamic>.from(doc.data());
         if (!data.containsKey('id')) {
           data['id'] = int.tryParse(doc.id) ?? doc.id.hashCode.abs();
         }
         return CategoryItem.fromJson(data);
       }).toList();
+      _categoriesCacheTime = DateTime.now();
+      return _cachedCategories!;
     } catch (_) {
-      return [];
+      return _cachedCategories ?? [];
     }
   }
 
-  Future<List<AnnouncementItem>> getActiveAnnouncements() async {
+  Future<List<AnnouncementItem>> getActiveAnnouncements({
+    bool forceRefresh = false,
+  }) async {
+    if (!forceRefresh &&
+        _cachedAnnouncements != null &&
+        _announcementsCacheTime != null &&
+        DateTime.now().difference(_announcementsCacheTime!) < _cmsCacheTtl) {
+      return _cachedAnnouncements!;
+    }
+
     final db = _firestore;
-    if (db == null) return [];
+    if (db == null) return _cachedAnnouncements ?? [];
 
     try {
       final snapshot = await db
@@ -157,15 +189,17 @@ class ArticleRepository {
           .where('is_active', isEqualTo: true)
           .get();
 
-      return snapshot.docs.map((doc) {
+      _cachedAnnouncements = snapshot.docs.map((doc) {
         final data = Map<String, dynamic>.from(doc.data());
         if (!data.containsKey('id')) {
           data['id'] = int.tryParse(doc.id) ?? doc.id.hashCode.abs();
         }
         return AnnouncementItem.fromJson(data);
       }).toList();
+      _announcementsCacheTime = DateTime.now();
+      return _cachedAnnouncements!;
     } catch (_) {
-      return [];
+      return _cachedAnnouncements ?? [];
     }
   }
 }

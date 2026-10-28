@@ -61,3 +61,6 @@ symbols/
 # Operating System
 .DS_Store
 Thumbs.db
+
+# Backups
+scripts/backups/

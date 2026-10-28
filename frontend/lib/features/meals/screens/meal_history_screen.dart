@@ -7,6 +7,7 @@ import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
 import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/shared/widgets/error_view.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class MealHistoryScreen extends StatefulWidget {
   final bool isTab;
@@ -47,6 +48,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
       backgroundColor: NeoTokens.canvas,
       appBar: AppBar(
         automaticallyImplyLeading: !widget.isTab,
+        leading: widget.isTab ? null : NeoBackButton.leading(context),
         elevation: 0,
         backgroundColor: NeoTokens.canvas,
         title: const Text(
@@ -66,10 +68,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
             Padding(
               padding: const EdgeInsets.only(right: 6.0),
               child: NeoIconButton(
-                icon: Icons.clear_rounded,
+                icon: AppIcons.clear,
                 tooltip: 'Hapus Filter Tanggal',
-                size: 38,
-                iconSize: 20,
+                size: 40,
+                iconSize: AppIcons.sizeControl,
                 iconColor: NeoTokens.alert,
                 shadowOffset: Offset.zero,
                 onPressed: () => history.clearFilter(),
@@ -78,10 +80,10 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: NeoIconButton(
-              icon: Icons.calendar_today_rounded,
+              icon: AppIcons.calendarToday,
               tooltip: 'Filter Tanggal',
-              size: 38,
-              iconSize: 18,
+              size: 40,
+              iconSize: AppIcons.sizeLarge,
               backgroundColor: history.filterDate != null
                   ? NeoTokens.hazard
                   : NeoTokens.paper,
@@ -123,8 +125,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                           boxShadow: NeoTokens.neoBoxShadowSmall(),
                         ),
                         child: const Icon(
-                          Icons.no_meals_rounded,
-                          size: 34,
+                          AppIcons.noMeals,
+                          size: AppIcons.sizeEmpty,
                           color: NeoTokens.ink,
                         ),
                       ),
@@ -154,7 +156,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                       const SizedBox(height: NeoTokens.space20),
                       NeoButton(
                         text: 'SCAN SEKARANG',
-                        prefixIcon: Icons.camera_alt_rounded,
+                        prefixIcon: AppIcons.cameraAlt,
                         variant: NeoButtonVariant.primary,
                         height: 48,
                         onPressed: () {
@@ -235,8 +237,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                           Row(
                             children: [
                               const Icon(
-                                Icons.access_time_rounded,
-                                size: 13,
+                                AppIcons.accessTime,
+                                size: AppIcons.sizeSmall,
                                 color: NeoTokens.ink,
                               ),
                               const SizedBox(width: 4),
@@ -251,8 +253,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                               ),
                               const SizedBox(width: 6),
                               const Icon(
-                                Icons.chevron_right_rounded,
-                                size: 18,
+                                AppIcons.chevronRight,
+                                size: AppIcons.sizeLarge,
                                 color: NeoTokens.ink,
                               ),
                             ],

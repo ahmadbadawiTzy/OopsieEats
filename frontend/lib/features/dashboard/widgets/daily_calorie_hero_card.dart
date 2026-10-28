@@ -6,6 +6,7 @@ import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_progress_bar.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Daily Calorie Centerpiece Card.
 /// Displays Target, Consumed, and Remaining / Exceeded calories with
@@ -40,9 +41,9 @@ class DailyCalorieHeroCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
                   ),
                   child: const Icon(
-                    Icons.warning_amber_rounded,
+                    AppIcons.warningAmber,
                     color: NeoTokens.hazard,
-                    size: 20,
+                    size: AppIcons.sizeControl,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -87,8 +88,8 @@ class DailyCalorieHeroCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.person_add_alt_1_rounded,
-                      size: 18,
+                      AppIcons.personAddAlt,
+                      size: AppIcons.sizeLarge,
                       color: NeoTokens.ink,
                     ),
                     SizedBox(width: 8),
@@ -158,9 +159,9 @@ class DailyCalorieHeroCard extends StatelessWidget {
               const Row(
                 children: [
                   Icon(
-                    Icons.local_fire_department_rounded,
+                    AppIcons.localFire,
                     color: NeoTokens.ink,
-                    size: 20,
+                    size: AppIcons.sizeControl,
                   ),
                   SizedBox(width: 6),
                   Text(
@@ -297,7 +298,7 @@ class DailyCalorieHeroCard extends StatelessWidget {
           textAlign: TextAlign.center,
           style: const TextStyle(
             fontFamily: 'monospace',
-            fontSize: 9.5,
+            fontSize: 10,
             fontWeight: FontWeight.w800,
             color: NeoTokens.inkMuted,
             letterSpacing: 0.2,

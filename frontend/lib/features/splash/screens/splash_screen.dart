@@ -123,11 +123,18 @@ class _SplashScreenState extends State<SplashScreen>
     _isNavigating = true;
 
     final authProvider = context.read<AuthProvider>();
-    final targetRoute = authProvider.isLoggedIn
-        ? (authProvider.isAdmin
-              ? AppRoutes.adminDashboard
-              : AppRoutes.dashboard)
-        : AppRoutes.login;
+    final String targetRoute;
+
+    if (authProvider.isBiometricLocked) {
+      // Session exists but protected by biometric lock
+      targetRoute = AppRoutes.login;
+    } else if (authProvider.isLoggedIn) {
+      targetRoute = authProvider.isAdmin
+          ? AppRoutes.adminDashboard
+          : AppRoutes.dashboard;
+    } else {
+      targetRoute = AppRoutes.login;
+    }
 
     Navigator.of(context).pushReplacementNamed(targetRoute);
   }

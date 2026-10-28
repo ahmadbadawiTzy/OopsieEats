@@ -26,7 +26,7 @@ class NeoBadge extends StatelessWidget {
     this.hasShadow = false,
     this.onTap,
     this.padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    this.fontSize = 11.5,
+    this.fontSize = 12,
   });
 
   Color get _bg {

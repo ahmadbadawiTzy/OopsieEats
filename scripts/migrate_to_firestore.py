@@ -103,31 +103,23 @@ def seed_users(db):
     print("--> Seeding default admin and user profiles...")
     users = [
         {
-            "uid": "super_admin_nutriview",
+            "uid": "admin_nutriview",
             "id": 1,
             "email": "admin@nutriview.id",
-            "full_name": "Super Administrator NutriView",
-            "role": "super_admin",
-            "is_active": True,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        },
-        {
-            "uid": "dietitian_nutriview",
-            "id": 2,
-            "email": "dietitian@nutriview.id",
-            "full_name": "Dr. Nutrisi Klinis",
-            "role": "dietitian",
+            "full_name": "Administrator NutriView",
+            "role": "admin",
             "is_active": True,
             "created_at": datetime.now(timezone.utc).isoformat(),
         },
         {
             "uid": "demo_user_nutriview",
-            "id": 3,
+            "id": 2,
             "email": "user@nutriview.id",
             "full_name": "Pengguna NutriView",
             "role": "user",
             "is_active": True,
             "profile": {
+                "profession": "Umum",
                 "age": 28,
                 "sex": "male",
                 "weight_kg": 68.0,

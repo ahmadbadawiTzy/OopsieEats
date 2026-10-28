@@ -6,6 +6,7 @@ import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_progress_bar.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Neo-Brutalist Nutrition Metric / Stat Card.
 /// Displays nutrient intake with bold high-contrast hierarchy,
@@ -30,15 +31,15 @@ class NeoStatCard extends StatelessWidget {
     if (customIcon != null) return customIcon!;
     final lower = t.toLowerCase();
     if (lower.contains('kalori') || lower.contains('energi')) {
-      return Icons.local_fire_department_rounded;
+      return AppIcons.localFire;
     } else if (lower.contains('protein')) {
-      return Icons.egg_alt_outlined;
+      return AppIcons.eggAlt;
     } else if (lower.contains('karbo')) {
-      return Icons.grain_rounded;
+      return AppIcons.grain;
     } else if (lower.contains('lemak')) {
-      return Icons.water_drop_outlined;
+      return AppIcons.waterDrop;
     }
-    return Icons.pie_chart_outline_rounded;
+    return AppIcons.pieChartOutline;
   }
 
   @override
@@ -71,7 +72,7 @@ class NeoStatCard extends StatelessWidget {
                 ),
                 child: Icon(
                   _getIconForTitle(title),
-                  size: 20,
+                  size: AppIcons.sizeControl,
                   color: NeoTokens.black,
                 ),
               ),
@@ -111,7 +112,7 @@ class NeoStatCard extends StatelessWidget {
               Text(
                 'Terkonsumsi: ${progress.consumed.toStringAsFixed(1)} $unit',
                 style: const TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: NeoTokens.textDark,
                 ),
@@ -119,7 +120,7 @@ class NeoStatCard extends StatelessWidget {
               Text(
                 'Target: ${progress.target.toStringAsFixed(1)} $unit',
                 style: const TextStyle(
-                  fontSize: 12.5,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: NeoTokens.textMuted,
                 ),

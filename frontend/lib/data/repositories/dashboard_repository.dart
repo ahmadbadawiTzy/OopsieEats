@@ -49,6 +49,17 @@ class DashboardRepository {
     );
   }
 
+  Map<String, dynamic>? _cachedUserData;
+  String? _cachedUserUid;
+  DateTime? _cachedUserTime;
+  static const Duration _userTargetTtl = Duration(minutes: 15);
+
+  void invalidateUserCache() {
+    _cachedUserData = null;
+    _cachedUserUid = null;
+    _cachedUserTime = null;
+  }
+
   Future<DailyDashboard> getDailyDashboard(DateTime date) async {
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     final uid = await _getUid();
@@ -84,10 +95,24 @@ class DashboardRepository {
         consumedFat += (totals['fat_g'] as num?)?.toDouble() ?? 0.0;
       }
 
-      // 2. Fetch user target / profile
-      final userDoc = await db.collection('users').doc(uid).get();
-      if (userDoc.exists && userDoc.data() != null) {
-        final userData = userDoc.data()!;
+      // 2. Fetch user target / profile (with 15-min in-memory cache to prevent redundant reads on date switching)
+      Map<String, dynamic>? userData;
+      if (_cachedUserData != null &&
+          _cachedUserUid == uid &&
+          _cachedUserTime != null &&
+          DateTime.now().difference(_cachedUserTime!) < _userTargetTtl) {
+        userData = _cachedUserData;
+      } else {
+        final userDoc = await db.collection('users').doc(uid).get();
+        if (userDoc.exists && userDoc.data() != null) {
+          userData = userDoc.data()!;
+          _cachedUserData = userData;
+          _cachedUserUid = uid;
+          _cachedUserTime = DateTime.now();
+        }
+      }
+
+      if (userData != null) {
         if (userData['daily_target'] != null) {
           final dt = userData['daily_target'] as Map<String, dynamic>;
           targetCalories =

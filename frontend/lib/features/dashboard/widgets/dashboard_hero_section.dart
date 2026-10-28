@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/neo_avatar.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Editorial Hero Section.
 /// Displays user avatar, greeting, dynamic time context, heavy headline, and subheadline.
@@ -133,7 +134,7 @@ class DashboardHeroSection extends StatelessWidget {
                         'Halo, ${userName.trim().isNotEmpty ? userName.trim() : 'Sobat Sehat'}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
-                          fontSize: 15.5,
+                          fontSize: 16,
                           color: NeoTokens.ink,
                           letterSpacing: -0.3,
                         ),
@@ -145,9 +146,9 @@ class DashboardHeroSection extends StatelessWidget {
                 ),
                 if (onAvatarTap != null)
                   const Icon(
-                    Icons.chevron_right_rounded,
+                    AppIcons.chevronRight,
                     color: NeoTokens.ink,
-                    size: 22,
+                    size: AppIcons.sizeToolbar,
                   ),
               ],
             ),

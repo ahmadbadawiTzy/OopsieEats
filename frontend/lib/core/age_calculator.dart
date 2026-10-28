@@ -41,7 +41,10 @@ class AgeCalculator {
 
   /// Validates a [birthDate] for app usage.
   /// Returns an error message string if invalid, or `null` if valid.
-  static String? validateBirthDate(DateTime? birthDate, [DateTime? referenceDate]) {
+  static String? validateBirthDate(
+    DateTime? birthDate, [
+    DateTime? referenceDate,
+  ]) {
     if (birthDate == null) {
       return 'Tanggal lahir wajib diisi.';
     }

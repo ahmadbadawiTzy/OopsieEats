@@ -12,7 +12,20 @@
           "package_name": "com.nutriview.nutriview"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "350308179098-0ojpvs6f260q55qrlrlt15bu53gljp3a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nutriview.nutriview",
+            "certificate_hash": "a2a4f886da6aedf627d5280e0dac7b02108a3c7b"
+          }
+        },
+        {
+          "client_id": "350308179098-rj47kjc7qkab0loht39si2ek37qj7gku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB7Vu136ZplCHuV5d-nPuwQBr2Xq0_YI08"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350308179098-rj47kjc7qkab0loht39si2ek37qj7gku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

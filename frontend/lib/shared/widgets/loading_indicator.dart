@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Neo-Brutalist Loading Indicator.
 /// Displays an animated high-contrast spinner container with bold status typography.
@@ -61,9 +62,9 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                 ),
                 child: const Center(
                   child: Icon(
-                    Icons.sync_rounded,
+                    AppIcons.sync,
                     color: NeoTokens.black,
-                    size: 26,
+                    size: AppIcons.sizeHeader,
                   ),
                 ),
               ),
@@ -87,7 +88,7 @@ class _LoadingIndicatorState extends State<LoadingIndicator>
                   widget.message!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 13.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: NeoTokens.textDark,
                     height: 1.4,

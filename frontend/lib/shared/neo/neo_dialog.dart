@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Neo-Brutalist Confirmation Dialog.
 /// Features a heavy black border, deep hard shadow, and high-impact action buttons.
@@ -100,7 +101,11 @@ class NeoDialog extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(icon, size: 28, color: NeoTokens.black),
+                  child: Icon(
+                    icon,
+                    size: AppIcons.sizeState,
+                    color: NeoTokens.black,
+                  ),
                 ),
               ),
               const SizedBox(height: NeoTokens.space16),
@@ -120,7 +125,7 @@ class NeoDialog extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 13.5,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: NeoTokens.textMuted,
                 height: 1.4,

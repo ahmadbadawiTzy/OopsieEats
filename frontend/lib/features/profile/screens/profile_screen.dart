@@ -3,9 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
+import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
+import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
 import 'package:nutriview/features/profile/providers/profile_provider.dart';
 import 'package:nutriview/shared/neo/neo.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Redesigned Profile Screen acting as the central user identity hub:
 /// - Prominent centered game avatar character
@@ -26,6 +29,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _initialized = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -33,11 +37,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await context.read<ProfileProvider>().loadProfile();
       if (mounted) {
+        await context.read<AuthProvider>().checkBiometricAvailability();
+      }
+      if (mounted) {
         setState(() {
           _initialized = true;
         });
       }
     });
+  }
+
+  Future<void> _handleToggleBiometric(bool value) async {
+    final auth = context.read<AuthProvider>();
+    if (value) {
+      final success = await auth.setBiometricEnabled(true);
+      if (success && mounted) {
+        NeoSnackBars.success(context, 'Kunci biometrik berhasil diaktifkan.');
+      } else if (mounted) {
+        NeoSnackBars.error(
+          context,
+          auth.errorMessage ?? 'Gagal mengaktifkan biometrik.',
+        );
+      }
+    } else {
+      await auth.setBiometricEnabled(false);
+      if (mounted) {
+        NeoSnackBars.info(context, 'Kunci biometrik dinonaktifkan.');
+      }
+    }
   }
 
   Future<void> _openAvatarCatalog(ProfileProvider profileProvider) async {
@@ -50,24 +77,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (selectedId != null && selectedId != currentAvatarId && mounted) {
-      final success = await profileProvider.updateAvatar(avatarPreset: selectedId);
+      final success = await profileProvider.updateAvatar(
+        avatarPreset: selectedId,
+      );
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: NeoTokens.black,
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle_rounded, color: NeoTokens.mintGreen, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Avatar berhasil diubah ke ${AvatarCatalog.getById(selectedId).name}!',
-                    style: const TextStyle(fontWeight: FontWeight.w700, color: NeoTokens.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        NeoSnackBars.success(
+          context,
+          'Avatar berhasil diubah ke ${AvatarCatalog.getById(selectedId).name}!',
         );
       }
     }
@@ -77,12 +93,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirmed = await NeoDialog.show(
       context,
       title: 'Keluar dari Akun?',
-      message:
-          'Apakah Anda yakin ingin keluar dari akun NutriView? Anda perlu masuk kembali untuk mengakses data gizi Anda.',
+      message: 'Apakah Anda yakin ingin keluar dari akun NutriView? Anda perlu masuk kembali untuk mengakses data gizi Anda.',
       confirmText: 'Ya, Logout',
       cancelText: 'Batal',
       confirmColor: NeoTokens.alert,
-      icon: Icons.logout_rounded,
+      icon: AppIcons.logout,
     );
 
     if (confirmed == true && mounted) {
@@ -94,48 +109,285 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showLoadingDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(NeoTokens.space24),
+            decoration: BoxDecoration(
+              color: NeoTokens.paper,
+              borderRadius: BorderRadius.circular(NeoTokens.radiusLarge),
+              border: Border.all(
+                color: NeoTokens.black,
+                width: NeoTokens.borderWidth,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: NeoTokens.black,
+                  offset: NeoTokens.shadowOffsetMedium,
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(NeoTokens.black),
+                  ),
+                ),
+                const SizedBox(height: NeoTokens.space16),
+                Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: NeoTokens.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _showReauthPasswordDialog() async {
+    final passwordController = TextEditingController();
+    bool obscure = true;
+
+    return await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 24,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(NeoTokens.space20),
+                decoration: BoxDecoration(
+                  color: NeoTokens.paper,
+                  borderRadius: BorderRadius.circular(NeoTokens.radiusLarge),
+                  border: Border.all(
+                    color: NeoTokens.black,
+                    width: NeoTokens.borderWidth,
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: NeoTokens.black,
+                      offset: NeoTokens.shadowOffsetMedium,
+                      blurRadius: 0,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: NeoTokens.alert,
+                            borderRadius: BorderRadius.circular(
+                              NeoTokens.radiusSmall,
+                            ),
+                            border: Border.all(
+                              color: NeoTokens.black,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            AppIcons.lock,
+                            size: AppIcons.sizeMedium,
+                            color: NeoTokens.paper,
+                          ),
+                        ),
+                        const SizedBox(width: NeoTokens.space12),
+                        const Expanded(
+                          child: Text(
+                            'Konfirmasi Sandi',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: NeoTokens.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+                    const Text(
+                      'Demi keamanan, masukkan kata sandi akun Anda untuk mengonfirmasi penghapusan permanen.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: NeoTokens.textMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+                    NeoInput(
+                      controller: passwordController,
+                      label: 'Kata Sandi',
+                      hintText: 'Masukkan kata sandi Anda',
+                      prefixIcon: const Icon(
+                        AppIcons.lock,
+                        size: AppIcons.sizeSmall,
+                        color: NeoTokens.black,
+                      ),
+                      obscureText: obscure,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure
+                              ? AppIcons.visibility
+                              : AppIcons.visibilityOff,
+                          size: AppIcons.sizeSmall,
+                          color: NeoTokens.black,
+                        ),
+                        onPressed: () {
+                          setDialogState(() {
+                            obscure = !obscure;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: NeoTokens.space20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: NeoButton(
+                            text: 'Batal',
+                            variant: NeoButtonVariant.secondary,
+                            onPressed: () => Navigator.of(dialogCtx).pop(null),
+                          ),
+                        ),
+                        const SizedBox(width: NeoTokens.space12),
+                        Expanded(
+                          child: NeoButton(
+                            text: 'Hapus Akun',
+                            variant: NeoButtonVariant.danger,
+                            onPressed: () {
+                              final pwd = passwordController.text;
+                              if (pwd.isEmpty) {
+                                return;
+                              }
+                              Navigator.of(dialogCtx).pop(pwd);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _handleDeleteAccount() async {
+    if (_isDeleting) return;
+
     final confirmed = await NeoDialog.show(
       context,
       title: 'Hapus Akun & Data?',
-      message:
-          'PERINGATAN: Tindakan ini bersifat permanen. Seluruh akun, profil, target gizi, dan riwayat makanan Anda akan dihapus secara permanen dari server.',
+      message: 'PERINGATAN: Tindakan ini bersifat permanen. Seluruh akun, profil, target gizi, dan riwayat makanan Anda akan dihapus secara permanen dari server.',
       confirmText: 'Hapus Akun',
       cancelText: 'Batal',
       confirmColor: NeoTokens.alert,
-      icon: Icons.delete_forever_rounded,
+      icon: AppIcons.deleteForever,
     );
 
-    if (confirmed == true && mounted) {
-      final auth = context.read<AuthProvider>();
-      final nav = Navigator.of(context);
-      final messenger = ScaffoldMessenger.of(context);
+    if (confirmed != true || !mounted) return;
 
-      final success = await auth.deleteAccount();
-      if (!mounted) return;
+    setState(() {
+      _isDeleting = true;
+    });
 
-      if (success) {
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Akun Anda telah berhasil dihapus.'),
-            backgroundColor: NeoTokens.black,
-          ),
-        );
-        nav.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-      } else if (auth.errorMessage != null) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(auth.errorMessage!),
-            backgroundColor: NeoTokens.alert,
-          ),
-        );
+    final auth = context.read<AuthProvider>();
+    final nav = Navigator.of(context);
+
+    _showLoadingDialog('Menghapus akun dan seluruh data...');
+
+    var success = await auth.deleteAccount();
+
+    if (!mounted) return;
+
+    // Handle re-authentication requirement if session is older than 5 minutes
+    if (!success && auth.errorCode == 'REQUIRES_RECENT_LOGIN') {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pop(); // dismiss loading dialog
+
+      final password = await _showReauthPasswordDialog();
+      if (!mounted) {
+        setState(() => _isDeleting = false);
+        return;
       }
+
+      if (password != null && password.isNotEmpty) {
+        _showLoadingDialog('Memverifikasi sandi & menghapus akun...');
+        success = await auth.deleteAccount(password: password);
+        if (!mounted) return;
+        Navigator.of(
+          context,
+          rootNavigator: true,
+        ).pop(); // dismiss loading dialog
+      } else {
+        setState(() => _isDeleting = false);
+        return;
+      }
+    } else {
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pop(); // dismiss loading dialog
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isDeleting = false;
+    });
+
+    if (success) {
+      // Clear in-memory caches and states
+      context.read<ProfileProvider>().clear();
+      context.read<MealHistoryProvider>().clear();
+      context.read<DashboardProvider>().clear();
+
+      NeoSnackBars.success(context, 'Akun Anda telah berhasil dihapus.');
+      nav.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    } else if (auth.errorMessage != null) {
+      NeoSnackBars.error(context, auth.errorMessage!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final profileProvider = context.watch<ProfileProvider>();
+    final auth = context.watch<AuthProvider>();
 
     if (!_initialized && profileProvider.isLoading) {
       return const Scaffold(
@@ -153,13 +405,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final displayName = user?.fullName.isNotEmpty == true
         ? user!.fullName
         : (user?.email.isNotEmpty == true
-            ? user!.email.split('@').first
-            : 'Pengguna NutriView');
+              ? user!.email.split('@').first
+              : 'Pengguna NutriView');
 
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
         automaticallyImplyLeading: !widget.isTab,
+        leading: widget.isTab ? null : NeoBackButton.leading(context),
         elevation: 0,
         backgroundColor: NeoTokens.warmBackground,
         title: const Text(
@@ -177,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline_rounded, color: NeoTokens.ink),
+            icon: const Icon(AppIcons.info, color: NeoTokens.ink),
             tooltip: 'Tentang Aplikasi',
             onPressed: () => Navigator.pushNamed(context, AppRoutes.about),
           ),
@@ -230,7 +483,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 decoration: BoxDecoration(
                                   color: NeoTokens.vividYellow,
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: NeoTokens.black, width: 2),
+                                  border: Border.all(
+                                    color: NeoTokens.black,
+                                    width: 2,
+                                  ),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: NeoTokens.black,
@@ -240,8 +496,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                                 child: const Icon(
-                                  Icons.edit_rounded,
-                                  size: 18,
+                                  AppIcons.edit,
+                                  size: AppIcons.sizeLarge,
                                   color: NeoTokens.black,
                                 ),
                               ),
@@ -272,7 +528,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       user?.email ?? '',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 13,
                         color: NeoTokens.textMuted,
                         fontWeight: FontWeight.w500,
                       ),
@@ -281,10 +537,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     // Character Name Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: character.backgroundColor,
-                        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          NeoTokens.radiusSmall,
+                        ),
                         border: Border.all(color: NeoTokens.black, width: 1.5),
                       ),
                       child: Text(
@@ -296,6 +557,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
+
+                    // Badges row: Social Profession vs Security Role
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: [
+                        // Display Profession Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: NeoTokens.mintGreen,
+                            borderRadius: BorderRadius.circular(
+                              NeoTokens.radiusSmall,
+                            ),
+                            border: Border.all(
+                              color: NeoTokens.black,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                AppIcons.businessCenter,
+                                size: AppIcons.sizeMicro,
+                                color: NeoTokens.black,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Profesi: ${user?.profile?.profession ?? 'Umum'}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: NeoTokens.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Security Role Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: user?.isAdmin == true
+                                ? NeoTokens.vividYellow
+                                : NeoTokens.white,
+                            borderRadius: BorderRadius.circular(
+                              NeoTokens.radiusSmall,
+                            ),
+                            border: Border.all(
+                              color: NeoTokens.black,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                user?.isAdmin == true
+                                    ? AppIcons.adminPanelSettings
+                                    : AppIcons.person,
+                                size: AppIcons.sizeMicro,
+                                color: NeoTokens.black,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                user?.isAdmin == true ? 'ADMIN' : 'USER',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'monospace',
+                                  color: NeoTokens.black,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: NeoTokens.space16),
 
                     // "Ganti Avatar" Button
@@ -304,7 +653,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: NeoButton(
                         text: 'Pilih Karakter Avatar',
                         variant: NeoButtonVariant.secondary,
-                        prefixIcon: Icons.theater_comedy_rounded,
+                        prefixIcon: AppIcons.theaterComedy,
                         height: 44,
                         onPressed: () => _openAvatarCatalog(profileProvider),
                       ),
@@ -326,16 +675,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   GestureDetector(
                     onTap: () async {
-                      final updated = await Navigator.pushNamed(context, AppRoutes.biodata);
+                      final updated = await Navigator.pushNamed(
+                        context,
+                        AppRoutes.biodata,
+                      );
                       if (updated == true && mounted) {
                         profileProvider.loadProfile();
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: NeoTokens.vividYellow,
-                        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          NeoTokens.radiusSmall,
+                        ),
                         border: Border.all(color: NeoTokens.black, width: 1.5),
                         boxShadow: const [
                           BoxShadow(
@@ -348,15 +705,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Row(
                         children: [
                           Icon(
-                            profile != null ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded,
-                            size: 16,
+                            profile != null
+                                ? AppIcons.editNote
+                                : AppIcons.addCircleOutline,
+                            size: AppIcons.sizeMedium,
                             color: NeoTokens.black,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             profile != null ? 'Kelola Biodata' : 'Isi Biodata',
                             style: const TextStyle(
-                              fontSize: 11.5,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                               color: NeoTokens.black,
                             ),
@@ -380,10 +739,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 52,
                         decoration: BoxDecoration(
                           color: NeoTokens.paper,
-                          borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+                          borderRadius: BorderRadius.circular(
+                            NeoTokens.radiusMedium,
+                          ),
                           border: Border.all(color: NeoTokens.black, width: 2),
                         ),
-                        child: const Icon(Icons.fitness_center_rounded, color: NeoTokens.black, size: 28),
+                        child: const Icon(
+                          AppIcons.fitnessCenter,
+                          color: NeoTokens.black,
+                          size: AppIcons.sizeState,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       const Text(
@@ -398,15 +763,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Text(
                         'Lengkapi tanggal lahir, tinggi, dan berat badan agar NutriView dapat menghitung kebutuhan kalori harianmu secara akurat.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 12, color: NeoTokens.textMuted, height: 1.35),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: NeoTokens.textMuted,
+                          height: 1.35,
+                        ),
                       ),
                       const SizedBox(height: NeoTokens.space16),
                       NeoButton(
                         text: 'Lengkapi Biodata Sekarang',
                         variant: NeoButtonVariant.primary,
-                        prefixIcon: Icons.add_rounded,
+                        prefixIcon: AppIcons.add,
                         onPressed: () async {
-                          final updated = await Navigator.pushNamed(context, AppRoutes.biodata);
+                          final updated = await Navigator.pushNamed(
+                            context,
+                            AppRoutes.biodata,
+                          );
                           if (updated == true && mounted) {
                             profileProvider.loadProfile();
                           }
@@ -466,15 +838,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: NeoTokens.paper,
-                          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
-                          border: Border.all(color: NeoTokens.black, width: 1.5),
+                          borderRadius: BorderRadius.circular(
+                            NeoTokens.radiusSmall,
+                          ),
+                          border: Border.all(
+                            color: NeoTokens.black,
+                            width: 1.5,
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.bolt_rounded, size: 16, color: NeoTokens.black),
+                            const Icon(
+                              AppIcons.bolt,
+                              size: AppIcons.sizeMedium,
+                              color: NeoTokens.black,
+                            ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
@@ -509,7 +893,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: const [
                             Row(
                               children: [
-                                Icon(Icons.track_changes_rounded, size: 18, color: NeoTokens.black),
+                                Icon(
+                                  AppIcons.trackChanges,
+                                  size: AppIcons.sizeLarge,
+                                  color: NeoTokens.black,
+                                ),
                                 SizedBox(width: 6),
                                 Text(
                                   'Target Gizi Harian',
@@ -524,20 +912,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             NeoBadge(
                               label: 'MIFFLIN-ST JEOR',
                               color: NeoBadgeColor.yellow,
-                              fontSize: 9.5,
+                              fontSize: 10,
                             ),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Expanded(child: _targetCard('Kalori', '${target.caloriesKcal}', 'kkal', NeoTokens.vividYellow)),
+                            Expanded(
+                              child: _targetCard(
+                                'Kalori',
+                                '${target.caloriesKcal}',
+                                'kkal',
+                                NeoTokens.vividYellow,
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: _targetCard('Protein', '${target.proteinG}', 'g', NeoTokens.skyBlue)),
+                            Expanded(
+                              child: _targetCard(
+                                'Protein',
+                                '${target.proteinG}',
+                                'g',
+                                NeoTokens.skyBlue,
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: _targetCard('Karbo', '${target.carbsG}', 'g', NeoTokens.orangeCarb)),
+                            Expanded(
+                              child: _targetCard(
+                                'Karbo',
+                                '${target.carbsG}',
+                                'g',
+                                NeoTokens.orangeCarb,
+                              ),
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: _targetCard('Lemak', '${target.fatG}', 'g', NeoTokens.lavender)),
+                            Expanded(
+                              child: _targetCard(
+                                'Lemak',
+                                '${target.fatG}',
+                                'g',
+                                NeoTokens.lavender,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -560,29 +976,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Column(
                   children: [
+                    if (user?.isAdmin == true) ...[
+                      _menuTile(
+                        icon: AppIcons.adminPanelSettings,
+                        iconColor: NeoTokens.lime,
+                        title: 'Portal Admin',
+                        subtitle:
+                            'Kelola pangan, artikel CMS, pengguna & log sistem',
+                        onTap: () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.adminDashboard,
+                        ),
+                      ),
+                      const Divider(
+                        color: NeoTokens.black,
+                        height: 1,
+                        thickness: 1,
+                      ),
+                    ],
                     _menuTile(
-                      icon: Icons.info_outline_rounded,
+                      icon: AppIcons.info,
                       iconColor: NeoTokens.skyBlue,
                       title: 'Tentang NutriView & Pembuat',
                       subtitle: 'Profil Ahmad Badawi, tujuan & versi aplikasi',
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.about),
+                      onTap: () =>
+                          Navigator.pushNamed(context, AppRoutes.about),
                     ),
-                    const Divider(color: NeoTokens.black, height: 1, thickness: 1),
+                    const Divider(
+                      color: NeoTokens.black,
+                      height: 1,
+                      thickness: 1,
+                    ),
+                    if (auth.isBiometricAvailable) ...[
+                      _switchMenuTile(
+                        icon: auth.hasFace
+                            ? AppIcons.face
+                            : AppIcons.fingerprint,
+                        iconColor: NeoTokens.lime,
+                        title: auth.hasFace
+                            ? 'Kunci Wajah (Face Unlock)'
+                            : (auth.hasFingerprint
+                                  ? 'Kunci Sidik Jari'
+                                  : 'Kunci Biometrik'),
+                        subtitle:
+                            'Buka sesi aplikasi dengan cepat tanpa kata sandi',
+                        value: auth.isBiometricEnabled,
+                        onChanged: _handleToggleBiometric,
+                      ),
+                      const Divider(
+                        color: NeoTokens.black,
+                        height: 1,
+                        thickness: 1,
+                      ),
+                    ],
                     _menuTile(
-                      icon: Icons.logout_rounded,
+                      icon: AppIcons.logout,
                       iconColor: NeoTokens.vividYellow,
                       title: 'Keluar dari Akun',
                       subtitle: 'Akhiri sesi aktif Anda pada perangkat ini',
                       onTap: _handleLogout,
                     ),
-                    const Divider(color: NeoTokens.black, height: 1, thickness: 1),
+                    const Divider(
+                      color: NeoTokens.black,
+                      height: 1,
+                      thickness: 1,
+                    ),
                     _menuTile(
-                      icon: Icons.delete_forever_rounded,
+                      icon: AppIcons.deleteForever,
                       iconColor: NeoTokens.coralRed,
                       title: 'Hapus Akun & Data',
                       subtitle: 'Hapus akun autentikasi dan data permanen',
                       textColor: NeoTokens.coralRed,
-                      onTap: _handleDeleteAccount,
+                      onTap: _isDeleting ? null : _handleDeleteAccount,
                     ),
                   ],
                 ),
@@ -687,7 +1152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Text(
             unit,
             style: const TextStyle(
-              fontSize: 8.5,
+              fontSize: 9,
               fontWeight: FontWeight.w700,
               color: NeoTokens.black,
             ),
@@ -703,7 +1168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String title,
     required String subtitle,
     Color textColor = NeoTokens.black,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
   }) {
     return Material(
       color: Colors.transparent,
@@ -716,7 +1181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
             border: Border.all(color: NeoTokens.black, width: 1.5),
           ),
-          child: Icon(icon, color: NeoTokens.black, size: 20),
+          child: Icon(icon, color: NeoTokens.black, size: AppIcons.sizeControl),
         ),
         title: Text(
           title,
@@ -728,14 +1193,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         subtitle: Text(
           subtitle,
-          style: const TextStyle(fontSize: 11.5, color: NeoTokens.textMuted),
+          style: const TextStyle(fontSize: 12, color: NeoTokens.textMuted),
         ),
         trailing: const Icon(
-          Icons.chevron_right_rounded,
+          AppIcons.chevronRight,
           color: NeoTokens.black,
-          size: 22,
+          size: AppIcons.sizeToolbar,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _switchMenuTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: iconColor,
+            borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+            border: Border.all(color: NeoTokens.black, width: 1.5),
+          ),
+          child: Icon(icon, color: NeoTokens.black, size: AppIcons.sizeControl),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: NeoTokens.black,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(fontSize: 12, color: NeoTokens.textMuted),
+        ),
+        trailing: Switch.adaptive(
+          value: value,
+          activeThumbColor: NeoTokens.black,
+          activeTrackColor: NeoTokens.lime,
+          inactiveThumbColor: NeoTokens.white,
+          inactiveTrackColor: NeoTokens.recess,
+          onChanged: onChanged,
+        ),
       ),
     );
   }

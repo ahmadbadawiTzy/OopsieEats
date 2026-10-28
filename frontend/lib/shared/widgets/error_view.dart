@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Neo-Brutalist Error View.
 /// Displays an emphatic alert card with retry capability.
@@ -44,8 +45,8 @@ class ErrorView extends StatelessWidget {
                   ],
                 ),
                 child: const Icon(
-                  Icons.priority_high_rounded,
-                  size: 34,
+                  AppIcons.priorityHigh,
+                  size: AppIcons.sizeEmpty,
                   color: NeoTokens.white,
                 ),
               ),
@@ -64,7 +65,7 @@ class ErrorView extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontSize: 13.5,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: NeoTokens.textMuted,
                   height: 1.4,
@@ -76,7 +77,7 @@ class ErrorView extends StatelessWidget {
                   width: 170,
                   child: NeoButton(
                     text: 'Coba Lagi',
-                    prefixIcon: Icons.refresh_rounded,
+                    prefixIcon: AppIcons.refresh,
                     customBackgroundColor: NeoTokens.vividYellow,
                     height: 46,
                     onPressed: onRetry!,

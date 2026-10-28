@@ -147,11 +147,30 @@ class MealRepository {
     final db = _firestore;
     if (db == null) return [];
 
-    final snapshot = await db
-        .collection('users')
-        .doc(uid)
-        .collection('meals')
-        .get();
+    final formatter = DateFormat('yyyy-MM-dd');
+    final mealsCollection = db.collection('users').doc(uid).collection('meals');
+
+    // Performance optimization: when querying a specific date (e.g. today's intake on dashboard)
+    // avoid scanning the entire multi-year meals collection by querying where('consumed_date', isEqualTo: ...)
+    if (dateFrom != null && dateTo != null) {
+      final fromStr = formatter.format(dateFrom);
+      final toStr = formatter.format(dateTo);
+      if (fromStr == toStr) {
+        final snapshot = await mealsCollection
+            .where('consumed_date', isEqualTo: fromStr)
+            .get();
+        final meals = snapshot.docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data());
+          return MealRecord.fromJson(data);
+        }).toList();
+        meals.sort((a, b) => b.consumedAt.compareTo(a.consumedAt));
+        final startIndex = (page - 1) * pageSize;
+        if (startIndex >= meals.length) return [];
+        return meals.skip(startIndex).take(pageSize).toList();
+      }
+    }
+
+    final snapshot = await mealsCollection.get();
 
     final allMeals = snapshot.docs.map((doc) {
       final data = Map<String, dynamic>.from(doc.data());
@@ -160,7 +179,6 @@ class MealRepository {
 
     // Filter by date range if provided
     var filtered = allMeals;
-    final formatter = DateFormat('yyyy-MM-dd');
 
     if (dateFrom != null) {
       final fromStr = formatter.format(dateFrom);

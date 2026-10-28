@@ -4,6 +4,7 @@ import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Overkill Neo-Brutalist Today's Intake Section.
 /// Displays today's meal records with loading skeleton, empty state, and error handling.
@@ -80,7 +81,11 @@ class TodaysIntakeSection extends StatelessWidget {
           children: [
             const Row(
               children: [
-                Icon(Icons.restaurant_rounded, color: NeoTokens.ink, size: 18),
+                Icon(
+                  AppIcons.restaurant,
+                  color: NeoTokens.ink,
+                  size: AppIcons.sizeLarge,
+                ),
                 SizedBox(width: 6),
                 Text(
                   '[04] TODAY\'S INTAKE',
@@ -124,15 +129,15 @@ class TodaysIntakeSection extends StatelessWidget {
                         'RIWAYAT',
                         style: TextStyle(
                           fontFamily: 'monospace',
-                          fontSize: 9.5,
+                          fontSize: 10,
                           fontWeight: FontWeight.w900,
                           color: NeoTokens.ink,
                         ),
                       ),
                       SizedBox(width: 4),
                       Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 11,
+                        AppIcons.arrowForward,
+                        size: AppIcons.sizeMicro,
                         color: NeoTokens.ink,
                       ),
                     ],
@@ -145,7 +150,7 @@ class TodaysIntakeSection extends StatelessWidget {
         const Text(
           'Yang sudah kamu konsumsi hari ini.',
           style: TextStyle(
-            fontSize: 12.5,
+            fontSize: 13,
             fontWeight: FontWeight.w600,
             color: NeoTokens.inkSecondary,
           ),
@@ -164,9 +169,9 @@ class TodaysIntakeSection extends StatelessWidget {
             child: Column(
               children: [
                 const Icon(
-                  Icons.error_outline_rounded,
+                  AppIcons.error,
                   color: NeoTokens.alert,
-                  size: 28,
+                  size: AppIcons.sizeState,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -229,9 +234,9 @@ class TodaysIntakeSection extends StatelessWidget {
                   ),
                   child: const Center(
                     child: Icon(
-                      Icons.flatware_rounded,
+                      AppIcons.flatware,
                       color: NeoTokens.inkMuted,
-                      size: 26,
+                      size: AppIcons.sizeHeader,
                     ),
                   ),
                 ),
@@ -278,8 +283,8 @@ class TodaysIntakeSection extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.camera_alt_rounded,
-                          size: 16,
+                          AppIcons.cameraAlt,
+                          size: AppIcons.sizeMedium,
                           color: NeoTokens.ink,
                         ),
                         SizedBox(width: 6),
@@ -328,9 +333,9 @@ class TodaysIntakeSection extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Icon(
-                        Icons.lunch_dining_rounded,
+                        AppIcons.lunchDining,
                         color: NeoTokens.ink,
-                        size: 22,
+                        size: AppIcons.sizeToolbar,
                       ),
                     ),
                   ),
@@ -372,7 +377,7 @@ class TodaysIntakeSection extends StatelessWidget {
                               ? itemsNames
                               : 'Catatan Makanan',
                           style: const TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: NeoTokens.ink,
                             letterSpacing: -0.2,

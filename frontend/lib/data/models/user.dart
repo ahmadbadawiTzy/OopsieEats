@@ -21,8 +21,7 @@ class User {
     this.avatarPreset,
   });
 
-  bool get isAdmin =>
-      role == 'super_admin' || role == 'dietitian' || role == 'editor';
+  bool get isAdmin => role.toLowerCase().trim() == 'admin';
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(

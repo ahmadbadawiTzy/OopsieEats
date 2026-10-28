@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -47,20 +48,24 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    // Send official auth emails (password reset, verification) in Indonesian
+    try {
+      await fb.FirebaseAuth.instance.setLanguageCode('id');
+    } catch (_) {}
+    // Production bounded cache: 100MB prevents unbounded memory and disk footprint
     FirebaseFirestore.instance.settings = const Settings(
       persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      cacheSizeBytes: 104857600,
     );
   } catch (e) {
     debugPrint('Firebase initialization warning: $e');
   }
 
   final yoloDetector = YoloDetector();
-  try {
-    await yoloDetector.initialize();
-  } catch (e) {
-    debugPrint('YOLO detector initialization warning: $e');
-  }
+  // Asynchronously warmup YOLO in background without blocking first frame/startup
+  yoloDetector.initialize().catchError((e) {
+    debugPrint('Background YOLO detector initialization warning: $e');
+  });
 
   final apiClient = ApiClient();
   final authRepository = AuthRepository(apiClient);
@@ -72,6 +77,11 @@ void main() async {
   final adminRepository = AdminRepository(client: apiClient);
 
   final authProvider = AuthProvider(authRepository);
+  authProvider.onLogout = () {
+    dashboardRepository.invalidateUserCache();
+    foodRepository.invalidateCache();
+    articleRepository.invalidateCache();
+  };
 
   apiClient.onUnauthorized = () {
     authProvider.handleSessionExpired();

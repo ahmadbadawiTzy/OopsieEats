@@ -3,27 +3,33 @@ import 'package:nutriview/core/age_calculator.dart';
 
 void main() {
   group('AgeCalculator Unit Tests', () {
-    test('calculates correct age when birthday has already passed this year', () {
-      final now = DateTime.now();
-      // Birthday 25 years ago, earlier this year
-      final birthDate = DateTime(now.year - 25, 1, 1);
-      final age = AgeCalculator.calculateAge(birthDate);
-      expect(age, equals(25));
-    });
-
-    test('calculates correct age when birthday has not occurred yet this year', () {
-      final now = DateTime.now();
-      // If today is December 31, birthday cannot be later this year,
-      // but in general month 12 day 31 is later if now is before Dec 31
-      final futureMonth = now.month < 12 ? now.month + 1 : 12;
-      final futureDay = now.month < 12 ? now.day : 28;
-      
-      if (now.month < 12 || now.day < 28) {
-        final birthDate = DateTime(now.year - 20, futureMonth, futureDay);
+    test(
+      'calculates correct age when birthday has already passed this year',
+      () {
+        final now = DateTime.now();
+        // Birthday 25 years ago, earlier this year
+        final birthDate = DateTime(now.year - 25, 1, 1);
         final age = AgeCalculator.calculateAge(birthDate);
-        expect(age, equals(19));
-      }
-    });
+        expect(age, equals(25));
+      },
+    );
+
+    test(
+      'calculates correct age when birthday has not occurred yet this year',
+      () {
+        final now = DateTime.now();
+        // If today is December 31, birthday cannot be later this year,
+        // but in general month 12 day 31 is later if now is before Dec 31
+        final futureMonth = now.month < 12 ? now.month + 1 : 12;
+        final futureDay = now.month < 12 ? now.day : 28;
+
+        if (now.month < 12 || now.day < 28) {
+          final birthDate = DateTime(now.year - 20, futureMonth, futureDay);
+          final age = AgeCalculator.calculateAge(birthDate);
+          expect(age, equals(19));
+        }
+      },
+    );
 
     test('calculates correct age on exact birthday today', () {
       final now = DateTime.now();

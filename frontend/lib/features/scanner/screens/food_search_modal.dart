@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/food.dart';
@@ -6,6 +8,7 @@ import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_icon_button.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class FoodSearchModal extends StatefulWidget {
   final FoodRepository foodRepository;
@@ -18,6 +21,7 @@ class FoodSearchModal extends StatefulWidget {
 
 class _FoodSearchModalState extends State<FoodSearchModal> {
   final _searchController = TextEditingController();
+  Timer? _debounceTimer;
   List<FoodItem> _foods = [];
   bool _isLoading = false;
   String? _error;
@@ -30,8 +34,18 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String val) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 250), () {
+      if (mounted) {
+        _fetchFoods(val);
+      }
+    });
   }
 
   Future<void> _fetchFoods([String? query]) async {
@@ -111,9 +125,10 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
                 ),
               ),
               NeoIconButton(
-                icon: Icons.close_rounded,
-                size: 34,
-                iconSize: 18,
+                icon: AppIcons.close,
+                tooltip: 'Tutup pencarian makanan',
+                size: 36,
+                iconSize: AppIcons.sizeLarge,
                 shadowOffset: Offset.zero,
                 onPressed: () => Navigator.pop(context),
               ),
@@ -141,7 +156,7 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
             child: TextField(
               controller: _searchController,
               style: const TextStyle(
-                fontSize: 14.5,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: NeoTokens.textDark,
               ),
@@ -153,17 +168,18 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
                   color: NeoTokens.textLight,
                 ),
                 prefixIcon: const Icon(
-                  Icons.search_rounded,
-                  size: 22,
+                  AppIcons.search,
+                  size: AppIcons.sizeToolbar,
                   color: NeoTokens.black,
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(
-                          Icons.clear_rounded,
-                          size: 20,
+                          AppIcons.clear,
+                          size: AppIcons.sizeControl,
                           color: NeoTokens.black,
                         ),
+                        tooltip: 'Hapus pencarian',
                         onPressed: () {
                           _searchController.clear();
                           _fetchFoods();
@@ -178,9 +194,7 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
                   vertical: 14,
                 ),
               ),
-              onChanged: (val) {
-                _fetchFoods(val);
-              },
+              onChanged: _onSearchChanged,
             ),
           ),
           const SizedBox(height: NeoTokens.space16),
@@ -205,15 +219,15 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
                       mainAxisSize: MainAxisSize.min,
                       children: const [
                         Icon(
-                          Icons.search_off_rounded,
-                          size: 44,
+                          AppIcons.searchOff,
+                          size: AppIcons.sizeBrand,
                           color: NeoTokens.black,
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Tidak ada makanan yang cocok.',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: NeoTokens.textMuted,
                           ),
@@ -251,7 +265,7 @@ class _FoodSearchModalState extends State<FoodSearchModal> {
                                   Text(
                                     '${food.caloriesPer100g} kkal • P: ${food.proteinPer100g}g • K: ${food.carbsPer100g}g • L: ${food.fatPer100g}g (per 100g)',
                                     style: const TextStyle(
-                                      fontSize: 11.5,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w600,
                                       color: NeoTokens.textMuted,
                                     ),

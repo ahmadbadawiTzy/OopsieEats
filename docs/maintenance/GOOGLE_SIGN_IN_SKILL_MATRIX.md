@@ -1,0 +1,13 @@
+# Google Sign-In Skill Execution Matrix
+
+Daftar inventarisasi dan status eksekusi skill dalam implementasi Google Sign-In dengan Firebase Authentication pada NutriView.
+
+| Skill | Status | Penggunaan aktual | Bukti |
+|---|---|---|---|
+| **Ponytail** | USED | Menerapkan prinsip *the smallest complete change*: tidak menambahkan layer atau abstraksi berlebih, memanfaatkan arsitektur & komponen existing (`NeoButton`, `AuthRepository`, `AuthProvider`, `ApiClient`), mempertahankan `firestore.rules` dan error handling tanpa duplikasi. | Perubahan terpusat pada file existing: `auth_repository.dart`, `auth_provider.dart`, `login_screen.dart`, `neo_button.dart`. |
+| **Flutter architecture** | USED | Mempertahankan arsitektur berlapis (Presentation / MVVM di `LoginScreen` & `AuthProvider`, Data Access di `AuthRepository`). Tidak menaruh business logic atau data fetching di UI View. | `frontend/lib/data/repositories/auth_repository.dart`, `frontend/lib/features/auth/providers/auth_provider.dart`, `frontend/lib/features/auth/screens/login_screen.dart`. |
+| **Static analysis (`dart-run-static-analysis`)** | USED | Menjalankan `flutter analyze` secara berkelanjutan untuk memastikan zero warning, zero info-as-error, dan kepatuhan strict typing. | Hasil `flutter analyze` bersih: **No issues found!** |
+| **Widget tests (`flutter-add-widget-test`)** | USED | Menulis widget test untuk memverifikasi tombol Google Sign-In, styling Neo-Brutalism, loading state, pencegahan multiple tap, dan integrasi view. | `frontend/test/google_sign_in_widget_test.dart` (6 passed tests). |
+| **Dart unit tests (`dart-add-unit-test`)** | USED | Menguji alur `loginWithGoogle` pada `AuthRepository` dan `AuthProvider` menggunakan mocktail: login sukses, cancellation, error credential, Firestore user baru vs lama, dan logout. | `frontend/test/google_sign_in_test.dart` (12 passed tests). |
+| **Integration tests (`flutter-add-integration-test`)** | REVIEWED | Mengaudit kemampuan otomasi end-to-end vs dependensi akun Google riil. Pengujian otomatis dijalankan pada boundary mock SDK untuk menjaga keandalan CI/CD tanpa mencemari kredensial produksi. Total test suite lulus: **156 passed tests**. | Eksekusi `flutter test` lulus 156/156 pengujian. |
+| **Pre-launch checklist** | USED | Memeriksa package ID (`com.nutriview.nutriview`), `google-services.json`, SHA-1 / SHA-256 signing fingerprint debug & release, zero hardcoded secrets, dan keamanan session/token. Build Android verified (`✓ Built build/app/outputs/flutter-apk/app-debug.apk`). | Ekstraksi fingerprint via `keytool`, audit file `firestore.rules`, audit `google-services.json`, build APK sukses. |

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 enum NeoButtonVariant {
   primary, // Acid Lime (Hero Action)
@@ -20,6 +21,7 @@ class NeoButton extends StatefulWidget {
   final Color? customBackgroundColor;
   final Color? customTextColor;
   final IconData? prefixIcon;
+  final Widget? prefixWidget;
   final IconData? suffixIcon;
   final bool isLoading;
   final bool isFullWidth;
@@ -38,6 +40,7 @@ class NeoButton extends StatefulWidget {
     this.customBackgroundColor,
     this.customTextColor,
     this.prefixIcon,
+    this.prefixWidget,
     this.suffixIcon,
     this.isLoading = false,
     this.isFullWidth = true,
@@ -138,8 +141,15 @@ class _NeoButtonState extends State<NeoButton> {
             ),
           )
         else ...[
-          if (widget.prefixIcon != null) ...[
-            Icon(widget.prefixIcon, size: 20, color: effectiveFg),
+          if (widget.prefixWidget != null) ...[
+            widget.prefixWidget!,
+            const SizedBox(width: NeoTokens.space8),
+          ] else if (widget.prefixIcon != null) ...[
+            Icon(
+              widget.prefixIcon,
+              size: AppIcons.sizeControl,
+              color: effectiveFg,
+            ),
             const SizedBox(width: NeoTokens.space8),
           ],
           Flexible(
@@ -148,7 +158,8 @@ class _NeoButtonState extends State<NeoButton> {
               child: Text(
                 widget.text,
                 maxLines: 1,
-                style: widget.textStyle ??
+                style:
+                    widget.textStyle ??
                     TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
@@ -160,7 +171,11 @@ class _NeoButtonState extends State<NeoButton> {
           ),
           if (widget.suffixIcon != null) ...[
             const SizedBox(width: NeoTokens.space8),
-            Icon(widget.suffixIcon, size: 20, color: effectiveFg),
+            Icon(
+              widget.suffixIcon,
+              size: AppIcons.sizeControl,
+              color: effectiveFg,
+            ),
           ],
         ],
       ],
@@ -185,7 +200,8 @@ class _NeoButtonState extends State<NeoButton> {
           ),
           height: widget.height,
           width: widget.isFullWidth ? double.infinity : null,
-          padding: widget.padding ??
+          padding:
+              widget.padding ??
               const EdgeInsets.symmetric(horizontal: NeoTokens.space20),
           decoration: BoxDecoration(
             color: effectiveBg,

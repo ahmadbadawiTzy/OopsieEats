@@ -1,6 +1,17 @@
 import 'package:nutriview/core/age_calculator.dart';
 
 class UserProfile {
+  static const List<String> predefinedProfessions = [
+    'Umum',
+    'Ahli Gizi',
+    'Dokter',
+    'Mahasiswa',
+    'Software Developer',
+    'Atlet / Trainer',
+    'Guru / Dosen',
+    'Lainnya',
+  ];
+
   final int age;
   final DateTime? birthDate;
   final String sex;
@@ -8,6 +19,7 @@ class UserProfile {
   final double heightCm;
   final String activityLevel;
   final String goal;
+  final String profession;
 
   UserProfile({
     required this.age,
@@ -17,6 +29,7 @@ class UserProfile {
     required this.heightCm,
     required this.activityLevel,
     required this.goal,
+    this.profession = 'Umum',
   });
 
   /// Dynamic age computed from [birthDate]. Falls back to [age] if [birthDate] is null.
@@ -36,19 +49,45 @@ class UserProfile {
       heightCm: (json['height_cm'] as num?)?.toDouble() ?? 165.0,
       activityLevel: json['activity_level'] as String? ?? 'moderate',
       goal: json['goal'] as String? ?? 'maintain_weight',
+      profession: json['profession'] as String? ?? 'Umum',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'age': calculatedAge,
-      'birth_date': birthDate != null ? AgeCalculator.formatIsoDate(birthDate!) : null,
+      'birth_date': birthDate != null
+          ? AgeCalculator.formatIsoDate(birthDate!)
+          : null,
       'sex': sex,
       'weight_kg': weightKg,
       'height_cm': heightCm,
       'activity_level': activityLevel,
       'goal': goal,
+      'profession': profession,
     };
+  }
+
+  UserProfile copyWith({
+    int? age,
+    DateTime? birthDate,
+    String? sex,
+    double? weightKg,
+    double? heightCm,
+    String? activityLevel,
+    String? goal,
+    String? profession,
+  }) {
+    return UserProfile(
+      age: age ?? this.age,
+      birthDate: birthDate ?? this.birthDate,
+      sex: sex ?? this.sex,
+      weightKg: weightKg ?? this.weightKg,
+      heightCm: heightCm ?? this.heightCm,
+      activityLevel: activityLevel ?? this.activityLevel,
+      goal: goal ?? this.goal,
+      profession: profession ?? this.profession,
+    );
   }
 
   String get sexLabel => sex == 'male' ? 'Laki-laki' : 'Perempuan';

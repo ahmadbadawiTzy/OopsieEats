@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/data/repositories/meal_repository.dart';
+import 'package:nutriview/shared/neo/neo_back_button.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
@@ -67,6 +68,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Detail Catatan Makan'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -122,7 +124,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                             Text(
                               _formatTime(_meal!.consumedAt),
                               style: const TextStyle(
-                                fontSize: 12.5,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 color: NeoTokens.black,
                               ),
@@ -212,7 +214,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                                 NeoBadge(
                                   label: '${mealItem.portionGrams} g',
                                   color: NeoBadgeColor.mint,
-                                  fontSize: 11.5,
+                                  fontSize: 12,
                                 ),
                               ],
                             ),

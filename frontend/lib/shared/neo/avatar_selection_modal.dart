@@ -5,6 +5,7 @@ import 'package:nutriview/shared/neo/neo_avatar.dart';
 import 'package:nutriview/shared/neo/neo_badge.dart';
 import 'package:nutriview/shared/neo/neo_button.dart';
 import 'package:nutriview/shared/neo/neo_card.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 /// Modal bottom sheet allowing users to choose an authentic Neo-Brutalism
 /// game-style avatar character from [AvatarCatalog].
@@ -112,7 +113,8 @@ class _AvatarSelectionModalState extends State<AvatarSelectionModal> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: NeoTokens.black),
+                    icon: const Icon(AppIcons.close, color: NeoTokens.black),
+                    tooltip: 'Tutup katalog avatar',
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -174,7 +176,7 @@ class _AvatarSelectionModalState extends State<AvatarSelectionModal> {
                           Text(
                             activeCharacter.traits,
                             style: const TextStyle(
-                              fontSize: 10.5,
+                              fontSize: 11,
                               color: NeoTokens.textMuted,
                             ),
                           ),
@@ -189,7 +191,10 @@ class _AvatarSelectionModalState extends State<AvatarSelectionModal> {
             // Grid of Characters
             Expanded(
               child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
                   mainAxisSpacing: 12,
@@ -276,7 +281,7 @@ class _AvatarSelectionModalState extends State<AvatarSelectionModal> {
               child: NeoButton(
                 text: 'Gunakan Avatar Ini',
                 variant: NeoButtonVariant.primary,
-                suffixIcon: Icons.check_circle_rounded,
+                suffixIcon: AppIcons.checkCircle,
                 onPressed: () => widget.onAvatarSelected(_selectedId),
               ),
             ),
