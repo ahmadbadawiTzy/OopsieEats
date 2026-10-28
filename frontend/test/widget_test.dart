@@ -5,7 +5,6 @@ import 'package:nutriview/data/models/dashboard.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
 import 'package:nutriview/features/auth/screens/login_screen.dart';
 import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/shared/widgets/progress_card.dart';
 import 'package:provider/provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
@@ -43,7 +42,7 @@ void main() {
     expect(find.text('Daftar Sekarang'), findsOneWidget);
   });
 
-  testWidgets('ProgressCard displays correct percentage and nutrient amounts', (
+  testWidgets('NeoStatCard displays correct percentage and nutrient amounts', (
     WidgetTester tester,
   ) async {
     final progress = NutrientProgress(
@@ -56,7 +55,7 @@ void main() {
       MaterialApp(
         theme: AppTheme.lightTheme,
         home: Scaffold(
-          body: ProgressCard(
+          body: NeoStatCard(
             title: 'Energi / Kalori',
             progress: progress,
             unit: 'kkal',

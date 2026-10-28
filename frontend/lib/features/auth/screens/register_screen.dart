@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/widgets/custom_button.dart';
-import 'package:nutriview/shared/widgets/custom_text_field.dart';
+import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -53,6 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
+        leading: NeoBackButton.leading(context),
         title: const Text('Daftar Akun NutriView'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -94,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     'Daftar untuk memantau asupan gizi harian secara mudah',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: NeoTokens.textMuted,
                       height: 1.3,
@@ -113,9 +112,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.error_outline_rounded,
+                            AppIcons.error,
                             color: NeoTokens.white,
-                            size: 22,
+                            size: AppIcons.sizeToolbar,
                           ),
                           const SizedBox(width: NeoTokens.space12),
                           Expanded(
@@ -140,13 +139,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        CustomTextField(
+                        NeoInput(
                           label: 'Nama Lengkap',
                           controller: _nameController,
                           hintText: 'Masukkan nama lengkap',
                           prefixIcon: const Icon(
-                            Icons.person_outline_rounded,
-                            size: 20,
+                            AppIcons.personOutline,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           validator: (val) {
@@ -157,14 +156,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: NeoTokens.space16),
-                        CustomTextField(
+                        NeoInput(
                           label: 'Email',
                           controller: _emailController,
                           hintText: 'nama@example.com',
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(
-                            Icons.email_outlined,
-                            size: 20,
+                            AppIcons.email,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           validator: (val) {
@@ -178,24 +177,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: NeoTokens.space16),
-                        CustomTextField(
+                        NeoInput(
                           label: 'Kata Sandi',
                           controller: _passwordController,
                           hintText: 'Minimal 8 karakter, huruf & angka',
                           obscureText: _obscurePassword,
                           prefixIcon: const Icon(
-                            Icons.lock_outline_rounded,
-                            size: 20,
+                            AppIcons.lock,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              size: 20,
+                                  ? AppIcons.visibilityOff
+                                  : AppIcons.visibility,
+                              size: AppIcons.sizeControl,
                               color: NeoTokens.black,
                             ),
+                            tooltip: _obscurePassword
+                                ? 'Tampilkan kata sandi'
+                                : 'Sembunyikan kata sandi',
                             onPressed: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -217,9 +219,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: NeoTokens.space24),
-                        CustomButton(
+                        NeoButton(
                           text: 'Daftar Akun',
                           isLoading: auth.isLoading,
+                          customBackgroundColor: NeoTokens.vividYellow,
                           onPressed: _handleRegister,
                         ),
                       ],
@@ -244,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const Text(
                           'Sudah memiliki akun? ',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: NeoTokens.textMuted,
                           ),
@@ -252,7 +255,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const Text(
                           'Masuk',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             color: NeoTokens.black,
                             fontWeight: FontWeight.w900,
                             decoration: TextDecoration.underline,
@@ -260,8 +263,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(width: 4),
                         const Icon(
-                          Icons.login_rounded,
-                          size: 16,
+                          AppIcons.login,
+                          size: AppIcons.sizeMedium,
                           color: NeoTokens.black,
                         ),
                       ],

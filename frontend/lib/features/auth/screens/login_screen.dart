@@ -3,10 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/widgets/custom_button.dart';
-import 'package:nutriview/shared/widgets/custom_text_field.dart';
+import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/core/app_icons.dart';
+import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,7 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (user != null && mounted) {
-      if (user.isAdmin) {
+      final isAdmin =
+          user.isAdmin ||
+          auth.isAdmin ||
+          user.role.toLowerCase().trim() == 'admin' ||
+          auth.role.toLowerCase().trim() == 'admin';
+
+      if (isAdmin) {
         Navigator.pushReplacementNamed(
           context,
           AppRoutes.adminDashboard,
@@ -73,43 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Neo Hero Badge
-                  Center(
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: NeoTokens.mintGreen,
-                        borderRadius: BorderRadius.circular(
-                          NeoTokens.radiusMedium,
-                        ),
-                        border: Border.all(
-                          color: NeoTokens.black,
-                          width: NeoTokens.borderWidth,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: NeoTokens.black,
-                            offset: NeoTokens.shadowOffset,
-                            blurRadius: NeoTokens.shadowBlurRadius,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.restaurant_menu_rounded,
-                        size: 44,
-                        color: NeoTokens.black,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: NeoTokens.space16),
-                  const Center(
-                    child: NeoBadge(
-                      label: 'NUTRITION INTELLIGENCE',
-                      color: NeoBadgeColor.yellow,
-                      hasShadow: true,
-                    ),
-                  ),
+                  // Neo Hero Brand Logo Mark (Apple mark matching Splash View & App Icon)
+                  const Center(child: NutriViewLogoMark(size: 96)),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
                     'NutriView',
@@ -126,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Kenali Makanan & Lacak Asupan Gizi Harian',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: NeoTokens.textMuted,
                       height: 1.3,
@@ -146,9 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.error_outline_rounded,
+                            AppIcons.error,
                             color: NeoTokens.white,
-                            size: 22,
+                            size: AppIcons.sizeToolbar,
                           ),
                           const SizedBox(width: NeoTokens.space12),
                           Expanded(
@@ -174,14 +144,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        CustomTextField(
+                        NeoInput(
                           label: 'Email',
                           controller: _emailController,
                           hintText: 'nama@example.com',
                           keyboardType: TextInputType.emailAddress,
                           prefixIcon: const Icon(
-                            Icons.email_outlined,
-                            size: 20,
+                            AppIcons.email,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           validator: (val) {
@@ -195,24 +165,27 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: NeoTokens.space16),
-                        CustomTextField(
+                        NeoInput(
                           label: 'Kata Sandi',
                           controller: _passwordController,
                           hintText: 'Minimal 8 karakter',
                           obscureText: _obscurePassword,
                           prefixIcon: const Icon(
-                            Icons.lock_outline_rounded,
-                            size: 20,
+                            AppIcons.lock,
+                            size: AppIcons.sizeControl,
                             color: NeoTokens.black,
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              size: 20,
+                                  ? AppIcons.visibilityOff
+                                  : AppIcons.visibility,
+                              size: AppIcons.sizeControl,
                               color: NeoTokens.black,
                             ),
+                            tooltip: _obscurePassword
+                                ? 'Tampilkan kata sandi'
+                                : 'Sembunyikan kata sandi',
                             onPressed: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -227,9 +200,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         const SizedBox(height: NeoTokens.space24),
-                        CustomButton(
+                        NeoButton(
                           text: 'Masuk',
                           isLoading: auth.isLoading,
+                          customBackgroundColor: NeoTokens.vividYellow,
                           onPressed: _handleLogin,
                         ),
                       ],
@@ -255,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           'Belum punya akun? ',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: NeoTokens.textMuted,
                           ),
@@ -263,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Text(
                           'Daftar Sekarang',
                           style: TextStyle(
-                            fontSize: 13.5,
+                            fontSize: 14,
                             color: NeoTokens.black,
                             fontWeight: FontWeight.w900,
                             decoration: TextDecoration.underline,
@@ -271,8 +245,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(width: 4),
                         const Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 16,
+                          AppIcons.arrowForward,
+                          size: AppIcons.sizeMedium,
                           color: NeoTokens.black,
                         ),
                       ],
