@@ -12,7 +12,7 @@ class CreatorConfig {
   static const String creatorName = 'Ahmad Badawi';
   static const String creatorProfession = 'Software Developer';
   static const String creatorDomains = 'Web · AI · Mobile';
-  static const String creatorRole = 'Pembuat & Pengembang NutriView';
+  static const String creatorRole = 'Developer of NutriView';
   static const String creatorLocation = 'Indonesia';
 
   static const String creatorBio =

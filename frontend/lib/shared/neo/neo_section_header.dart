@@ -19,55 +19,72 @@ class NeoSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: NeoTokens.space8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  border: Border.all(color: NeoTokens.black, width: 1.5),
-                  borderRadius: BorderRadius.circular(2),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isBounded = constraints.maxWidth.isFinite;
+
+        final textColumn = Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              maxLines: isBounded ? 2 : null,
+              overflow: isBounded ? TextOverflow.ellipsis : null,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: NeoTokens.textDark,
+                letterSpacing: -0.3,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subtitle!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: NeoTokens.textMuted,
                 ),
               ),
-              const SizedBox(width: NeoTokens.space8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: NeoTokens.textDark,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: NeoTokens.textMuted,
-                      ),
-                    ),
-                  ],
-                ],
+            ],
+          ],
+        );
+
+        final indicatorRow = Row(
+          mainAxisSize: isBounded ? MainAxisSize.max : MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 6,
+              height: 20,
+              decoration: BoxDecoration(
+                color: accentColor,
+                border: Border.all(color: NeoTokens.black, width: 1.5),
+                borderRadius: BorderRadius.circular(2),
               ),
+            ),
+            const SizedBox(width: NeoTokens.space8),
+            if (isBounded) Expanded(child: textColumn) else textColumn,
+          ],
+        );
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: NeoTokens.space8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (isBounded) Expanded(child: indicatorRow) else indicatorRow,
+              if (trailing != null) ...[
+                const SizedBox(width: NeoTokens.space8),
+                trailing!,
+              ],
             ],
           ),
-          if (trailing != null) trailing!,
-        ],
-      ),
+        );
+      },
     );
   }
 }

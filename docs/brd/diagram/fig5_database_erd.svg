@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1150" height="780" viewBox="0 0 1150 780">
+  <defs>
+    <marker id="arr-sub" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#1E293B"/>
+    </marker>
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1150" height="780" fill="#F8FAFC"/>
+  <rect x="15" y="15" width="1120" height="750" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Title Header -->
+  <rect x="15" y="15" width="1120" height="55" rx="10" fill="#0F172A"/>
+  <rect x="15" y="55" width="1120" height="15" fill="#0F172A"/>
+  <text x="35" y="48" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">NutriView — Cloud Firestore Document Schema Model (ERD)</text>
+  <text x="1115" y="48" font-family="system-ui, sans-serif" font-size="13" font-weight="500" fill="#94A3B8" text-anchor="end">NoSQL Collections, Subcollections &amp; Embedded Maps</text>
+
+  <!-- Collection 1: users/{userId} -->
+  <g transform="translate(45, 95)" filter="url(#shadow)">
+    <rect x="0" y="0" width="320" height="365" rx="6" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="0" y="0" width="320" height="32" rx="6" fill="#EFF6FF"/>
+    <rect x="0" y="22" width="320" height="10" fill="#EFF6FF"/>
+    <text x="15" y="22" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#1E40AF">users/{userId} (Top-Level Collection)</text>
+    <line x1="0" y1="32" x2="320" y2="32" stroke="#2563EB" stroke-width="1.5"/>
+
+    <g transform="translate(15, 52)" font-family="monospace" font-size="10.5">
+      <text y="0" font-weight="bold" fill="#0F172A">+ uid: string &lt;PK / Auth UID&gt;</text>
+      <text y="18" fill="#334155">+ email: string</text>
+      <text y="36" fill="#334155">+ full_name: string</text>
+      <text y="54" font-weight="bold" fill="#B91C1C">+ role: 'user' | 'admin' &lt;Strict 2-Role&gt;</text>
+      <text y="72" fill="#334155">+ is_active: boolean</text>
+      <text y="90" fill="#334155">+ avatar_preset: string</text>
+      <text y="108" fill="#334155">+ created_at: timestamp</text>
+      <text y="126" fill="#334155">+ updated_at: timestamp</text>
+
+      <line x1="0" y1="138" x2="290" y2="138" stroke="#E2E8F0" stroke-width="1"/>
+      <text y="154" font-weight="bold" fill="#0369A1">+ profile: map</text>
+      <text y="170" fill="#475569">    age: int, gender: string ('male'|'female')</text>
+      <text y="186" fill="#475569">    height_cm: double, weight_kg: double</text>
+      <text y="202" fill="#475569">    activity_level: string (1.2 - 1.9)</text>
+      <text y="218" fill="#475569">    goal: string ('lose' | 'maintain' | 'gain')</text>
+
+      <line x1="0" y1="230" x2="290" y2="230" stroke="#E2E8F0" stroke-width="1"/>
+      <text y="246" font-weight="bold" fill="#047857">+ daily_target: map (Mifflin-St Jeor)</text>
+      <text y="262" fill="#475569">    calories_kcal: int (min 1200/1500)</text>
+      <text y="278" fill="#475569">    protein_g: double, carbs_g: double</text>
+      <text y="294" fill="#475569">    fat_g: double, bmr_kcal: double</text>
+    </g>
+  </g>
+
+  <!-- Subcollection 2: users/{userId}/meals/{mealId} -->
+  <g transform="translate(435, 95)" filter="url(#shadow)">
+    <rect x="0" y="0" width="340" height="340" rx="6" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+    <rect x="0" y="0" width="340" height="32" rx="6" fill="#ECFDF5"/>
+    <rect x="0" y="22" width="340" height="10" fill="#ECFDF5"/>
+    <text x="15" y="22" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#065F46">users/{userId}/meals/{mealId} (Subcollection)</text>
+    <line x1="0" y1="32" x2="340" y2="32" stroke="#10B981" stroke-width="1.5"/>
+
+    <g transform="translate(15, 52)" font-family="monospace" font-size="10.5">
+      <text y="0" font-weight="bold" fill="#0F172A">+ id: string / int &lt;PK / timestamp&gt;</text>
+      <text y="18" fill="#334155">+ meal_type: 'breakfast'|'lunch'|'dinner'|'snack'</text>
+      <text y="36" font-weight="bold" fill="#0369A1">+ consumed_date: string ('yyyy-MM-dd') &lt;Indexed&gt;</text>
+      <text y="54" fill="#334155">+ consumed_at: timestamp</text>
+      <text y="72" fill="#334155">+ created_at: timestamp</text>
+
+      <line x1="0" y1="84" x2="310" y2="84" stroke="#E2E8F0" stroke-width="1"/>
+      <text y="102" font-weight="bold" fill="#047857">+ totals: map (Accumulated Gizi)</text>
+      <text y="118" fill="#475569">    calories: double, protein: double</text>
+      <text y="134" fill="#475569">    carbs: double, fat: double</text>
+
+      <line x1="0" y1="148" x2="310" y2="148" stroke="#E2E8F0" stroke-width="1"/>
+      <text y="166" font-weight="bold" fill="#D97706">+ items: array&lt;map&gt; (Sajian Terkonsumsi)</text>
+      <text y="184" fill="#475569">    food_id: int &lt;ref: foods.id&gt;</text>
+      <text y="200" fill="#475569">    food_name: string</text>
+      <text y="216" fill="#475569">    portion_grams: double (e.g. 150.0)</text>
+      <text y="232" fill="#475569">    calories_kcal: double (scaled)</text>
+      <text y="248" fill="#475569">    protein_g: double, carbs_g: double</text>
+      <text y="264" fill="#475569">    fat_g: double</text>
+      <text y="280" fill="#475569">    confidence: double (YOLO26n score)</text>
+    </g>
+  </g>
+
+  <!-- Collection 3: foods/{foodId} -->
+  <g transform="translate(45, 465)" filter="url(#shadow)">
+    <rect x="0" y="0" width="320" height="270" rx="6" fill="#FFFFFF" stroke="#F59E0B" stroke-width="2"/>
+    <rect x="0" y="0" width="320" height="32" rx="6" fill="#FEF3C7"/>
+    <rect x="0" y="22" width="320" height="10" fill="#FEF3C7"/>
+    <text x="15" y="22" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#92400E">foods/{foodId} (Master Catalog)</text>
+    <line x1="0" y1="32" x2="320" y2="32" stroke="#F59E0B" stroke-width="1.5"/>
+
+    <g transform="translate(15, 52)" font-family="monospace" font-size="10.5">
+      <text y="0" font-weight="bold" fill="#0F172A">+ id: int &lt;PK / Unique Number&gt;</text>
+      <text y="18" fill="#334155">+ name: string (e.g. 'Ayam Goreng')</text>
+      <text y="36" font-weight="bold" fill="#0369A1">+ yolo_class: string (Model Class Label)</text>
+      <text y="54" fill="#334155">+ is_active: boolean</text>
+      <text y="72" fill="#334155">+ calories_kcal_per_100g: double</text>
+      <text y="90" fill="#334155">+ protein_g_per_100g: double</text>
+      <text y="108" fill="#334155">+ carbs_g_per_100g: double</text>
+      <text y="126" fill="#334155">+ fat_g_per_100g: double</text>
+      <text y="144" fill="#334155">+ source: 'TKPI 2020'</text>
+      <text y="162" fill="#475569">+ created_at: timestamp</text>
+      <text y="180" fill="#475569">+ updated_at: timestamp</text>
+      <text y="202" font-size="9" font-style="italic" fill="#78350F">Validated via Atwater: 4P+4C+9F &lt;= 30% dev</text>
+    </g>
+  </g>
+
+  <!-- Collection 4: cms_articles/{articleId} -->
+  <g transform="translate(435, 465)" filter="url(#shadow)">
+    <rect x="0" y="0" width="340" height="270" rx="6" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="2"/>
+    <rect x="0" y="0" width="340" height="32" rx="6" fill="#F5F3FF"/>
+    <rect x="0" y="22" width="340" height="10" fill="#F5F3FF"/>
+    <text x="15" y="22" font-family="system-ui, sans-serif" font-size="12.5" font-weight="700" fill="#6D28D9">cms_articles/{articleId} (Education)</text>
+    <line x1="0" y1="32" x2="340" y2="32" stroke="#8B5CF6" stroke-width="1.5"/>
+
+    <g transform="translate(15, 52)" font-family="monospace" font-size="10.5">
+      <text y="0" font-weight="bold" fill="#0F172A">+ id: string &lt;PK / Document ID&gt;</text>
+      <text y="18" fill="#334155">+ title: string</text>
+      <text y="36" fill="#334155">+ slug: string &lt;Unique Slug&gt;</text>
+      <text y="54" font-weight="bold" fill="#0369A1">+ status: 'published' | 'draft' &lt;Index&gt;</text>
+      <text y="72" fill="#334155">+ cover_image_url: string (HTTPS URL)</text>
+      <text y="90" fill="#334155">+ author_name: string</text>
+      <text y="108" fill="#334155">+ category: string</text>
+      <text y="126" fill="#334155">+ excerpt: string</text>
+      <text y="144" fill="#334155">+ content: string (Markdown / HTML)</text>
+      <text y="162" fill="#334155">+ read_time_minutes: int</text>
+      <text y="180" font-weight="bold" fill="#0369A1">+ created_at: timestamp &lt;Indexed DESC&gt;</text>
+    </g>
+  </g>
+
+  <!-- Right Side Column: Supporting CMS & Governance Collections -->
+  <g transform="translate(825, 95)" filter="url(#shadow)">
+    <!-- cms_audit_logs/{logId} -->
+    <rect x="0" y="0" width="280" height="185" rx="6" fill="#FFFFFF" stroke="#DC2626" stroke-width="2"/>
+    <rect x="0" y="0" width="280" height="30" rx="6" fill="#FEE2E2"/>
+    <rect x="0" y="20" width="280" height="10" fill="#FEE2E2"/>
+    <text x="12" y="20" font-family="system-ui, sans-serif" font-size="11.5" font-weight="700" fill="#991B1B">cms_audit_logs/{logId} (Immutable)</text>
+    <line x1="0" y1="30" x2="280" y2="30" stroke="#DC2626" stroke-width="1.5"/>
+
+    <g transform="translate(12, 48)" font-family="monospace" font-size="10">
+      <text y="0" font-weight="bold" fill="#0F172A">+ id: string &lt;PK&gt;</text>
+      <text y="16" fill="#334155">+ performed_by: string &lt;Auth UID&gt;</text>
+      <text y="32" fill="#334155">+ action: string (e.g. 'CREATE_FOOD')</text>
+      <text y="48" fill="#334155">+ target_collection: string</text>
+      <text y="64" fill="#334155">+ timestamp: timestamp</text>
+      <text y="80" fill="#334155">+ details: map&lt;string, dynamic&gt;</text>
+      <text y="105" font-weight="bold" fill="#B91C1C">Security: update/delete = false</text>
+      <text y="120" font-size="8.5" fill="#7F1D1D">Append-only audit trail for compliance</text>
+    </g>
+
+    <!-- cms_categories & cms_announcements -->
+    <g transform="translate(0, 205)">
+      <rect x="0" y="0" width="280" height="135" rx="6" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
+      <rect x="0" y="0" width="280" height="28" rx="6" fill="#F1F5F9"/>
+      <text x="12" y="19" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">cms_categories &amp; announcements</text>
+      <line x1="0" y1="28" x2="280" y2="28" stroke="#64748B" stroke-width="1.2"/>
+
+      <g transform="translate(12, 44)" font-family="monospace" font-size="9.5">
+        <text y="0" font-weight="bold" fill="#0F172A">cms_categories/{id}</text>
+        <text y="14" fill="#475569">+ id: string, name: string, slug: string</text>
+        <line x1="0" y1="24" x2="255" y2="24" stroke="#E2E8F0" stroke-width="1"/>
+        <text y="40" font-weight="bold" fill="#0F172A">cms_announcements/{id}</text>
+        <text y="54" fill="#475569">+ id: string, title: string, message: string</text>
+        <text y="68" fill="#475569">+ is_active: boolean, created_at: ts</text>
+      </g>
+    </g>
+
+    <!-- cms_media/{mediaId} -->
+    <g transform="translate(0, 360)">
+      <rect x="0" y="0" width="280" height="150" rx="6" fill="#FFFFFF" stroke="#64748B" stroke-width="1.5"/>
+      <rect x="0" y="0" width="280" height="28" rx="6" fill="#F1F5F9"/>
+      <text x="12" y="19" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">cms_media/{mediaId} (External URLs)</text>
+      <line x1="0" y1="28" x2="280" y2="28" stroke="#64748B" stroke-width="1.2"/>
+
+      <g transform="translate(12, 44)" font-family="monospace" font-size="9.5">
+        <text y="0" font-weight="bold" fill="#0F172A">+ id: string &lt;PK&gt;</text>
+        <text y="16" fill="#475569">+ url: string (HTTPS Web Image)</text>
+        <text y="32" fill="#475569">+ file_name: string, uploaded_by: string</text>
+        <text y="48" fill="#475569">+ created_at: timestamp</text>
+        <text y="70" font-weight="bold" fill="#047857">Architectural Decision Record:</text>
+        <text y="84" font-size="8.5" fill="#15803D">Eliminates Firebase Cloud Storage</text>
+        <text y="96" font-size="8.5" fill="#15803D">Maintains $0 Spark Plan Boundary</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Relationship Connectors -->
+  <!-- users to meals (Physical 1 : N Subcollection) -->
+  <path fill="none" d="M 365 240 L 435 240" stroke="#0F172A" stroke-width="2.5" marker-end="url(#arr-sub)"/>
+  <rect x="375" y="215" width="50" height="20" rx="3" fill="#0F172A"/>
+  <text x="400" y="229" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" text-anchor="middle">1 : N</text>
+  <text x="400" y="254" font-family="system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#047857" text-anchor="middle">Subcollection</text>
+
+  <!-- foods to meals.items[] (Conceptual Reference) -->
+  <path fill="none" d="M 365 580 L 400 580 L 400 380 L 435 380" stroke="#D97706" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arr-sub)"/>
+  <rect x="370" y="470" width="60" height="22" rx="3" fill="#FFFBEB" stroke="#D97706" stroke-width="1"/>
+  <text x="400" y="485" font-family="system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#92400E" text-anchor="middle">referenced</text>
+
+  <!-- users to cms_audit_logs (Conceptual Reference by UID) -->
+  <path fill="none" d="M 205 95 L 205 78 L 965 78 L 965 95" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-sub)"/>
+  <rect x="545" y="68" width="85" height="20" rx="3" fill="#FEE2E2" stroke="#DC2626" stroke-width="1"/>
+  <text x="587" y="82" font-family="system-ui, sans-serif" font-size="8.5" font-weight="600" fill="#991B1B" text-anchor="middle">performed_by</text>
+</svg>

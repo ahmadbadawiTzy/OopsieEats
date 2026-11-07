@@ -23,7 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _fallbackPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureFallbackPassword = true;
-  bool _rememberMe = true;
   bool _isNavigating = false;
 
   @override
@@ -82,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final user = await auth.login(
       _emailController.text.trim(),
       _passwordController.text,
-      rememberMe: _rememberMe,
     );
 
     if (user != null && mounted) {
@@ -94,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleGoogleLogin() async {
     final auth = context.read<AuthProvider>();
-    final user = await auth.loginWithGoogle(rememberMe: _rememberMe);
+    final user = await auth.loginWithGoogle();
 
     if (user != null && mounted) {
       await _checkFirstTimeBiometricEnrollment();
@@ -123,21 +121,29 @@ class _LoginScreenState extends State<LoginScreen> {
         user?.role?.toString().toLowerCase().trim() == 'admin' ||
         auth.role.toLowerCase().trim() == 'admin';
 
-    final targetRoute = isAdmin
-        ? AppRoutes.adminDashboard
-        : AppRoutes.dashboard;
+    if (isAdmin) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.adminDashboard,
+        (route) => false,
+        arguments: {
+          'email': user?.email ?? auth.email,
+          'role': user?.role ?? auth.role,
+          'name': user?.fullName ?? auth.name,
+        },
+      );
+      return;
+    }
+
+    final isComplete =
+        user?.isProfileComplete == true || auth.isProfileComplete;
+    final targetRoute =
+        isComplete ? AppRoutes.dashboard : AppRoutes.completeProfile;
 
     Navigator.pushNamedAndRemoveUntil(
       context,
       targetRoute,
       (route) => false,
-      arguments: isAdmin
-          ? {
-              'email': user?.email ?? auth.email,
-              'role': user?.role ?? auth.role,
-              'name': user?.fullName ?? auth.name,
-            }
-          : null,
     );
   }
 
@@ -611,17 +617,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 : _handleBiometricLogin,
           ),
           const SizedBox(height: NeoTokens.space12),
-          NeoButton(
-            key: const Key('password_fallback_button'),
-            text: 'Gunakan Kata Sandi',
-            variant: NeoButtonVariant.secondary,
-            onPressed: auth.isLoading
-                ? null
-                : () {
-                    _fallbackPasswordController.clear();
-                    auth.switchToPasswordFallback();
-                  },
-          ),
+          if (auth.hasGoogleProvider && !auth.hasPasswordProvider)
+            NeoButton(
+              key: const Key('google_fallback_button'),
+              text: 'Masuk dengan Akun Google',
+              variant: NeoButtonVariant.secondary,
+              prefixWidget: Image.asset(
+                'assets/images/google_logo.png',
+                width: AppIcons.sizeControl,
+                height: AppIcons.sizeControl,
+              ),
+              isLoading: auth.isGoogleLoading,
+              onPressed: auth.isLoading ? null : _handleGoogleLogin,
+            )
+          else
+            NeoButton(
+              key: const Key('password_fallback_button'),
+              text: 'Gunakan Kata Sandi',
+              variant: NeoButtonVariant.secondary,
+              onPressed: auth.isLoading
+                  ? null
+                  : () {
+                      _fallbackPasswordController.clear();
+                      auth.switchToPasswordFallback();
+                    },
+            ),
           const SizedBox(height: NeoTokens.space12),
           Center(
             child: TextButton(
@@ -1075,67 +1095,22 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: NeoTokens.space12),
 
-          // Remember Me & Forgot Password
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                key: const Key('remember_me_checkbox'),
-                onTap: () {
-                  setState(() => _rememberMe = !_rememberMe);
-                },
-                borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: _rememberMe
-                              ? NeoTokens.lime
-                              : NeoTokens.canvas,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: NeoTokens.black,
-                            width: 1.8,
-                          ),
-                        ),
-                        child: _rememberMe
-                            ? CustomPaint(
-                                size: const Size(14, 14),
-                                painter: _NeoCheckPainter(),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Ingat Saya',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: NeoTokens.black,
-                        ),
-                      ),
-                    ],
-                  ),
+          // Forgot Password
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              key: const Key('forgot_password_link'),
+              onTap: _showForgotPasswordModal,
+              child: const Text(
+                'Lupa Password?',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: NeoTokens.black,
+                  decoration: TextDecoration.underline,
                 ),
               ),
-              GestureDetector(
-                key: const Key('forgot_password_link'),
-                onTap: _showForgotPasswordModal,
-                child: const Text(
-                  'Lupa Password?',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: NeoTokens.black,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: NeoTokens.space20),
 
@@ -1199,21 +1174,4 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class _NeoCheckPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = NeoTokens.black
-      ..strokeWidth = 2.4
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.square;
-    final path = Path()
-      ..moveTo(size.width * 0.22, size.height * 0.52)
-      ..lineTo(size.width * 0.44, size.height * 0.74)
-      ..lineTo(size.width * 0.78, size.height * 0.26);
-    canvas.drawPath(path, paint);
-  }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

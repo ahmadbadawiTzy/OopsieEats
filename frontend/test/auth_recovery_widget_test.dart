@@ -40,35 +40,16 @@ void main() {
     );
   }
 
-  group('LoginScreen - Remember Me & Forgot Password Integration', () {
-    testWidgets('renders Remember Me checkbox and Forgot Password link', (
+  group('LoginScreen - Forgot Password Integration', () {
+    testWidgets('renders Forgot Password link and does not render Remember Me checkbox', (
       WidgetTester tester,
     ) async {
       await tester.pumpWidget(wrapWidget(const LoginScreen()));
 
-      expect(find.byKey(const Key('remember_me_checkbox')), findsOneWidget);
-      expect(find.text('Ingat Saya'), findsOneWidget);
+      expect(find.byKey(const Key('remember_me_checkbox')), findsNothing);
+      expect(find.text('Ingat Saya'), findsNothing);
       expect(find.byKey(const Key('forgot_password_link')), findsOneWidget);
       expect(find.text('Lupa Password?'), findsOneWidget);
-    });
-
-    testWidgets('tapping Remember Me checkbox toggles its state', (
-      WidgetTester tester,
-    ) async {
-      await tester.pumpWidget(wrapWidget(const LoginScreen()));
-
-      final checkboxFinder = find.byKey(const Key('remember_me_checkbox'));
-      expect(checkboxFinder, findsOneWidget);
-
-      // Tap to toggle off
-      await tester.tap(checkboxFinder);
-      await tester.pump();
-
-      // Tap again to toggle on
-      await tester.tap(checkboxFinder);
-      await tester.pump();
-
-      expect(checkboxFinder, findsOneWidget);
     });
 
     testWidgets('tapping Forgot Password link opens ForgotPasswordModal', (

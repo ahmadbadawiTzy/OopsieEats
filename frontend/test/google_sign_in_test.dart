@@ -94,9 +94,6 @@ void main() {
         email: any(named: 'email'),
       ),
     ).thenAnswer((_) async {});
-    when(() => mockApiClient.saveRememberMe(any())).thenAnswer((_) async {});
-    when(() => mockApiClient.isRememberMeEnabled())
-        .thenAnswer((_) async => true);
 
     repository = AuthRepository(
       mockApiClient,

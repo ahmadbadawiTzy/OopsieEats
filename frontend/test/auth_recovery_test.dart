@@ -175,32 +175,9 @@ void main() {
         );
       });
     });
-
-    group('Remember Me delegation in AuthRepository', () {
-      test('isRememberMeEnabled delegates to ApiClient', () async {
-        when(() => mockApiClient.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
-        expect(await repository.isRememberMeEnabled(), isTrue);
-
-        when(() => mockApiClient.isRememberMeEnabled())
-            .thenAnswer((_) async => false);
-        expect(await repository.isRememberMeEnabled(), isFalse);
-      });
-
-      test('setRememberMe delegates to ApiClient', () async {
-        when(() => mockApiClient.saveRememberMe(any()))
-            .thenAnswer((_) async {});
-
-        await repository.setRememberMe(false);
-        verify(() => mockApiClient.saveRememberMe(false)).called(1);
-
-        await repository.setRememberMe(true);
-        verify(() => mockApiClient.saveRememberMe(true)).called(1);
-      });
-    });
   });
 
-  group('AuthProvider - Password Reset & Remember Me Session Handling', () {
+  group('AuthProvider - Password Reset & Session Handling', () {
     late MockAuthRepository mockRepo;
     late AuthProvider provider;
 
@@ -244,37 +221,21 @@ void main() {
       },
     );
 
-    test(
-      'checkAuthStatus preserves session if isRememberMeEnabled is true',
-      () async {
-        when(() => mockRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
-        when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
-        when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
-        when(() => mockRepo.getUserName()).thenAnswer((_) async => 'Test User');
-        when(() => mockRepo.getUserEmail())
-            .thenAnswer((_) async => 'user@example.com');
-
-        await provider.checkAuthStatus();
-
-        expect(provider.isLoggedIn, isTrue);
-        expect(provider.name, equals('Test User'));
-        expect(provider.email, equals('user@example.com'));
-        expect(provider.role, equals('user'));
-        verifyNever(() => mockRepo.logout());
-      },
-    );
-
-    test('checkAuthStatus logs out and clears session on cold launch if isRememberMeEnabled is false', () async {
-      when(() => mockRepo.isRememberMeEnabled()).thenAnswer((_) async => false);
-      when(() => mockRepo.logout()).thenAnswer((_) async {});
+    test('checkAuthStatus preserves session naturally on cold launch when logged in', () async {
+      when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
+      when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
+      when(() => mockRepo.getUserName()).thenAnswer((_) async => 'Test User');
+      when(() => mockRepo.getUserEmail())
+          .thenAnswer((_) async => 'user@example.com');
+      when(() => mockRepo.isBiometricAvailable()).thenAnswer((_) async => false);
 
       await provider.checkAuthStatus();
 
-      expect(provider.isLoggedIn, isFalse);
-      expect(provider.currentUser, isNull);
-      verify(() => mockRepo.logout()).called(1);
-      verifyNever(() => mockRepo.isLoggedIn());
+      expect(provider.isLoggedIn, isTrue);
+      expect(provider.name, equals('Test User'));
+      expect(provider.email, equals('user@example.com'));
+      expect(provider.role, equals('user'));
+      verifyNever(() => mockRepo.logout());
     });
   });
 }

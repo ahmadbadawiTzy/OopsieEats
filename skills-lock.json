@@ -37,6 +37,12 @@
       "skillPath": "skills/firebase-ai-logic-basics/SKILL.md",
       "computedHash": "0c486d8e316cb2d8d2acf04dc66b1f40f8dd046c363ad3c8c7a880057bab7493"
     },
+    "firebase-apk-scanner": {
+      "source": "trailofbits/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/firebase-apk-scanner/skills/firebase-apk-scanner/SKILL.md",
+      "computedHash": "1a2dd22e58401c7661a358e760705dd10eb82a1770a9727fe5f3fdb1e906278d"
+    },
     "firebase-app-hosting-basics": {
       "source": "firebase/agent-skills",
       "sourceType": "github",
@@ -133,11 +139,35 @@
       "skillPath": "skills/flutter-apply-architecture-best-practices/SKILL.md",
       "computedHash": "2b1b63214d6b153c50aacd4bbcb76ce91dece449de9e06f477f8aad3163d667f"
     },
+    "flutter-build-release": {
+      "source": "thienqo/flutter-skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-build-release/SKILL.md",
+      "computedHash": "5351ae816cf4c8ecbb60b6f590a525e20eb0104080a1f8c47b1f3ac0dc565883"
+    },
+    "flutter-dart-code-review": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-dart-code-review/SKILL.md",
+      "computedHash": "a5bbf2fda0e54df51e75e9316e8f341a64a1be9473137408f60244b6d0d777b7"
+    },
+    "flutter-performance": {
+      "source": "thienqo/flutter-skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-performance/SKILL.md",
+      "computedHash": "16603cd496837ff9388e40edca4a2a46076ff7ba45ca932c4e68c787a17cb318"
+    },
     "flutter-reducing-app-size": {
       "source": "hmtriit/Flutter-skills",
       "sourceType": "github",
       "skillPath": "skills/flutter-reducing-app-size/SKILL.md",
       "computedHash": "7c67126eb9edaae1128bf77c1eaace1b5da1fb44da7b402b6ce1231757340af0"
+    },
+    "flutter-security": {
+      "source": "thienqo/flutter-skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-security/SKILL.md",
+      "computedHash": "372adf49e7c2537919160b62838608073ee9e3426dde8be0e9385f3fdf42feb6"
     },
     "gm-architecture": {
       "source": "zeroz-lab/gmdiagram",

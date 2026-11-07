@@ -83,41 +83,8 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: NeoTokens.space16),
 
-            // Key Value Pillars
-            const NeoSectionHeader(
-              title: 'Nilai Utama Aplikasi',
-              accentColor: NeoTokens.mintGreen,
-            ),
-            const SizedBox(height: NeoTokens.space8),
-
-            _buildPillarTile(
-              icon: AppIcons.cameraAlt,
-              iconColor: NeoTokens.vividYellow,
-              title: 'Pemindai Makanan Praktis',
-              subtitle: 'Kenali jenis makanan dari foto kamera atau galeri untuk pencatatan gizi harian yang cepat.',
-            ),
-            _buildPillarTile(
-              icon: AppIcons.factCheck,
-              iconColor: NeoTokens.mintGreen,
-              title: 'Data Gizi Terverifikasi',
-              subtitle: 'Estimasi nilai kalori dan makronutrien merujuk pada Tabel Komposisi Pangan Indonesia (TKPI).',
-            ),
-            _buildPillarTile(
-              icon: AppIcons.calculate,
-              iconColor: NeoTokens.skyBlue,
-              title: 'Kebutuhan Kalori Personal',
-              subtitle: 'Target dihitung akurat berdasarkan umur dari tanggal lahir, tinggi badan, berat badan, dan aktivitas.',
-            ),
-            _buildPillarTile(
-              icon: AppIcons.menuBook,
-              iconColor: NeoTokens.lavender,
-              title: 'Artikel & Panduan Gizi Seimbang',
-              subtitle: 'Wawasan nutrisi terpercaya yang mudah dipahami untuk mendukung pola hidup sehat.',
-            ),
-            const SizedBox(height: NeoTokens.space20),
-
             // ================================================================
-            // SECTION 2: CREATOR PROFILE (AHMAD BADAWI)
+            // SECTION 2: DEVELOPER PROFILE (AHMAD BADAWI)
             // ================================================================
             const NeoSectionHeader(
               title: 'Profil Pengembang',
@@ -131,14 +98,14 @@ class AboutScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Photo & Main Headline
+                  // Developer Role Badge & Headline
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Creator Photo with Neo-Brutalist Frame & Fallback
                       Container(
                         width: 84,
-                        height: 94,
+                        height: 112,
                         decoration: BoxDecoration(
                           color: NeoTokens.mintGreen,
                           borderRadius: BorderRadius.circular(
@@ -160,8 +127,12 @@ class AboutScreen extends StatelessWidget {
                         child: Image.asset(
                           CreatorConfig.creatorPhotoAsset,
                           width: 84,
-                          height: 94,
+                          height: 112,
                           fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          cacheWidth: 252,
+                          cacheHeight: 336,
+                          semanticLabel: 'Foto Pengembang Ahmad Badawi',
                           errorBuilder: (context, error, stackTrace) {
                             return _buildCreatorPlaceholder();
                           },
@@ -169,11 +140,38 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: NeoTokens.space16),
 
-                      // Name, Role, Domains
+                      // Name, Role, Profession & Domain Chips
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: NeoTokens.vividYellow,
+                                borderRadius: BorderRadius.circular(
+                                  NeoTokens.radiusSmall,
+                                ),
+                                border: Border.all(
+                                  color: NeoTokens.black,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Text(
+                                'DIKEMBANGKAN OLEH',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w900,
+                                  color: NeoTokens.black,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             const Text(
                               CreatorConfig.creatorName,
                               style: TextStyle(
@@ -185,11 +183,20 @@ class AboutScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             const Text(
-                              CreatorConfig.creatorProfession,
+                              CreatorConfig.creatorRole,
                               style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: NeoTokens.textDark,
+                                fontWeight: FontWeight.w800,
+                                color: NeoTokens.black,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            const Text(
+                              CreatorConfig.creatorProfession,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: NeoTokens.textMuted,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -272,6 +279,79 @@ class AboutScreen extends StatelessWidget {
                     fullUrl: CreatorConfig.instagramUrl,
                     icon: AppIcons.cameraAlt,
                     color: NeoTokens.white,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: NeoTokens.space20),
+
+            // ================================================================
+            // SECTION 3: KEY VALUE PILLARS
+            // ================================================================
+            const NeoSectionHeader(
+              title: 'Nilai Utama Aplikasi',
+              accentColor: NeoTokens.mintGreen,
+            ),
+            const SizedBox(height: NeoTokens.space8),
+
+            _buildPillarTile(
+              icon: AppIcons.cameraAlt,
+              iconColor: NeoTokens.vividYellow,
+              title: 'Pemindai Makanan Praktis',
+              subtitle: 'Kenali jenis makanan dari foto kamera atau galeri untuk pencatatan gizi harian yang cepat.',
+            ),
+            _buildPillarTile(
+              icon: AppIcons.factCheck,
+              iconColor: NeoTokens.mintGreen,
+              title: 'Data Gizi Terverifikasi',
+              subtitle: 'Estimasi nilai kalori dan makronutrien merujuk pada Tabel Komposisi Pangan Indonesia (TKPI).',
+            ),
+            _buildPillarTile(
+              icon: AppIcons.calculate,
+              iconColor: NeoTokens.skyBlue,
+              title: 'Kebutuhan Kalori Personal',
+              subtitle: 'Target dihitung akurat berdasarkan umur dari tanggal lahir, tinggi badan, berat badan, dan aktivitas.',
+            ),
+            _buildPillarTile(
+              icon: AppIcons.menuBook,
+              iconColor: NeoTokens.lavender,
+              title: 'Artikel & Panduan Gizi Seimbang',
+              subtitle: 'Wawasan nutrisi terpercaya yang mudah dipahami untuk mendukung pola hidup sehat.',
+            ),
+            const SizedBox(height: NeoTokens.space20),
+
+            // ================================================================
+            // SECTION 4: PRIVACY & DATA SAFETY COMPLIANCE (GOOGLE PLAY)
+            // ================================================================
+            const NeoSectionHeader(
+              title: 'Privasi & Keamanan Data',
+              accentColor: NeoTokens.skyBlue,
+            ),
+            const SizedBox(height: NeoTokens.space8),
+
+            NeoCard(
+              backgroundColor: NeoTokens.white,
+              padding: const EdgeInsets.all(NeoTokens.space16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildPillarTile(
+                    icon: AppIcons.shield,
+                    iconColor: NeoTokens.mintGreen,
+                    title: 'Pemrosesan AI On-Device',
+                    subtitle: 'Foto makanan diproses lokal di perangkat dengan model TFLite tanpa pernah diunggah ke server cloud eksternal.',
+                  ),
+                  _buildPillarTile(
+                    icon: AppIcons.lock,
+                    iconColor: NeoTokens.skyBlue,
+                    title: 'Isolasi Akun Multi-Tenant',
+                    subtitle: 'Data profil dan riwayat makanan terenkripsi dan hanya dapat diakses oleh akun pemilik yang terautentikasi.',
+                  ),
+                  _buildPillarTile(
+                    icon: AppIcons.deleteForever,
+                    iconColor: NeoTokens.coralRed,
+                    title: 'Kendali & Penghapusan Akun',
+                    subtitle: 'Pengguna memiliki hak penuh menghapus data dan akun secara permanen langsung dari menu Profil.',
                   ),
                 ],
               ),

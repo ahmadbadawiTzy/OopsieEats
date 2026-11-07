@@ -344,8 +344,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
                                 : 'Sobat Sehat');
                       return DashboardHeroSection(
                         userName: displayName,
-                        photoUrl: user?.photoUrl,
-                        avatarPreset: user?.avatarPreset,
+                        photoUrl: user?.photoUrl ?? auth.currentUser?.photoUrl,
                         onAvatarTap: () =>
                             widget.onNavigateToTab(NeoNavTab.profile),
                       );

@@ -161,6 +161,8 @@ void main() {
           mealType: any(named: 'mealType'),
           consumedAt: any(named: 'consumedAt'),
           items: any(named: 'items'),
+          imageMetadata: any(named: 'imageMetadata'),
+          customMealId: any(named: 'customMealId'),
         ),
       ).thenAnswer((_) async => dummyRecord);
 

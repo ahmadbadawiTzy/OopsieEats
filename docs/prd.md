@@ -1,5 +1,14 @@
 # Product Requirements Document — NutriView
 
+> [!NOTE] **DOKUMEN HISTORIS (HISTORICAL DOCUMENTATION)**  
+> Dokumen ini mencatat spesifikasi kebutuhan produk pada tahap perancangan awal (29 September 2026) saat sistem masih direncanakan menggunakan arsitektur client-server (FastAPI + MySQL).  
+> Sejak Oktober 2026, NutriView telah bermigrasi penuh ke arsitektur **Serverless Firebase + On-Device Edge AI (Flutter & TFLite)**.  
+> Untuk spesifikasi dan arsitektur aktif saat ini, silakan merujuk pada:
+> - [`README.md`](../README.md) — Gambaran umum sistem dan panduan memulai.
+> - [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) — Arsitektur sistem aktif.
+> - [`docs/DATABASE_AND_BACKEND.md`](DATABASE_AND_BACKEND.md) — Spesifikasi Cloud Firestore & Firebase Auth.
+> - [`docs/MACHINE_LEARNING.md`](MACHINE_LEARNING.md) — Pipeline YOLO26n on-device.
+
 ## 1. Informasi Dokumen
 
 | Atribut | Nilai |

@@ -131,8 +131,8 @@ void main() {
       expect(find.text('Tanggal Lahir'), findsOneWidget);
       expect(find.text('Berat Badan (kg)'), findsOneWidget);
       expect(find.text('Tinggi Badan (cm)'), findsOneWidget);
-      expect(find.text('Tingkat Aktivitas Harian'), findsOneWidget);
-      expect(find.text('Tujuan Gizi'), findsOneWidget);
+      expect(find.text('Tingkat Aktivitas Fisik'), findsOneWidget);
+      expect(find.text('Target Gizi & Berat Badan'), findsOneWidget);
 
       // Check dynamic age badge
       expect(find.textContaining('Usia:'), findsOneWidget);

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nutriview/core/app_icons.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/data/models/article.dart';
 import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
 
+/// Overkill Neo-Brutalism Editorial Article Detail Reader for NutriView Users.
+/// Prioritizes clear reading experience, strong typography hierarchy,
+/// distinct editorial standfirst for excerpt, and verified nutritional sources.
 class ArticleDetailScreen extends StatelessWidget {
   final ArticleItem article;
 
@@ -17,8 +20,8 @@ class ArticleDetailScreen extends StatelessWidget {
         leading: NeoBackButton.leading(context),
         title: const Text('Artikel Nutrisi'),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(2),
-          child: Container(color: NeoTokens.ink, height: 2),
+          preferredSize: const Size.fromHeight(1.5),
+          child: Container(color: NeoTokens.ink, height: 1.5),
         ),
       ),
       body: SingleChildScrollView(
@@ -29,18 +32,28 @@ class ArticleDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Category Badge & Date
+            // Category Badge & Published Date Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (article.categoryName != null)
+                if (article.categoryName != null && article.categoryName!.isNotEmpty)
                   NeoBadge(
                     label: article.categoryName!.toUpperCase(),
                     color: NeoBadgeColor.mint,
+                    fontSize: 11,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                   )
                 else
-                  const SizedBox.shrink(),
-                if (article.publishedAt != null)
+                  const NeoBadge(
+                    label: 'NUTRISI',
+                    color: NeoBadgeColor.mint,
+                    fontSize: 11,
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  ),
+                if (article.publishedAt != null && article.publishedAt!.isNotEmpty)
                   Text(
                     article.publishedAt!.split('T').first,
                     style: const TextStyle(
@@ -52,9 +65,9 @@ class ArticleDetailScreen extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: NeoTokens.space12),
 
-            // Title
+            // Editorial Headline Title
             Text(
               article.title,
               style: const TextStyle(
@@ -65,10 +78,10 @@ class ArticleDetailScreen extends StatelessWidget {
                 height: 1.25,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: NeoTokens.space10),
 
-            // Author Info
-            if (article.authorName != null) ...[
+            // Author Attribution
+            if (article.authorName != null && article.authorName!.isNotEmpty) ...[
               Row(
                 children: [
                   const Icon(
@@ -82,24 +95,25 @@ class ArticleDetailScreen extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w600,
                       color: NeoTokens.inkSecondary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: NeoTokens.space16),
             ],
 
             // Cover Image Banner
             if (article.coverImageUrl != null &&
                 article.coverImageUrl!.trim().isNotEmpty) ...[
               Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: NeoTokens.space16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
                   border: Border.all(
                     color: NeoTokens.ink,
-                    width: NeoTokens.borderWidthThin,
+                    width: NeoTokens.borderWidth,
                   ),
                   boxShadow: const [
                     BoxShadow(
@@ -115,11 +129,11 @@ class ArticleDetailScreen extends StatelessWidget {
                   ),
                   child: Image.network(
                     article.coverImageUrl!.trim(),
-                    height: 180,
+                    height: 190,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      height: 80,
+                      height: 90,
                       color: NeoTokens.recess,
                       child: const Center(
                         child: Row(
@@ -146,10 +160,13 @@ class ArticleDetailScreen extends StatelessWidget {
                     loadingBuilder: (_, child, progress) {
                       if (progress == null) return child;
                       return Container(
-                        height: 180,
+                        height: 190,
                         color: NeoTokens.recess,
                         child: const Center(
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(NeoTokens.ink),
+                          ),
                         ),
                       );
                     },
@@ -158,16 +175,19 @@ class ArticleDetailScreen extends StatelessWidget {
               ),
             ],
 
-            // Content Card
+            // Editorial Content Card
             NeoCard(
               padding: const EdgeInsets.all(NeoTokens.space16),
+              borderWidth: NeoTokens.borderWidth,
+              shadowOffset: NeoTokens.shadowOffsetMedium,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Standfirst / Editorial Pull-Quote Excerpt
                   if (article.excerpt != null &&
-                      article.excerpt!.isNotEmpty) ...[
+                      article.excerpt!.trim().isNotEmpty) ...[
                     Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(NeoTokens.space12),
                       decoration: BoxDecoration(
                         color: NeoTokens.recess,
                         borderRadius: BorderRadius.circular(
@@ -178,30 +198,86 @@ class ArticleDetailScreen extends StatelessWidget {
                           width: NeoTokens.borderWidthThin,
                         ),
                       ),
-                      child: Text(
-                        article.excerpt!,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: NeoTokens.ink,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: NeoTokens.lime,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              article.excerpt!.trim(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: NeoTokens.ink,
+                                height: 1.45,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: NeoTokens.space16),
                   ],
-                  Text(
+
+                  // Body Content with generous line height and contrast
+                  SelectableText(
                     article.contentMarkdown ?? 'Konten artikel belum tersedia.',
                     style: const TextStyle(
                       fontSize: 15,
                       color: NeoTokens.ink,
-                      height: 1.6,
+                      height: 1.65,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+
+                  const SizedBox(height: NeoTokens.space20),
+
+                  // Editorial Disclaimer / Verified Guideline Source
+                  Container(
+                    padding: const EdgeInsets.all(NeoTokens.space10),
+                    decoration: BoxDecoration(
+                      color: NeoTokens.warmBackground,
+                      borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                      border: Border.all(
+                        color: NeoTokens.ink,
+                        width: NeoTokens.borderWidthThin,
+                      ),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          AppIcons.factCheck,
+                          size: AppIcons.sizeSmall,
+                          color: NeoTokens.inkSecondary,
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Informasi edukasi ini disajikan untuk panduan nutrisi harian dan tidak menggantikan rekomendasi klinis dari tenaga medis profesional.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: NeoTokens.inkSecondary,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: NeoTokens.space32),
           ],
         ),
       ),

@@ -37,7 +37,7 @@ void main() {
   });
 
   group('NeoAvatar Component Tests', () {
-    testWidgets('renders game avatar character when photoUrl is null', (
+    testWidgets('renders initials fallback when photoUrl is null', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -46,9 +46,9 @@ void main() {
         ),
       );
 
-      expect(find.byType(CustomPaint), findsWidgets);
+      expect(find.text('AB'), findsOneWidget);
       expect(
-        find.bySemanticsLabel(RegExp(r'Avatar Master Koki')),
+        find.bySemanticsLabel(RegExp(r'Foto profil Ahmad Badawi')),
         findsOneWidget,
       );
     });
@@ -324,12 +324,12 @@ void main() {
 
         // Verify Profile tab is now active and displays user profile and avatar button
         expect(find.text('Ahmad Badawi'), findsWidgets);
-        expect(find.text('Pilih Karakter Avatar'), findsOneWidget);
+        expect(find.text('Ubah Foto Profil'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'ProfileScreen avatar section renders presets and handles game avatar modal selection',
+      'ProfileScreen avatar section renders real photo action sheet and options',
       (tester) async {
         await authProvider.checkAuthStatus();
         await profileProvider.loadProfile();
@@ -342,32 +342,16 @@ void main() {
 
         // Verify Profile Header and buttons are rendered
         expect(find.text('Ahmad Badawi'), findsWidgets);
-        expect(find.text('Pilih Karakter Avatar'), findsOneWidget);
+        expect(find.text('Ubah Foto Profil'), findsOneWidget);
         expect(find.text('Isi Biodata'), findsOneWidget);
 
-        // Tap Pilih Karakter Avatar to open modal
-        await tester.tap(find.text('Pilih Karakter Avatar'));
+        // Tap Ubah Foto Profil to open photo action sheet
+        await tester.tap(find.text('Ubah Foto Profil'));
         await tester.pumpAndSettle();
 
-        // Verify modal opened with character catalog
-        expect(find.text('Katalog Avatar Game'), findsOneWidget);
-        expect(find.text('Pelari Tangguh'), findsWidgets);
-
-        // Tap Pelari Tangguh character
-        await tester.tap(find.text('Pelari Tangguh').first);
-        await tester.pumpAndSettle();
-
-        // Tap Gunakan Avatar Ini button
-        await tester.tap(find.text('Gunakan Avatar Ini'));
-        await tester.pumpAndSettle();
-
-        // Verify updateAvatar was called with preset 'runner_ace'
-        verify(
-          () => mockProfileRepo.updateAvatar(
-            photoUrl: null,
-            avatarPreset: 'runner_ace',
-          ),
-        ).called(1);
+        // Verify modal bottom sheet opened with photo options
+        expect(find.text('Ambil Foto dengan Kamera'), findsOneWidget);
+        expect(find.text('Pilih dari Galeri'), findsOneWidget);
       },
     );
   });

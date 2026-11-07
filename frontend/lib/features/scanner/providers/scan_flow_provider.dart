@@ -1,6 +1,6 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nutriview/core/error_handler.dart';
@@ -8,6 +8,7 @@ import 'package:nutriview/data/models/food.dart';
 import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/data/repositories/meal_repository.dart';
+import 'package:nutriview/data/services/supabase_storage_service.dart';
 
 class ConfirmedFoodItem {
   int? foodId;
@@ -75,9 +76,11 @@ class ConfirmedFoodItem {
 class ScanFlowProvider extends ChangeNotifier {
   final FoodRepository foodRepository;
   final MealRepository mealRepository;
+  final SupabaseStorageService? storageService;
   final ImagePicker _picker = ImagePicker();
 
   File? _imageFile;
+  Uint8List? _imageBytes;
   bool _isProcessing = false;
   String? _errorMessage;
   List<ConfirmedFoodItem> _confirmedItems = [];
@@ -88,11 +91,13 @@ class ScanFlowProvider extends ChangeNotifier {
   ScanFlowProvider({
     required this.foodRepository,
     required this.mealRepository,
+    this.storageService,
   }) {
     _suggestDefaultMealType();
   }
 
   File? get imageFile => _imageFile;
+  Uint8List? get imageBytes => _imageBytes;
   bool get isProcessing => _isProcessing;
   String? get errorMessage => _errorMessage;
   List<ConfirmedFoodItem> get confirmedItems => _confirmedItems;
@@ -133,27 +138,41 @@ class ScanFlowProvider extends ChangeNotifier {
   Future<bool> pickAndScanImage(ImageSource source) async {
     _errorMessage = null;
     try {
-      final picked = await _picker.pickImage(
+      XFile? picked = await _picker.pickImage(
         source: source,
         maxWidth: 1280,
         maxHeight: 1280,
         imageQuality: 85,
       );
 
+      if (picked == null && !kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        final LostDataResponse lostData = await _picker.retrieveLostData();
+        if (!lostData.isEmpty && lostData.file != null) {
+          picked = lostData.file;
+        }
+      }
+
       if (picked == null) return false;
 
-      _imageFile = File(picked.path);
+      final bytes = await picked.readAsBytes();
+      _imageBytes = bytes;
+      if (!kIsWeb) {
+        _imageFile = File(picked.path);
+      }
       _isProcessing = true;
       _confirmedItems = [];
       _rawDetections = [];
       notifyListeners();
 
-      final detections = await foodRepository.detectFood(_imageFile!);
+      final detections = await foodRepository.detectFood(
+        kIsWeb ? bytes : (_imageFile ?? bytes),
+      );
       _rawDetections = detections;
       _confirmedItems = detections.map((d) {
         return ConfirmedFoodItem(
           foodId: d.foodId,
           foodName: d.displayName,
+          portionGrams: 0.0,
           source: 'detected',
           detectionConfidence: d.confidence,
           lowConfidence: d.lowConfidence,
@@ -223,6 +242,7 @@ class ScanFlowProvider extends ChangeNotifier {
       ConfirmedFoodItem(
         foodId: newFood.id,
         foodName: newFood.name,
+        portionGrams: 0.0,
         source: 'manual',
         detectionConfidence: null,
         lowConfidence: false,
@@ -275,7 +295,62 @@ class ScanFlowProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    MealImageMetadata? uploadedMetadata;
     try {
+      final now = DateTime.now();
+      final mealId = now.millisecondsSinceEpoch;
+
+      // Recover image bytes from file if lost in low-memory conditions
+      if (_imageBytes == null && _imageFile != null) {
+        try {
+          if (await _imageFile!.exists()) {
+            _imageBytes = await _imageFile!.readAsBytes();
+          }
+        } catch (e) {
+          debugPrint('ScanFlowProvider: error reloading image bytes from file: $e');
+        }
+      }
+
+      // 1. Resilient image upload to Supabase Storage if image bytes exist
+      if (_imageBytes != null && storageService != null) {
+        String? uid;
+        try {
+          uid = fb.FirebaseAuth.instance.currentUser?.uid;
+        } catch (_) {
+          uid = null;
+        }
+
+        if (uid == null || uid.isEmpty) {
+          try {
+            uid = await mealRepository.getCurrentUserId();
+          } catch (_) {
+            uid = null;
+          }
+        }
+
+        if (uid == null || uid.isEmpty) {
+          _errorMessage = 'Sesi pengguna tidak valid. Silakan login kembali.';
+          _isProcessing = false;
+          notifyListeners();
+          return false;
+        }
+
+        try {
+          uploadedMetadata = await storageService!.uploadFoodImage(
+            userId: uid,
+            mealId: mealId,
+            imageBytes: _imageBytes!,
+          );
+        } catch (storageErr) {
+          debugPrint('SupabaseStorage upload failure: $storageErr');
+          _errorMessage =
+              'Gagal mengunggah foto makanan ke penyimpanan cloud. Periksa koneksi internet Anda dan coba lagi.';
+          _isProcessing = false;
+          notifyListeners();
+          return false;
+        }
+      }
+
       final itemsPayload = _confirmedItems.map((item) {
         final map = <String, dynamic>{
           'food_id': item.foodId,
@@ -288,13 +363,26 @@ class ScanFlowProvider extends ChangeNotifier {
         return map;
       }).toList();
 
-      final now = DateTime.now();
-      _savedMealRecord = await mealRepository.createMeal(
-        mealType: _mealType,
-        consumedAt: now,
-        items: itemsPayload,
-      );
-      return true;
+      try {
+        _savedMealRecord = await mealRepository.createMeal(
+          mealType: _mealType,
+          consumedAt: now,
+          items: itemsPayload,
+          imageMetadata: uploadedMetadata,
+          customMealId: mealId,
+        );
+        return true;
+      } catch (repoErr) {
+        // Rollback uploaded image in Supabase to avoid orphaned storage files if Firestore save fails
+        if (uploadedMetadata != null && storageService != null) {
+          try {
+            await storageService!.deleteFoodImage(uploadedMetadata.path);
+          } catch (deleteErr) {
+            debugPrint('Failed to rollback orphaned image: $deleteErr');
+          }
+        }
+        rethrow;
+      }
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
       return false;
@@ -309,6 +397,7 @@ class ScanFlowProvider extends ChangeNotifier {
 
   void reset() {
     _imageFile = null;
+    _imageBytes = null;
     _isProcessing = false;
     _errorMessage = null;
     _confirmedItems = [];
@@ -316,5 +405,15 @@ class ScanFlowProvider extends ChangeNotifier {
     _savedMealRecord = null;
     _suggestDefaultMealType();
     notifyListeners();
+  }
+
+  @visibleForTesting
+  void setImageBytesForTesting(Uint8List? bytes) {
+    _imageBytes = bytes;
+  }
+
+  @visibleForTesting
+  void setImageFileForTesting(File? file) {
+    _imageFile = file;
   }
 }

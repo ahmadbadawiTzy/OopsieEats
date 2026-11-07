@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/error_handler.dart';
 import 'package:nutriview/data/models/profile.dart';
@@ -21,6 +22,14 @@ class ProfileProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasProfile => _profile != null;
+  bool get isProfileComplete {
+    if (_profile == null) return false;
+    return _profile!.heightCm >= 50 &&
+        _profile!.weightKg >= 20 &&
+        (_profile!.birthDate != null || _profile!.age > 0) &&
+        _profile!.sex.isNotEmpty &&
+        _profile!.activityLevel.isNotEmpty;
+  }
 
   Future<void> loadProfile() async {
     _isLoading = true;
@@ -84,6 +93,49 @@ class ProfileProvider extends ChangeNotifier {
       return false;
     } catch (_) {
       _errorMessage = 'Gagal memperbarui avatar.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateProfilePhoto(Uint8List imageBytes) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _user = await _repository.updateProfilePhoto(imageBytes);
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal memperbarui foto profil.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteProfilePhoto() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteProfilePhoto();
+      if (_user != null) {
+        _user = _user!.copyWith(clearPhoto: true);
+      }
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.friendlyMessage;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Gagal menghapus foto profil.';
       return false;
     } finally {
       _isLoading = false;

@@ -41,6 +41,10 @@ void main() {
 
     setUp(() {
       mockAuthRepo = MockAuthRepository();
+      when(() => mockAuthRepo.getSignInProviders()).thenReturn(['password']);
+      when(() => mockAuthRepo.hasPasswordProvider()).thenReturn(true);
+      when(() => mockAuthRepo.hasGoogleProvider()).thenReturn(false);
+      when(() => mockAuthRepo.getPrimaryProviderId()).thenReturn('password');
       authProvider = AuthProvider(mockAuthRepo);
     });
 
@@ -55,6 +59,8 @@ void main() {
           routes: {
             AppRoutes.dashboard: (_) =>
                 const Scaffold(body: Text('DASHBOARD_SCREEN')),
+            AppRoutes.completeProfile: (_) =>
+                const Scaffold(body: Text('COMPLETE_PROFILE_SCREEN')),
             AppRoutes.adminDashboard: (_) =>
                 const Scaffold(body: Text('ADMIN_DASHBOARD_SCREEN')),
           },
@@ -69,8 +75,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -117,8 +121,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -139,6 +141,7 @@ void main() {
             email: 'budi@nutriview.com',
             fullName: 'Budi Santoso',
             role: 'user',
+            isProfileComplete: true,
           ),
         );
 
@@ -163,8 +166,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -173,6 +174,14 @@ void main() {
             .thenAnswer((_) async => 'budi@nutriview.com');
         when(() => mockAuthRepo.isBiometricAvailable())
             .thenAnswer((_) async => false);
+
+        authProvider.setCurrentUser(User(
+          id: 1,
+          email: 'budi@nutriview.com',
+          fullName: 'Budi Santoso',
+          role: 'user',
+          isProfileComplete: true,
+        ));
 
         await authProvider.checkAuthStatus();
         expect(authProvider.lifecycleState, AuthLifecycleState.authenticated);
@@ -208,8 +217,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -266,14 +273,62 @@ void main() {
     );
 
     testWidgets(
+      'renders Google fallback button instead of password button when account is Google-only',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 2400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        when(() => mockAuthRepo.getSignInProviders()).thenReturn(['google.com']);
+        when(() => mockAuthRepo.hasPasswordProvider()).thenReturn(false);
+        when(() => mockAuthRepo.hasGoogleProvider()).thenReturn(true);
+        when(() => mockAuthRepo.getPrimaryProviderId()).thenReturn('google.com');
+
+        when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
+        when(() => mockAuthRepo.getUserName())
+            .thenAnswer((_) async => 'Google User');
+        when(() => mockAuthRepo.getUserEmail())
+            .thenAnswer((_) async => 'googleuser@gmail.com');
+        when(() => mockAuthRepo.isBiometricAvailable())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.getAvailableBiometrics())
+            .thenAnswer((_) async => [BiometricType.fingerprint]);
+        when(() => mockAuthRepo.isBiometricEnabled())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepo.hasPromptedBiometric())
+            .thenAnswer((_) async => true);
+
+        await authProvider.checkAuthStatus();
+        await tester.pumpWidget(wrapLogin(const LoginScreen()));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Selamat Datang Kembali'), findsOneWidget);
+        expect(find.text('Google User'), findsOneWidget);
+
+        // Crucial verification: Google fallback button rendered, password button NOT rendered!
+        expect(
+          find.byKey(const Key('google_fallback_button')),
+          findsOneWidget,
+        );
+        expect(
+          find.widgetWithText(NeoButton, 'Masuk dengan Akun Google'),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('password_fallback_button')),
+          findsNothing,
+        );
+      },
+    );
+
+    testWidgets(
       'submitting valid password in password fallback unlocks session and navigates to dashboard',
       (tester) async {
         tester.view.physicalSize = const Size(1080, 2400);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -295,6 +350,7 @@ void main() {
             email: 'budi@nutriview.com',
             fullName: 'Budi Santoso',
             role: 'user',
+            isProfileComplete: true,
           ),
         );
 
@@ -333,8 +389,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -394,8 +448,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())
@@ -451,8 +503,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => false);
         when(() => mockAuthRepo.isBiometricAvailable())
             .thenAnswer((_) async => true);
@@ -483,8 +533,6 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(() => tester.view.resetPhysicalSize());
 
-        when(() => mockAuthRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockAuthRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockAuthRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockAuthRepo.getUserName())

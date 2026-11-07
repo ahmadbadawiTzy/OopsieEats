@@ -108,6 +108,7 @@ void main() {
       when(() => mockUser.email).thenReturn(testEmail);
       when(() => mockUser.metadata).thenReturn(mockMetadata);
       when(() => mockUser.delete()).thenAnswer((_) async {});
+      when(() => mockUser.providerData).thenReturn([]);
 
       when(() => mockAuth.currentUser).thenReturn(mockUser);
 
@@ -330,6 +331,10 @@ void main() {
       when(() => mockAuthRepo.getUserEmail())
           .thenAnswer((_) async => 'ahmad@example.com');
       when(() => mockAuthRepo.logout()).thenAnswer((_) async {});
+      when(() => mockAuthRepo.getSignInProviders()).thenReturn(['password']);
+      when(() => mockAuthRepo.hasPasswordProvider()).thenReturn(true);
+      when(() => mockAuthRepo.hasGoogleProvider()).thenReturn(false);
+      when(() => mockAuthRepo.getPrimaryProviderId()).thenReturn('password');
 
       when(() => mockProfileRepo.getUser()).thenAnswer((_) async => testUser);
       when(() => mockProfileRepo.getDailyTarget()).thenAnswer(

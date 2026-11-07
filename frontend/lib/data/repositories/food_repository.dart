@@ -152,12 +152,19 @@ class FoodRepository {
     return FoodDetail.fromJson(item);
   }
 
-  Future<List<DetectionItem>> detectFood(File imageFile) async {
+  Future<List<DetectionItem>> detectFood(dynamic imageInput) async {
     if (!_detector.isAvailable) {
       await _detector.initialize();
     }
 
-    final rawDetections = await _detector.detect(imageFile);
+    final List<RawDetection> rawDetections;
+    if (imageInput is Uint8List) {
+      rawDetections = await _detector.detectFromBytes(imageInput);
+    } else if (imageInput is File) {
+      rawDetections = await _detector.detect(imageInput);
+    } else {
+      rawDetections = [];
+    }
     final allFoods = await _getAllFoods();
 
     final List<DetectionItem> result = [];

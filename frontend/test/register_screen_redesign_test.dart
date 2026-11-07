@@ -38,8 +38,8 @@ void main() {
         home: screen,
         routes: {
           AppRoutes.login: (_) => const Scaffold(body: Text('LOGIN_SCREEN')),
-          AppRoutes.profile: (_) =>
-              const Scaffold(body: Text('PROFILE_ONBOARDING_SCREEN')),
+          AppRoutes.completeProfile: (_) =>
+              const Scaffold(body: Text('COMPLETE_PROFILE_SCREEN')),
         },
       ),
     );
@@ -258,7 +258,7 @@ void main() {
           ),
         ).called(1);
 
-        expect(find.text('PROFILE_ONBOARDING_SCREEN'), findsOneWidget);
+        expect(find.text('COMPLETE_PROFILE_SCREEN'), findsOneWidget);
         expect(find.byType(RegisterScreen), findsNothing);
       },
     );

@@ -72,7 +72,7 @@ class DetectionConfirmationScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Image preview with bounding box overlay if present
-                  if (flow.imageFile != null) ...[
+                  if (flow.imageFile != null || flow.imageBytes != null) ...[
                     NeoCard(
                       padding: EdgeInsets.zero,
                       backgroundColor: NeoTokens.black,
@@ -87,12 +87,19 @@ class DetectionConfirmationScreen extends StatelessWidget {
                                 NeoTokens.radiusMedium,
                               ),
                             ),
-                            child: Image.file(
-                              flow.imageFile!,
-                              height: 220,
-                              width: double.infinity,
-                              fit: BoxFit.contain,
-                            ),
+                            child: flow.imageBytes != null
+                                ? Image.memory(
+                                    flow.imageBytes!,
+                                    height: 220,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                  )
+                                : Image.file(
+                                    flow.imageFile!,
+                                    height: 220,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                  ),
                           ),
                           if (flow.rawDetections.isNotEmpty)
                             Positioned.fill(

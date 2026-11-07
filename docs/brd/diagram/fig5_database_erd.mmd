@@ -1,0 +1,29 @@
+flowchart LR
+    subgraph ColLeft[" "]
+        direction TB
+        USERS["<b>users/{userId}</b><hr/><div style='text-align:left; min-width:250px;'>+ uid: string (PK)<br/>+ email: string<br/>+ full_name: string<br/>+ role: 'user' | 'admin'<br/>+ is_active: boolean<br/>+ avatar_preset: string<br/>+ profile: map (age, sex, TB, BB, goal)<br/>+ daily_target: map (kalori, makro, bmr)</div>"]
+        
+        FOODS["<b>foods/{foodId}</b><hr/><div style='text-align:left; min-width:250px;'>+ id: string (PK)<br/>+ name: string<br/>+ yolo_class: string<br/>+ is_active: boolean<br/>+ calories_kcal_per_100g: number<br/>+ protein_g_per_100g: number<br/>+ carbs_g_per_100g: number<br/>+ fat_g_per_100g: number<br/>+ source: 'TKPI 2020'</div>"]
+    end
+
+    subgraph ColRight[" "]
+        direction TB
+        MEALS["<b>users/{userId}/meals/{mealId}</b><hr/><div style='text-align:left; min-width:250px;'>+ id: string (PK)<br/>+ meal_type: string<br/>+ consumed_date: string (Index)<br/>+ consumed_at: timestamp<br/>+ items: array&lt;map&gt; (food, grams, kcal)<br/>+ totals: map (calories, P, C, F)<br/>+ created_at: timestamp</div>"]
+        
+        ARTICLES["<b>cms_articles/{articleId}</b><hr/><div style='text-align:left; min-width:250px;'>+ id: string (PK)<br/>+ title: string<br/>+ slug: string<br/>+ status: 'published' | 'draft'<br/>+ cover_image_url: string<br/>+ author_name: string<br/>+ category: string<br/>+ excerpt: string<br/>+ content: string</div>"]
+    end
+
+    USERS == "1 : N (Subcollection)" ==> MEALS
+    FOODS -. "referenced in items[]" .-> MEALS
+
+    classDef userNode fill:#EEF2FF,stroke:#18181B,stroke-width:3px,color:#18181B;
+    classDef mealNode fill:#ECFDF5,stroke:#18181B,stroke-width:3px,color:#18181B;
+    classDef foodNode fill:#FEF3C7,stroke:#18181B,stroke-width:3px,color:#18181B;
+    classDef articleNode fill:#FEE2E2,stroke:#18181B,stroke-width:3px,color:#18181B;
+    classDef invisibleSub fill:none,stroke:none;
+
+    class USERS userNode;
+    class MEALS mealNode;
+    class FOODS foodNode;
+    class ARTICLES articleNode;
+    class ColLeft,ColRight invisibleSub;

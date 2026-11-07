@@ -19,7 +19,6 @@ class ApiClient {
   static const String _roleKey = 'nutriview_user_role';
   static const String _nameKey = 'nutriview_user_name';
   static const String _emailKey = 'nutriview_user_email';
-  static const String _rememberMeKey = 'nutriview_remember_me';
   static const String _biometricEnabledKey = 'nutriview_biometric_enabled';
   static const String _biometricEmailKey = 'nutriview_biometric_user_email';
   static const String _biometricUidKey = 'nutriview_biometric_uid';
@@ -53,20 +52,6 @@ class ApiClient {
 
   Future<String?> getUserEmail() async {
     return await _storage.read(key: _emailKey);
-  }
-
-  Future<void> saveRememberMe(bool enabled) async {
-    await _storage.write(
-      key: _rememberMeKey,
-      value: enabled ? 'true' : 'false',
-    );
-  }
-
-  Future<bool> isRememberMeEnabled() async {
-    final value = await _storage.read(key: _rememberMeKey);
-    // Defaults to true (persistent mobile session) if never explicitly changed
-    if (value == null) return true;
-    return value == 'true';
   }
 
   Future<void> saveBiometricEnabled(bool enabled) async {

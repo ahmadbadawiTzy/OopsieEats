@@ -1,10 +1,17 @@
 # NutriView — Spesifikasi Teknis Implementasi Content Management System (CMS)
 
-**Dokumen**: Technical Architecture & Implementation Specification  
+> [!NOTE] **DOKUMEN HISTORIS (HISTORICAL DOCUMENTATION)**  
+> Dokumen ini merupakan spesifikasi perancangan awal CMS (23 Oktober 2026) yang membandingkan arsitektur REST FastAPI/Alembic/Docker dengan modul terintegrasi.  
+> Implementasi CMS aktual saat ini telah dibangun **secara native di dalam aplikasi Flutter (`AdminDashboardScreen`, `AdminRepository`)** yang terhubung langsung dengan **Cloud Firestore (`cms_articles`, `cms_categories`, `cms_announcements`, `cms_audit_logs`, `cms_media`)**, tanpa server FastAPI maupun bucket Firebase Storage.  
+> Untuk arsitektur dan dokumentasi database CMS aktif, lihat:
+> - [`docs/ARCHITECTURE.md`](ARCHITECTURE.md)
+> - [`docs/DATABASE_AND_BACKEND.md`](DATABASE_AND_BACKEND.md)
+
+**Dokumen**: Technical Architecture & Implementation Specification (Historical)  
 **Target File**: `docs/CMS_IMPLEMENTATION_SPEC.md`  
 **Proyek**: NutriView — Food Nutrition Recognition & Daily Tracking  
-**Status**: FINAL DRAFT // SIAP REVIEW & IMPLEMENTASI  
-**Versi Dokumen**: 2.0.0 (Comprehensive Revision & ADR Update)  
+**Status**: HISTORICAL REFERENCE (Implemented via Flutter + Firestore)  
+**Versi Dokumen**: 2.0.0 (Historical RFC)  
 **Tanggal Audit Terakhir**: 23 Oktober 2026  
 **Penulis**: Principal Software Architect, Senior Backend Engineer, Flutter Architect, Database Architect, Application Security Engineer & Technical Documentation Specialist  
 

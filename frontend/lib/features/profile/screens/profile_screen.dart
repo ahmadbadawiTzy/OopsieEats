@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
@@ -7,8 +9,10 @@ import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
 import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
 import 'package:nutriview/features/profile/providers/profile_provider.dart';
 import 'package:nutriview/shared/neo/neo.dart';
+import 'package:nutriview/shared/neo/user_profile_avatar.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
 import 'package:nutriview/core/app_icons.dart';
+import 'package:nutriview/core/profile_photo_logger.dart';
 
 /// Redesigned Profile Screen acting as the central user identity hub:
 /// - Prominent centered game avatar character
@@ -35,7 +39,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await context.read<ProfileProvider>().loadProfile();
+      final profileProv = context.read<ProfileProvider>();
+      if (profileProv.user == null) {
+        await profileProv.loadProfile();
+      }
       if (mounted) {
         await context.read<AuthProvider>().checkBiometricAvailability();
       }
@@ -67,24 +74,463 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _openAvatarCatalog(ProfileProvider profileProvider) async {
-    final currentAvatarId =
-        profileProvider.user?.avatarPreset ?? AvatarCatalog.defaultAvatarId;
+  Future<void> _openPhotoActionSheet(
+    ProfileProvider profileProvider,
+    AuthProvider authProvider,
+  ) async {
+    final hasPhoto = (profileProvider.user?.photoUrl?.isNotEmpty == true) ||
+        (authProvider.currentUser?.photoUrl?.isNotEmpty == true);
 
-    final selectedId = await AvatarSelectionModal.show(
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: NeoTokens.white,
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(NeoTokens.radiusLarge),
+            ),
+            border: Border(
+              top: BorderSide(color: NeoTokens.black, width: 2.5),
+              left: BorderSide(color: NeoTokens.black, width: 2.5),
+              right: BorderSide(color: NeoTokens.black, width: 2.5),
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(
+            NeoTokens.space20,
+            NeoTokens.space16,
+            NeoTokens.space20,
+            NeoTokens.space24,
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: NeoTokens.black,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: NeoTokens.space16),
+                const Text(
+                  'Ubah Foto Profil',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: NeoTokens.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Pilih foto asli dari kamera atau galeri untuk profil Anda.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: NeoTokens.textMuted,
+                  ),
+                ),
+                const SizedBox(height: NeoTokens.space20),
+                _buildPhotoOption(
+                  icon: AppIcons.cameraAlt,
+                  title: 'Ambil Foto dengan Kamera',
+                  subtitle: 'Gunakan kamera perangkat secara langsung',
+                  color: NeoTokens.lime,
+                  onTap: () {
+                    ProfilePhotoLogger.log(
+                      stage: 'STAGE_1_UI_TRIGGER',
+                      status: 'SUCCESS',
+                      uid: profileProvider.user?.id.toString(),
+                      path: 'source:camera',
+                    );
+                    Navigator.pop(sheetContext);
+                    _pickImage(ImageSource.camera, profileProvider, authProvider);
+                  },
+                ),
+                const SizedBox(height: NeoTokens.space12),
+                _buildPhotoOption(
+                  icon: AppIcons.photoLibrary,
+                  title: 'Pilih dari Galeri',
+                  subtitle: 'Pilih file gambar dari galeri perangkat',
+                  color: NeoTokens.skyBlue,
+                  onTap: () {
+                    ProfilePhotoLogger.log(
+                      stage: 'STAGE_1_UI_TRIGGER',
+                      status: 'SUCCESS',
+                      uid: profileProvider.user?.id.toString(),
+                      path: 'source:gallery',
+                    );
+                    Navigator.pop(sheetContext);
+                    _pickImage(ImageSource.gallery, profileProvider, authProvider);
+                  },
+                ),
+                if (hasPhoto) ...[
+                  const SizedBox(height: NeoTokens.space12),
+                  _buildPhotoOption(
+                    icon: AppIcons.delete,
+                    title: 'Hapus Foto Profil',
+                    subtitle: 'Hapus foto dan kembali ke inisial nama',
+                    color: NeoTokens.alert,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _handleDeletePhoto(profileProvider, authProvider);
+                    },
+                  ),
+                ],
+                const SizedBox(height: NeoTokens.space16),
+                NeoButton(
+                  text: 'Batal',
+                  variant: NeoButtonVariant.secondary,
+                  height: 44,
+                  onPressed: () => Navigator.pop(sheetContext),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPhotoOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(NeoTokens.radiusMedium),
+          border: Border.all(color: NeoTokens.black, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: NeoTokens.black,
+              offset: Offset(2, 2),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: NeoTokens.white,
+                borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                border: Border.all(color: NeoTokens.black, width: 1.5),
+              ),
+              child: Icon(icon, color: NeoTokens.black, size: AppIcons.sizeToolbar),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: NeoTokens.black,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: NeoTokens.black,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(AppIcons.chevronRight, size: AppIcons.sizeControl, color: NeoTokens.black),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(
+    ImageSource source,
+    ProfileProvider profileProvider,
+    AuthProvider authProvider,
+  ) async {
+    final pickerStopwatch = Stopwatch()..start();
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: source,
+        maxWidth: 1280,
+        maxHeight: 1280,
+        imageQuality: 85,
+      );
+
+      if (picked == null) {
+        ProfilePhotoLogger.log(
+          stage: 'STAGE_2_IMAGE_PICKER',
+          status: 'CANCELLED',
+          uid: profileProvider.user?.id.toString(),
+          durationMs: pickerStopwatch.elapsedMilliseconds,
+        );
+        return;
+      }
+
+      ProfilePhotoLogger.log(
+        stage: 'STAGE_2_IMAGE_PICKER',
+        status: 'SUCCESS',
+        uid: profileProvider.user?.id.toString(),
+        path: picked.path,
+        durationMs: pickerStopwatch.elapsedMilliseconds,
+      );
+
+      final bytes = await picked.readAsBytes();
+
+      if (bytes.length > 5 * 1024 * 1024 || bytes.isEmpty) {
+        ProfilePhotoLogger.log(
+          stage: 'STAGE_3_IMAGE_VALIDATION',
+          status: 'FAILED',
+          uid: profileProvider.user?.id.toString(),
+          path: picked.path,
+          error: 'Invalid size: ${bytes.length} bytes (max 5MB, min 1 byte)',
+        );
+        if (mounted) {
+          NeoSnackBars.error(
+            context,
+            'Ukuran foto terlalu besar. Maksimal 5 MB.',
+          );
+        }
+        return;
+      }
+
+      ProfilePhotoLogger.log(
+        stage: 'STAGE_3_IMAGE_VALIDATION',
+        status: 'SUCCESS',
+        uid: profileProvider.user?.id.toString(),
+        path: picked.path,
+      );
+
+      if (!mounted) return;
+
+      final confirmed = await _showPhotoPreviewDialog(bytes);
+      ProfilePhotoLogger.log(
+        stage: 'STAGE_4_PREVIEW_CONFIRM',
+        status: confirmed == true ? 'SUCCESS' : 'CANCELLED',
+        uid: profileProvider.user?.id.toString(),
+      );
+
+      if (confirmed == true && mounted) {
+        _showLoadingDialog('Mengunggah foto profil...');
+        final success = await profileProvider.updateProfilePhoto(bytes);
+        if (mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          if (success) {
+            authProvider.updateUserPhoto(
+              photoUrl: profileProvider.user?.photoUrl,
+              photoPath: profileProvider.user?.photoPath,
+            );
+            ProfilePhotoLogger.log(
+              stage: 'STAGE_12_UI_RENDER',
+              status: 'SUCCESS',
+              uid: profileProvider.user?.id.toString(),
+              path: profileProvider.user?.photoPath,
+            );
+            NeoSnackBars.success(context, 'Foto profil berhasil diperbarui!');
+          } else {
+            ProfilePhotoLogger.log(
+              stage: 'STAGE_12_UI_RENDER',
+              status: 'FAILED',
+              uid: profileProvider.user?.id.toString(),
+              error: profileProvider.errorMessage,
+            );
+            NeoSnackBars.error(
+              context,
+              profileProvider.errorMessage ?? 'Gagal mengunggah foto profil.',
+            );
+          }
+        }
+      }
+    } catch (e) {
+      ProfilePhotoLogger.log(
+        stage: 'STAGE_2_IMAGE_PICKER',
+        status: 'FAILED',
+        uid: profileProvider.user?.id.toString(),
+        error: e,
+      );
+      if (mounted) {
+        NeoSnackBars.error(
+          context,
+          'Gagal mengakses foto atau kamera. Pastikan izin telah diberikan.',
+        );
+      }
+    }
+  }
+
+  Future<bool?> _showPhotoPreviewDialog(Uint8List imageBytes) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
+            padding: const EdgeInsets.all(NeoTokens.space20),
+            decoration: BoxDecoration(
+              color: NeoTokens.paper,
+              borderRadius: BorderRadius.circular(NeoTokens.radiusLarge),
+              border: Border.all(
+                color: NeoTokens.black,
+                width: NeoTokens.borderWidth,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: NeoTokens.black,
+                  offset: NeoTokens.shadowOffsetMedium,
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: NeoTokens.lime,
+                        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                        border: Border.all(color: NeoTokens.black, width: 2),
+                      ),
+                      child: const Icon(
+                        AppIcons.cameraAlt,
+                        size: AppIcons.sizeMedium,
+                        color: NeoTokens.black,
+                      ),
+                    ),
+                    const SizedBox(width: NeoTokens.space12),
+                    const Expanded(
+                      child: Text(
+                        'Pratinjau Foto',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: NeoTokens.black,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: NeoTokens.space16),
+                const Text(
+                  'Pastikan foto wajah Anda terlihat jelas sebelum menyimpan foto profil.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: NeoTokens.textMuted,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: NeoTokens.space16),
+                Center(
+                  child: Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: NeoTokens.black,
+                        width: 2.5,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: NeoTokens.black,
+                          offset: Offset(3, 3),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.memory(
+                      imageBytes,
+                      width: 160,
+                      height: 160,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: NeoTokens.space20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: NeoButton(
+                        text: 'Batal',
+                        variant: NeoButtonVariant.secondary,
+                        onPressed: () => Navigator.of(dialogCtx).pop(false),
+                      ),
+                    ),
+                    const SizedBox(width: NeoTokens.space12),
+                    Expanded(
+                      child: NeoButton(
+                        text: 'Simpan Foto',
+                        variant: NeoButtonVariant.primary,
+                        onPressed: () => Navigator.of(dialogCtx).pop(true),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleDeletePhoto(
+    ProfileProvider profileProvider,
+    AuthProvider authProvider,
+  ) async {
+    final confirmed = await NeoDialog.show(
       context,
-      currentAvatarId: currentAvatarId,
+      title: 'Hapus Foto Profil?',
+      message:
+          'Foto profil Anda akan dihapus permanen dan tampilan akan kembali menggunakan inisial nama Anda.',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      confirmColor: NeoTokens.alert,
+      icon: AppIcons.delete,
     );
 
-    if (selectedId != null && selectedId != currentAvatarId && mounted) {
-      final success = await profileProvider.updateAvatar(
-        avatarPreset: selectedId,
-      );
-      if (success && mounted) {
-        NeoSnackBars.success(
-          context,
-          'Avatar berhasil diubah ke ${AvatarCatalog.getById(selectedId).name}!',
-        );
+    if (confirmed == true && mounted) {
+      _showLoadingDialog('Menghapus foto profil...');
+      final success = await profileProvider.deleteProfilePhoto();
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        if (success) {
+          authProvider.updateUserPhoto(clearPhoto: true);
+          NeoSnackBars.info(context, 'Foto profil berhasil dihapus.');
+        } else {
+          NeoSnackBars.error(
+            context,
+            profileProvider.errorMessage ?? 'Gagal menghapus foto profil.',
+          );
+        }
       }
     }
   }
@@ -341,23 +787,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
         rootNavigator: true,
       ).pop(); // dismiss loading dialog
 
-      final password = await _showReauthPasswordDialog();
-      if (!mounted) {
-        setState(() => _isDeleting = false);
-        return;
-      }
+      final isGoogleOnly =
+          auth.hasGoogleProvider && !auth.hasPasswordProvider;
 
-      if (password != null && password.isNotEmpty) {
-        _showLoadingDialog('Memverifikasi sandi & menghapus akun...');
-        success = await auth.deleteAccount(password: password);
+      if (isGoogleOnly) {
+        _showLoadingDialog('Memverifikasi akun Google & menghapus data...');
+        success = await auth.deleteAccount(useGoogleReauth: true);
         if (!mounted) return;
         Navigator.of(
           context,
           rootNavigator: true,
         ).pop(); // dismiss loading dialog
       } else {
-        setState(() => _isDeleting = false);
-        return;
+        final password = await _showReauthPasswordDialog();
+        if (!mounted) {
+          setState(() => _isDeleting = false);
+          return;
+        }
+
+        if (password != null && password.isNotEmpty) {
+          _showLoadingDialog('Memverifikasi sandi & menghapus akun...');
+          success = await auth.deleteAccount(password: password);
+          if (!mounted) return;
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).pop(); // dismiss loading dialog
+        } else {
+          setState(() => _isDeleting = false);
+          return;
+        }
       }
     } else {
       Navigator.of(
@@ -399,8 +858,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = profileProvider.user;
     final profile = profileProvider.profile;
     final target = profileProvider.dailyTarget;
-    final avatarId = user?.avatarPreset ?? AvatarCatalog.defaultAvatarId;
-    final character = AvatarCatalog.getById(avatarId);
 
     final displayName = user?.fullName.isNotEmpty == true
         ? user!.fullName
@@ -460,26 +917,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Centered Large Game Avatar
+                    // Centered Large User Profile Avatar
                     Center(
                       child: Stack(
                         clipBehavior: Clip.none,
                         alignment: Alignment.bottomRight,
                         children: [
-                          NeoAvatar(
-                            avatarPreset: avatarId,
+                          UserProfileAvatar(
+                            photoUrl: user?.photoUrl ?? auth.currentUser?.photoUrl,
+                            name: displayName,
                             size: 96,
                             borderWidth: 3.0,
                             shadowOffset: const Offset(4, 4),
+                            onTap: () => _openPhotoActionSheet(profileProvider, auth),
                           ),
                           Positioned(
                             right: -4,
                             bottom: -4,
                             child: GestureDetector(
-                              onTap: () => _openAvatarCatalog(profileProvider),
+                              onTap: () => _openPhotoActionSheet(profileProvider, auth),
                               child: Container(
-                                width: 34,
-                                height: 34,
+                                width: 36,
+                                height: 36,
                                 decoration: BoxDecoration(
                                   color: NeoTokens.vividYellow,
                                   shape: BoxShape.circle,
@@ -496,8 +955,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ],
                                 ),
                                 child: const Icon(
-                                  AppIcons.edit,
-                                  size: AppIcons.sizeLarge,
+                                  AppIcons.cameraAlt,
+                                  size: AppIcons.sizeMedium,
                                   color: NeoTokens.black,
                                 ),
                               ),
@@ -531,30 +990,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         fontSize: 13,
                         color: NeoTokens.textMuted,
                         fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Character Name Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: character.backgroundColor,
-                        borderRadius: BorderRadius.circular(
-                          NeoTokens.radiusSmall,
-                        ),
-                        border: Border.all(color: NeoTokens.black, width: 1.5),
-                      ),
-                      child: Text(
-                        'Karakter: ${character.name} (${character.title})',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: NeoTokens.black,
-                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -647,15 +1082,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: NeoTokens.space16),
 
-                    // "Ganti Avatar" Button
+                    // "Ubah Foto Profil" Button
                     SizedBox(
                       width: double.infinity,
                       child: NeoButton(
-                        text: 'Pilih Karakter Avatar',
+                        text: 'Ubah Foto Profil',
                         variant: NeoButtonVariant.secondary,
-                        prefixIcon: AppIcons.theaterComedy,
+                        prefixIcon: AppIcons.cameraAlt,
                         height: 44,
-                        onPressed: () => _openAvatarCatalog(profileProvider),
+                        onPressed: () => _openPhotoActionSheet(profileProvider, auth),
                       ),
                     ),
                   ],

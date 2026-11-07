@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:nutriview/core/error_handler.dart';
+import 'package:nutriview/data/models/profile.dart';
 import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
 
@@ -113,6 +114,70 @@ class AuthProvider extends ChangeNotifier {
   String get email => _currentUser?.email ?? _savedEmail ?? '';
 
   bool get isAdmin => role.toLowerCase().trim() == 'admin';
+  bool get isProfileComplete => _currentUser?.isProfileComplete ?? false;
+
+  /// Provider-aware detection
+  List<String> get signInProviders => _repository.getSignInProviders();
+  bool get hasPasswordProvider => _repository.hasPasswordProvider();
+  bool get hasGoogleProvider => _repository.hasGoogleProvider();
+  String get primaryProviderId => _repository.getPrimaryProviderId();
+
+  /// Updates current user profile and synchronizes completion state in memory.
+  void updateProfile(UserProfile profile) {
+    if (_currentUser != null) {
+      _currentUser = _currentUser!.copyWith(
+        profile: profile,
+        isProfileComplete: true,
+      );
+    } else {
+      _currentUser = User(
+        id: (_savedEmail ?? '').hashCode.abs(),
+        email: _savedEmail ?? '',
+        fullName: _savedName ?? 'User',
+        role: _savedRole ?? 'user',
+        isActive: true,
+        isProfileComplete: true,
+        profile: profile,
+      );
+    }
+    notifyListeners();
+  }
+
+  /// Updates or clears active in-memory user profile photo state across the entire app.
+  void updateUserPhoto({
+    String? photoUrl,
+    String? photoPath,
+    bool clearPhoto = false,
+  }) {
+    if (_currentUser != null) {
+      _currentUser = _currentUser!.copyWith(
+        photoUrl: photoUrl,
+        photoPath: photoPath,
+        clearPhoto: clearPhoto,
+      );
+    } else if (!clearPhoto && (photoUrl != null || photoPath != null)) {
+      _currentUser = User(
+        id: (_savedEmail ?? '').hashCode.abs(),
+        email: _savedEmail ?? '',
+        fullName: _savedName ?? 'User',
+        role: _savedRole ?? 'user',
+        isActive: true,
+        photoUrl: photoUrl,
+        photoPath: photoPath,
+      );
+    }
+    notifyListeners();
+  }
+
+  /// Sets or updates the active in-memory user instance.
+  void setCurrentUser(User user) {
+    _currentUser = user;
+    _isLoggedIn = true;
+    _savedRole = user.role;
+    _savedName = user.fullName;
+    _savedEmail = user.email;
+    notifyListeners();
+  }
 
   /// Evaluates authentication state on app launch.
   Future<void> checkAuthStatus() async {
@@ -121,21 +186,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      bool rememberMe = true;
-      try {
-        rememberMe = await _repository.isRememberMeEnabled();
-      } catch (_) {
-        rememberMe = true;
-      }
-
-      if (!rememberMe) {
-        // Ephemeral session: User opted out of Remember Me on their last session
-        await _repository.logout();
-        _resetSessionState();
-        _lifecycleState = AuthLifecycleState.unauthenticated;
-        return;
-      }
-
       _isLoggedIn = await _repository.isLoggedIn();
       if (_isLoggedIn) {
         _savedRole = await _repository.getRole();
@@ -311,9 +361,8 @@ class AuthProvider extends ChangeNotifier {
   /// Normal email/password identity login.
   Future<User?> login(
     String email,
-    String password, {
-    bool rememberMe = true,
-  }) async {
+    String password,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     _lifecycleState = AuthLifecycleState.authenticating;
@@ -323,7 +372,6 @@ class AuthProvider extends ChangeNotifier {
       final user = await _repository.login(
         email: email,
         password: password,
-        rememberMe: rememberMe,
       );
       _isLoggedIn = true;
       _currentUser = user;
@@ -351,14 +399,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Google identity login.
-  Future<User?> loginWithGoogle({bool rememberMe = true}) async {
+  Future<User?> loginWithGoogle() async {
     _isGoogleLoading = true;
     _errorMessage = null;
     _lifecycleState = AuthLifecycleState.authenticating;
     notifyListeners();
 
     try {
-      final user = await _repository.loginWithGoogle(rememberMe: rememberMe);
+      final user = await _repository.loginWithGoogle();
       if (user == null) {
         // User intentionally cancelled Google sign in dialog
         _lifecycleState = AuthLifecycleState.unauthenticated;
@@ -499,14 +547,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> deleteAccount({String? password}) async {
+  Future<bool> deleteAccount({String? password, bool useGoogleReauth = false}) async {
     _isLoading = true;
     _errorMessage = null;
     _errorCode = null;
     notifyListeners();
 
     try {
-      await _repository.deleteAccount(password: password);
+      await _repository.deleteAccount(
+        password: password,
+        useGoogleReauth: useGoogleReauth,
+      );
       _resetSessionState();
       _lifecycleState = AuthLifecycleState.unauthenticated;
       onLogout?.call();

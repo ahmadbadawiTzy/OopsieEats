@@ -19,6 +19,7 @@ class AppRoutes {
   static const String articleDetail = '/article/detail';
 
   // Biodata & Creator Profile
+  static const String completeProfile = '/complete-profile';
   static const String biodata = '/profile/biodata';
   static const String about = '/about';
 }

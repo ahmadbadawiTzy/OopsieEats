@@ -5,8 +5,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:nutriview/core/error_handler.dart';
 import 'package:nutriview/data/api_client.dart';
+import 'package:nutriview/data/models/profile.dart';
 import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/services/biometric_service.dart';
+import 'package:nutriview/data/services/supabase_storage_service.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -14,7 +16,35 @@ class AuthRepository {
   final FirebaseFirestore _firestore;
   final GoogleSignIn _googleSignIn;
   final BiometricService _biometricService;
+  final SupabaseStorageService? _storageService;
   bool _isGoogleSignInInitialized = false;
+
+  UserProfile? _extractProfile(Map<String, dynamic>? data) {
+    if (data == null || data['profile'] == null) return null;
+    try {
+      return UserProfile.fromJson(
+        Map<String, dynamic>.from(data['profile'] as Map),
+      );
+    } catch (e) {
+      debugPrint('[AuthRepository] Gagal parse profile: $e');
+      return null;
+    }
+  }
+
+  bool _extractProfileComplete(
+    Map<String, dynamic>? data,
+    UserProfile? profile,
+  ) {
+    if (data != null && data['is_profile_complete'] is bool) {
+      return data['is_profile_complete'] as bool;
+    }
+    if (profile == null) return false;
+    return profile.heightCm >= 50 &&
+        profile.weightKg >= 20 &&
+        (profile.birthDate != null || profile.age > 0) &&
+        profile.sex.isNotEmpty &&
+        profile.activityLevel.isNotEmpty;
+  }
 
   AuthRepository([
     ApiClient? apiClient,
@@ -22,17 +52,20 @@ class AuthRepository {
     FirebaseFirestore? firestore,
     GoogleSignIn? googleSignIn,
     BiometricService? biometricService,
+    SupabaseStorageService? storageService,
   ]) : _apiClient = apiClient ?? ApiClient(),
        _auth = auth ?? fb.FirebaseAuth.instance,
        _firestore = firestore ?? FirebaseFirestore.instance,
        _googleSignIn = googleSignIn ?? GoogleSignIn.instance,
-       _biometricService = biometricService ?? BiometricService();
+       _biometricService = biometricService ?? BiometricService(),
+       _storageService = storageService;
 
   ApiClient get apiClient => _apiClient;
   fb.FirebaseAuth get auth => _auth;
   FirebaseFirestore get firestore => _firestore;
   GoogleSignIn get googleSignIn => _googleSignIn;
   BiometricService get biometricService => _biometricService;
+  SupabaseStorageService? get storageService => _storageService;
 
   Future<User> register({
     required String email,
@@ -55,6 +88,7 @@ class AuthRepository {
         'full_name': fullName,
         'role': 'user',
         'is_active': true,
+        'is_profile_complete': false,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       };
@@ -76,6 +110,7 @@ class AuthRepository {
         fullName: fullName,
         role: 'user',
         isActive: true,
+        isProfileComplete: false,
       );
     } on fb.FirebaseAuthException catch (e) {
       if (e.code == 'email-already-in-use') {
@@ -111,7 +146,6 @@ class AuthRepository {
   Future<User> login({
     required String email,
     required String password,
-    bool rememberMe = true,
   }) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
@@ -123,6 +157,8 @@ class AuthRepository {
       String role = 'user';
       String fullName = cred.user?.displayName ?? '';
       bool isActive = true;
+      UserProfile? profile;
+      bool isProfileComplete = false;
 
       if (uid.isNotEmpty) {
         try {
@@ -142,6 +178,8 @@ class AuthRepository {
             fullName = (data['full_name'] as String?)?.isNotEmpty == true
                 ? data['full_name'] as String
                 : fullName;
+            profile = _extractProfile(data);
+            isProfileComplete = _extractProfileComplete(data, profile);
           }
         } catch (e) {
           if (e is ApiException) rethrow;
@@ -157,7 +195,6 @@ class AuthRepository {
         name: fullName.isNotEmpty ? fullName : email.split('@').first,
         email: email.trim(),
       );
-      await _apiClient.saveRememberMe(rememberMe);
 
       return User(
         id: uid.hashCode.abs(),
@@ -165,6 +202,8 @@ class AuthRepository {
         fullName: fullName.isNotEmpty ? fullName : email.split('@').first,
         role: role,
         isActive: isActive,
+        isProfileComplete: isProfileComplete,
+        profile: profile,
       );
     } on fb.FirebaseAuthException catch (e) {
       if (e.code == 'user-disabled') {
@@ -205,7 +244,7 @@ class AuthRepository {
     _isGoogleSignInInitialized = true;
   }
 
-  Future<User?> loginWithGoogle({bool rememberMe = true}) async {
+  Future<User?> loginWithGoogle() async {
     try {
       await _ensureGoogleSignInInitialized();
 
@@ -263,6 +302,8 @@ class AuthRepository {
       String role = 'user';
       String fullName = fbUser?.displayName ?? '';
       bool isActive = true;
+      UserProfile? profile;
+      bool isProfileComplete = false;
 
       if (!snapshot.exists || snapshot.data() == null) {
         // First-time Google user: initialize initial profile record
@@ -277,6 +318,7 @@ class AuthRepository {
           'full_name': fullName,
           'role': 'user',
           'is_active': true,
+          'is_profile_complete': false,
           'created_at': DateTime.now().toIso8601String(),
           'updated_at': DateTime.now().toIso8601String(),
         };
@@ -303,6 +345,8 @@ class AuthRepository {
         } else if (fullName.isEmpty) {
           fullName = (fbUser?.email ?? '').split('@').first;
         }
+        profile = _extractProfile(data);
+        isProfileComplete = _extractProfileComplete(data, profile);
       }
 
       await _apiClient.saveToken(uid);
@@ -313,7 +357,6 @@ class AuthRepository {
             : (fbUser?.email ?? '').split('@').first,
         email: (fbUser?.email ?? '').trim(),
       );
-      await _apiClient.saveRememberMe(rememberMe);
 
       return User(
         id: uid.hashCode.abs(),
@@ -323,6 +366,8 @@ class AuthRepository {
             : (fbUser?.email ?? '').split('@').first,
         role: role,
         isActive: isActive,
+        isProfileComplete: isProfileComplete,
+        profile: profile,
       );
     } on fb.FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
@@ -431,14 +476,6 @@ class AuthRepository {
             'Terjadi kesalahan sistem saat memproses pemulihan kata sandi.',
       );
     }
-  }
-
-  Future<bool> isRememberMeEnabled() async {
-    return await _apiClient.isRememberMeEnabled();
-  }
-
-  Future<void> setRememberMe(bool enabled) async {
-    await _apiClient.saveRememberMe(enabled);
   }
 
   Future<bool> isBiometricAvailable() async {
@@ -561,6 +598,8 @@ class AuthRepository {
     String role = 'user';
     String fullName = fbUser.displayName ?? '';
     bool isActive = true;
+    UserProfile? profile;
+    bool isProfileComplete = false;
 
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
@@ -581,6 +620,8 @@ class AuthRepository {
         fullName = (data['full_name'] as String?)?.isNotEmpty == true
             ? data['full_name'] as String
             : fullName;
+        profile = _extractProfile(data);
+        isProfileComplete = _extractProfileComplete(data, profile);
       }
     } catch (e) {
       if (e is ApiException) rethrow;
@@ -605,6 +646,8 @@ class AuthRepository {
           : (fbUser.email ?? '').split('@').first,
       role: role,
       isActive: isActive,
+      isProfileComplete: isProfileComplete,
+      profile: profile,
     );
   }
 
@@ -673,7 +716,6 @@ class AuthRepository {
       return await login(
         email: emailToVerify,
         password: password,
-        rememberMe: true,
       );
     }
 
@@ -682,6 +724,8 @@ class AuthRepository {
     String role = 'user';
     String fullName = fbUser.displayName ?? '';
     bool isActive = true;
+    UserProfile? profile;
+    bool isProfileComplete = false;
 
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
@@ -703,6 +747,8 @@ class AuthRepository {
         if (storedName != null && storedName.isNotEmpty) {
           fullName = storedName;
         }
+        profile = _extractProfile(data);
+        isProfileComplete = _extractProfileComplete(data, profile);
       }
     } catch (e) {
       if (e is ApiException) rethrow;
@@ -724,7 +770,95 @@ class AuthRepository {
       fullName: fullName.isNotEmpty ? fullName : emailToVerify.split('@').first,
       role: role,
       isActive: isActive,
+      isProfileComplete: isProfileComplete,
+      profile: profile,
     );
+  }
+
+  List<String> getSignInProviders() {
+    final user = _auth.currentUser;
+    if (user == null) return const [];
+    return user.providerData.map((info) => info.providerId).toList();
+  }
+
+  bool hasPasswordProvider() {
+    final providers = getSignInProviders();
+    return providers.contains('password');
+  }
+
+  bool hasGoogleProvider() {
+    final providers = getSignInProviders();
+    return providers.contains('google.com');
+  }
+
+  String getPrimaryProviderId() {
+    final providers = getSignInProviders();
+    if (providers.contains('google.com') && !providers.contains('password')) {
+      return 'google.com';
+    }
+    if (providers.contains('password')) {
+      return 'password';
+    }
+    return providers.isNotEmpty ? providers.first : 'password';
+  }
+
+  Future<void> reauthenticateWithGoogle() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw ApiException(
+        statusCode: 401,
+        code: 'UNAUTHORIZED',
+        message: 'Pengguna belum terautentikasi.',
+      );
+    }
+
+    await _ensureGoogleSignInInitialized();
+    final GoogleSignInAccount account;
+    try {
+      account = await _googleSignIn.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled ||
+          e.code == GoogleSignInExceptionCode.interrupted) {
+        throw ApiException(
+          statusCode: 401,
+          code: 'AUTH_CANCELLED',
+          message: 'Autentikasi Google dibatalkan.',
+        );
+      }
+      throw ApiException(
+        statusCode: 400,
+        code: 'GOOGLE_SIGN_IN_FAILED',
+        message: 'Gagal melakukan autentikasi Google: ${e.description ?? e.code.name}',
+      );
+    }
+
+    final googleAuth = account.authentication;
+    final idToken = googleAuth.idToken;
+    if (idToken == null || idToken.isEmpty) {
+      throw ApiException(
+        statusCode: 400,
+        code: 'MISSING_ID_TOKEN',
+        message: 'Gagal memperoleh token autentikasi Google.',
+      );
+    }
+
+    final credential = fb.GoogleAuthProvider.credential(idToken: idToken);
+    try {
+      await user.reauthenticateWithCredential(credential);
+    } on fb.FirebaseAuthException catch (e) {
+      if (e.code == 'user-mismatch') {
+        throw ApiException(
+          statusCode: 403,
+          code: 'USER_MISMATCH',
+          message: 'Akun Google yang dipilih berbeda dengan akun yang sedang aktif.',
+        );
+      }
+      throw ApiException(
+        statusCode: 400,
+        code: e.code,
+        message: e.message ?? 'Verifikasi Google gagal.',
+      );
+    }
   }
 
   Future<void> reauthenticateWithPassword(String password) async {
@@ -766,7 +900,7 @@ class AuthRepository {
     }
   }
 
-  Future<void> deleteAccount({String? password}) async {
+  Future<void> deleteAccount({String? password, bool useGoogleReauth = false}) async {
     final user = _auth.currentUser;
     if (user == null) {
       debugPrint(
@@ -782,7 +916,11 @@ class AuthRepository {
     );
 
     // 1. Reauthentication handling
-    if (password != null && password.isNotEmpty) {
+    if (useGoogleReauth) {
+      debugPrint('[AccountDeletion] Stage 1: Reauthenticating with Google credentials.');
+      await reauthenticateWithGoogle();
+      debugPrint('[AccountDeletion] Stage 1: Google reauthentication successful.');
+    } else if (password != null && password.isNotEmpty) {
       debugPrint(
         '[AccountDeletion] Stage 1: Reauthenticating with provided password credentials.',
       );
@@ -799,7 +937,9 @@ class AuthRepository {
         throw ApiException(
           statusCode: 401,
           code: 'REQUIRES_RECENT_LOGIN',
-          message: 'Demi keamanan, masukkan kata sandi akun Anda untuk konfirmasi penghapusan.',
+          message: hasGoogleProvider() && !hasPasswordProvider()
+              ? 'Demi keamanan, lakukan verifikasi ulang dengan akun Google Anda.'
+              : 'Demi keamanan, masukkan kata sandi akun Anda untuk konfirmasi penghapusan.',
         );
       }
       debugPrint(
@@ -850,6 +990,18 @@ class AuthRepository {
         await _firestore.collection('profiles').doc(uid).delete();
       } catch (_) {
         // Ignored: profiles collection is legacy/optional
+      }
+
+      // 2d. Delete all food inspection images in Supabase Storage
+      try {
+        debugPrint(
+          '[AccountDeletion] Stage 2d: Purging Supabase storage folder for UID: $uid',
+        );
+        await _storageService?.deleteUserFoodImages(uid);
+      } catch (storageErr) {
+        debugPrint(
+          '[AccountDeletion] Warning: Supabase storage folder purge encountered error: $storageErr',
+        );
       }
     } on fb.FirebaseException catch (e) {
       debugPrint(

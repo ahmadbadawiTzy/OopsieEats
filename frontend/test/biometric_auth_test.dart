@@ -498,7 +498,6 @@ void main() {
     });
 
     test('checkAuthStatus gates session in biometricLocked when biometric is enabled', () async {
-      when(() => mockRepo.isRememberMeEnabled()).thenAnswer((_) async => true);
       when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
       when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
       when(() => mockRepo.getUserName())
@@ -519,7 +518,6 @@ void main() {
     });
 
     test('checkAuthStatus marks authenticated directly when biometric is not enabled', () async {
-      when(() => mockRepo.isRememberMeEnabled()).thenAnswer((_) async => true);
       when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
       when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
       when(() => mockRepo.getUserName())
@@ -541,7 +539,6 @@ void main() {
     });
 
     test('unlockWithPasswordInstead switches state from biometricLocked to passwordFallback', () async {
-      when(() => mockRepo.isRememberMeEnabled()).thenAnswer((_) async => true);
       when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
       when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
       when(() => mockRepo.getUserName()).thenAnswer((_) async => 'Budi');
@@ -626,8 +623,6 @@ void main() {
         expect(authProvider.isBiometricLocked, isFalse);
 
         // Now set up eligible session
-        when(() => mockRepo.isRememberMeEnabled())
-            .thenAnswer((_) async => true);
         when(() => mockRepo.isLoggedIn()).thenAnswer((_) async => true);
         when(() => mockRepo.getRole()).thenAnswer((_) async => 'user');
         when(() => mockRepo.getUserName()).thenAnswer((_) async => 'Budi');

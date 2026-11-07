@@ -120,5 +120,9 @@ void main() {
         expect(list, isEmpty);
       },
     );
+
+    test('invalidateCache cleans in-memory state cleanly without error', () {
+      expect(() => articleRepository.invalidateCache(), returnsNormally);
+    });
   });
 }

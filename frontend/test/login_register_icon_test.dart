@@ -59,6 +59,8 @@ void main() {
         routes: {
           AppRoutes.dashboard: (_) =>
               const Scaffold(body: Text('DASHBOARD_ROUTE')),
+          AppRoutes.completeProfile: (_) =>
+              const Scaffold(body: Text('COMPLETE_PROFILE_ROUTE')),
           AppRoutes.profile: (_) => const Scaffold(body: Text('PROFILE_ROUTE')),
         },
       ),
@@ -150,7 +152,6 @@ void main() {
         () => mockAuthRepo.login(
           email: any(named: 'email'),
           password: any(named: 'password'),
-          rememberMe: any(named: 'rememberMe'),
         ),
       );
     });
@@ -167,6 +168,7 @@ void main() {
           email: 'badi@example.com',
           fullName: 'Ahmad Badawi',
           role: 'user',
+          isProfileComplete: true,
           profile: UserProfile(
             age: 25,
             sex: 'male',

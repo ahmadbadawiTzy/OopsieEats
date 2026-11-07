@@ -1,0 +1,29 @@
+flowchart TD
+    Splash["SplashScreen"] --> Login["LoginScreen"]
+    Login <--> Register["RegisterScreen"]
+    Login --> Shell["NeoBottomNav Shell"]
+    Login -.->|Role: admin| Admin["AdminDashboardScreen"]
+    
+    subgraph Shell ["Main Application Shell"]
+        Dashboard["DashboardScreen (Hero & Bento)"]
+        History["MealHistoryScreen"]
+        Articles["ArticleListScreen"]
+        Profile["ProfileScreen"]
+        
+        Scanner["ScannerScreen (Camera/Gallery)"]
+        Confirm["DetectionConfirmationScreen"]
+        Portion["PortionInputScreen"]
+        Result["MealResultScreen"]
+    end
+    
+    Shell --> Dashboard
+    Shell --> History
+    Shell --> Scanner
+    Shell --> Articles
+    Shell --> Profile
+    
+    Scanner --> Confirm --> Portion --> Result --> Dashboard
+    Profile --> Biodata["BiodataScreen"]
+    Profile --> About["AboutScreen"]
+    Articles --> ArticleDetail["ArticleDetailScreen"]
+    History --> MealDetail["MealDetailScreen"]

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
+import 'package:nutriview/features/profile/providers/profile_provider.dart';
 import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
 
 /// Clean, consumer-focused Neo-Brutalism Splash Screen for NutriView.
@@ -39,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     final totalDuration =
-        widget.minimumDuration ?? const Duration(milliseconds: 1200);
+        widget.minimumDuration ?? const Duration(milliseconds: 650);
 
     _controller = AnimationController(vsync: this, duration: totalDuration);
 
@@ -112,7 +113,27 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _verifyAuth() async {
     try {
       final authProvider = context.read<AuthProvider>();
+      ProfileProvider? profileProvider;
+      try {
+        profileProvider = context.read<ProfileProvider>();
+      } catch (_) {}
+
       await authProvider.checkAuthStatus().timeout(widget.authTimeout);
+
+      if (authProvider.isLoggedIn &&
+          !authProvider.isAdmin &&
+          profileProvider != null) {
+        try {
+          await profileProvider
+              .loadProfile()
+              .timeout(const Duration(seconds: 4));
+          if (profileProvider.user != null) {
+            authProvider.setCurrentUser(profileProvider.user!);
+          }
+        } catch (e) {
+          debugPrint('[SplashScreen] Profile load fallback: $e');
+        }
+      }
     } catch (e) {
       debugPrint('[SplashScreen] Auth check fallback: $e');
     }
@@ -123,15 +144,28 @@ class _SplashScreenState extends State<SplashScreen>
     _isNavigating = true;
 
     final authProvider = context.read<AuthProvider>();
+    ProfileProvider? profileProvider;
+    try {
+      profileProvider = context.read<ProfileProvider>();
+    } catch (_) {}
+
+    final bool isProfileComplete = authProvider.isProfileComplete ||
+        (profileProvider?.isProfileComplete ?? false);
+
     final String targetRoute;
 
     if (authProvider.isBiometricLocked) {
       // Session exists but protected by biometric lock
       targetRoute = AppRoutes.login;
     } else if (authProvider.isLoggedIn) {
-      targetRoute = authProvider.isAdmin
-          ? AppRoutes.adminDashboard
-          : AppRoutes.dashboard;
+      if (authProvider.isAdmin) {
+        targetRoute = AppRoutes.adminDashboard;
+      } else if (!isProfileComplete) {
+        // MANDATORY ONBOARDING: User must complete physical biodata before accessing app
+        targetRoute = AppRoutes.completeProfile;
+      } else {
+        targetRoute = AppRoutes.dashboard;
+      }
     } else {
       targetRoute = AppRoutes.login;
     }

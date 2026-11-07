@@ -1,0 +1,64 @@
+/* Neo-Brutalism Styling for Mermaid Charts */
+.node rect, .node polygon {
+    stroke: #18181B !important;
+    stroke-width: 3px !important;
+    filter: drop-shadow(5px 5px 0px #18181B) !important;
+    rx: 6px !important;
+    ry: 6px !important;
+}
+
+.cluster rect {
+    stroke: none !important;
+    fill: transparent !important;
+}
+
+.edgePath path {
+    stroke: #18181B !important;
+    stroke-width: 3px !important;
+}
+
+.marker {
+    fill: #18181B !important;
+    stroke: #18181B !important;
+    stroke-width: 2px !important;
+}
+
+/* Edge badge with Neo-Brutalism yellow pill */
+.labelBkg {
+    background-color: #FEF08A !important;
+    border: 2px solid #18181B !important;
+    border-radius: 4px !important;
+    box-shadow: 2.5px 2.5px 0px #18181B !important;
+    padding: 4px 10px !important;
+}
+
+.edgeLabel p, .edgeLabel span {
+    color: #18181B !important;
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+}
+
+/* Node labels typography and widths */
+.node .label {
+    font-family: 'Segoe UI', 'Inter', -apple-system, sans-serif !important;
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+    text-align: left !important;
+}
+
+.node .label b {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    display: block !important;
+    text-align: center !important;
+    color: #18181B !important;
+    padding-bottom: 2px !important;
+}
+
+hr {
+    border: 0 !important;
+    border-top: 2px solid #18181B !important;
+    margin: 6px 0 !important;
+}

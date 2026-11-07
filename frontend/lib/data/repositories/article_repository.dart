@@ -16,11 +16,15 @@ class ArticleRepository {
     return null;
   }
 
+  List<Map<String, dynamic>>? _cachedArticles;
+  DateTime? _articlesCacheTime;
+
   Future<Map<String, dynamic>> getArticles({
     int? categoryId,
     String? search,
     int page = 1,
     int limit = 10,
+    bool forceRefresh = false,
   }) async {
     final db = _firestore;
     if (db == null) {
@@ -33,14 +37,24 @@ class ArticleRepository {
     }
 
     try {
-      final snapshot = await db.collection('cms_articles').get();
-      final allArticles = snapshot.docs.map((doc) {
-        final data = Map<String, dynamic>.from(doc.data());
-        if (!data.containsKey('id')) {
-          data['id'] = int.tryParse(doc.id) ?? doc.id.hashCode.abs();
-        }
-        return data;
-      }).toList();
+      List<Map<String, dynamic>> allArticles;
+      if (!forceRefresh &&
+          _cachedArticles != null &&
+          _articlesCacheTime != null &&
+          DateTime.now().difference(_articlesCacheTime!) < _cmsCacheTtl) {
+        allArticles = _cachedArticles!;
+      } else {
+        final snapshot = await db.collection('cms_articles').get();
+        allArticles = snapshot.docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data());
+          if (!data.containsKey('id')) {
+            data['id'] = int.tryParse(doc.id) ?? doc.id.hashCode.abs();
+          }
+          return data;
+        }).toList();
+        _cachedArticles = allArticles;
+        _articlesCacheTime = DateTime.now();
+      }
 
       var filtered = allArticles
           .where((a) => a['status'] == 'published')
@@ -137,6 +151,8 @@ class ArticleRepository {
   static const Duration _cmsCacheTtl = Duration(minutes: 5);
 
   void invalidateCache() {
+    _cachedArticles = null;
+    _articlesCacheTime = null;
     _cachedCategories = null;
     _categoriesCacheTime = null;
     _cachedAnnouncements = null;

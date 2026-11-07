@@ -167,5 +167,73 @@ void main() {
       expect(json['age'], 25);
       expect(json['sex'], 'male');
     });
+
+    test('MealImageMetadata serialization and deserialization', () {
+      final json = {
+        'provider': 'supabase_storage',
+        'bucket': 'food-history-images',
+        'path': 'user123/meal456/food_12345.jpg',
+        'width': 1024,
+        'height': 768,
+        'size_bytes': 204800,
+        'mime_type': 'image/jpeg',
+        'created_at': '2026-11-07T12:00:00.000Z',
+      };
+
+      final metadata = MealImageMetadata.fromJson(json);
+      expect(metadata.provider, 'supabase_storage');
+      expect(metadata.bucket, 'food-history-images');
+      expect(metadata.path, 'user123/meal456/food_12345.jpg');
+      expect(metadata.width, 1024);
+      expect(metadata.height, 768);
+      expect(metadata.sizeBytes, 204800);
+      expect(metadata.mimeType, 'image/jpeg');
+
+      final serialized = metadata.toJson();
+      expect(serialized['provider'], 'supabase_storage');
+      expect(serialized['bucket'], 'food-history-images');
+      expect(serialized['path'], 'user123/meal456/food_12345.jpg');
+    });
+
+    test('MealRecord deserialization with and without image metadata', () {
+      final baseJson = {
+        'id': 101,
+        'meal_type': 'dinner',
+        'consumed_at': '2026-11-07T19:00:00Z',
+        'consumed_date': '2026-11-07',
+        'items': <Map<String, dynamic>>[],
+        'totals': {
+          'calories_kcal': 450.0,
+          'protein_g': 30.0,
+          'carbs_g': 50.0,
+          'fat_g': 12.0,
+        },
+        'created_at': '2026-11-07T19:10:00Z',
+      };
+
+      // 1. Without image field (backward compatibility)
+      final mealWithoutImage = MealRecord.fromJson(baseJson);
+      expect(mealWithoutImage.image, isNull);
+      expect(mealWithoutImage.toJson().containsKey('image'), isFalse);
+
+      // 2. With image field
+      final jsonWithImage = Map<String, dynamic>.from(baseJson)
+        ..['image'] = {
+          'provider': 'supabase_storage',
+          'bucket': 'food-history-images',
+          'path': 'user_xyz/101/food_img.jpg',
+          'width': 800,
+          'height': 600,
+          'size_bytes': 120000,
+          'mime_type': 'image/jpeg',
+          'created_at': '2026-11-07T19:00:01Z',
+        };
+
+      final mealWithImage = MealRecord.fromJson(jsonWithImage);
+      expect(mealWithImage.image, isNotNull);
+      expect(mealWithImage.image!.path, 'user_xyz/101/food_img.jpg');
+      expect(mealWithImage.image!.sizeBytes, 120000);
+      expect(mealWithImage.toJson()['image']['bucket'], 'food-history-images');
+    });
   });
 }

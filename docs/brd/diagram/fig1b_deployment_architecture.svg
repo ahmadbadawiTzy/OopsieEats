@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1050" height="580" viewBox="0 0 1050 580">
+  <defs>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1050" height="580" fill="#F8FAFC"/>
+  <rect x="15" y="15" width="1020" height="550" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Title Header -->
+  <rect x="15" y="15" width="1020" height="55" rx="10" fill="#0F172A"/>
+  <rect x="15" y="55" width="1020" height="15" fill="#0F172A"/>
+  <text x="35" y="48" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">NutriView — UML Deployment Architecture Diagram</text>
+  <text x="1015" y="48" font-family="system-ui, sans-serif" font-size="13" font-weight="500" fill="#94A3B8" text-anchor="end">Production Target Environment</text>
+
+  <!-- Node 1: Android Physical Mobile Device -->
+  <g transform="translate(40, 95)" filter="url(#shadow)">
+    <!-- Node 3D Box Header -->
+    <path d="M 0 16 L 16 0 L 396 0 L 380 16 Z" fill="#E2E8F0" stroke="#475569" stroke-width="1.5"/>
+    <path d="M 380 16 L 396 0 L 396 424 L 380 440 Z" fill="#CBD5E1" stroke="#475569" stroke-width="1.5"/>
+    <rect x="0" y="16" width="380" height="424" rx="4" fill="#F8FAFC" stroke="#475569" stroke-width="1.5"/>
+    
+    <text x="20" y="42" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0F172A">&lt;&lt;device&gt;&gt; Android Mobile Device</text>
+    <text x="20" y="58" font-family="system-ui, sans-serif" font-size="10" fill="#475569">OS: Android 10+ (API Level 29 s/d 34) • ARM64 / x86_64</text>
+    
+    <!-- Execution Environment -->
+    <rect x="15" y="70" width="350" height="355" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
+    <text x="25" y="90" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#0369A1">&lt;&lt;execution environment&gt;&gt; Android Runtime (ART) / Flutter</text>
+
+    <!-- Artifact: Application Bundle -->
+    <rect x="25" y="105" width="330" height="65" rx="4" fill="#F0FDF4" stroke="#16A34A" stroke-width="1.2"/>
+    <text x="35" y="125" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#14532D">&lt;&lt;artifact&gt;&gt; app-release.apk / .aab (57.8 MB)</text>
+    <text x="35" y="141" font-family="system-ui, sans-serif" font-size="9.5" fill="#166534">• Flutter SDK 3.24+ / Dart 3.5+</text>
+    <text x="35" y="155" font-family="system-ui, sans-serif" font-size="9.5" fill="#166534">• ProGuard R8 Code Shrinking &amp; Resource Stripping</text>
+
+    <!-- Artifact: Edge AI Model -->
+    <rect x="25" y="180" width="330" height="75" rx="4" fill="#FFFBEB" stroke="#D97706" stroke-width="1.2"/>
+    <text x="35" y="200" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400E">&lt;&lt;artifact&gt;&gt; best.tflite (9.4 MB) &amp; classes.txt</text>
+    <text x="35" y="216" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• YOLO26n Neural Network Model (29 Classes)</text>
+    <text x="35" y="230" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• AAPT noCompress('tflite') — zero uncompress memory overhead</text>
+    <text x="35" y="244" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• Executed via tflite_flutter C++ dynamic library</text>
+
+    <!-- Artifact: Secure KeyStore -->
+    <rect x="25" y="265" width="330" height="65" rx="4" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.2"/>
+    <text x="35" y="285" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#1E40AF">&lt;&lt;artifact&gt;&gt; Android KeyStore &amp; EncryptedPrefs</text>
+    <text x="35" y="301" font-family="system-ui, sans-serif" font-size="9.5" fill="#1D4ED8">• flutter_secure_storage hardware-backed encryption</text>
+    <text x="35" y="315" font-family="system-ui, sans-serif" font-size="9.5" fill="#1D4ED8">• Stores Auth UID, Role, and Biometric Keys</text>
+
+    <!-- Artifact: Local Bounded Cache -->
+    <rect x="25" y="340" width="330" height="70" rx="4" fill="#F8FAFC" stroke="#64748B" stroke-width="1.2"/>
+    <text x="35" y="360" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#334155">&lt;&lt;artifact&gt;&gt; Cloud Firestore SQLite Local Cache</text>
+    <text x="35" y="376" font-family="system-ui, sans-serif" font-size="9.5" fill="#475569">• 100 MB Bounded LRU Cache (cacheSizeBytes: 104857600)</text>
+    <text x="35" y="390" font-family="system-ui, sans-serif" font-size="9.5" fill="#475569">• Fallback asset seed_foods.json (29 local items)</text>
+    <text x="35" y="404" font-family="system-ui, sans-serif" font-size="9.5" fill="#475569">• Offline mutation write queue</text>
+  </g>
+
+  <!-- Node 2: Distribution Platform (Google Play Store) -->
+  <g transform="translate(440, 115)" filter="url(#shadow)">
+    <path d="M 0 16 L 16 0 L 226 0 L 210 16 Z" fill="#E2E8F0" stroke="#475569" stroke-width="1.5"/>
+    <path d="M 210 16 L 226 0 L 226 154 L 210 170 Z" fill="#CBD5E1" stroke="#475569" stroke-width="1.5"/>
+    <rect x="0" y="16" width="210" height="154" rx="4" fill="#F8FAFC" stroke="#475569" stroke-width="1.5"/>
+
+    <text x="15" y="40" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#0F172A">&lt;&lt;distribution&gt;&gt;</text>
+    <text x="15" y="56" font-family="system-ui, sans-serif" font-size="12" font-weight="700" fill="#047857">Google Play Store</text>
+
+    <rect x="15" y="70" width="180" height="85" rx="4" fill="#FFFFFF" stroke="#94A3B8" stroke-width="1.2"/>
+    <text x="25" y="90" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155">Play Console Pipeline:</text>
+    <text x="25" y="106" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Android App Bundle (.aab)</text>
+    <text x="25" y="120" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Play App Signing (KMS)</text>
+    <text x="25" y="134" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Target SDK 34 Compliance</text>
+    <text x="25" y="148" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Split APK per Device ABI</text>
+  </g>
+
+  <!-- Node 3: Cloud Infrastructure (Google Cloud / Firebase) -->
+  <g transform="translate(685, 95)" filter="url(#shadow)">
+    <path d="M 0 16 L 16 0 L 336 0 L 320 16 Z" fill="#E2E8F0" stroke="#475569" stroke-width="1.5"/>
+    <path d="M 320 16 L 336 0 L 336 424 L 320 440 Z" fill="#CBD5E1" stroke="#475569" stroke-width="1.5"/>
+    <rect x="0" y="16" width="320" height="424" rx="4" fill="#F8FAFC" stroke="#475569" stroke-width="1.5"/>
+
+    <text x="20" y="42" font-family="system-ui, sans-serif" font-size="13" font-weight="700" fill="#0F172A">&lt;&lt;cloud serverless&gt;&gt;</text>
+    <text x="20" y="58" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#B45309">Firebase Spark Plan ($0/month)</text>
+    <text x="20" y="74" font-family="system-ui, sans-serif" font-size="9.5" fill="#475569">Region: asia-southeast2 (Jakarta)</text>
+
+    <!-- Cloud Service: Firebase Auth -->
+    <rect x="15" y="85" width="290" height="85" rx="4" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.2"/>
+    <text x="25" y="105" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#92400E">&lt;&lt;service&gt;&gt; Firebase Authentication</text>
+    <text x="25" y="121" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• Email/Password &amp; Google Sign-In</text>
+    <text x="25" y="135" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• JWT ID Token Generation &amp; Refresh</text>
+    <text x="25" y="149" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• Indonesian Email Templates ('id')</text>
+    <text x="25" y="163" font-family="system-ui, sans-serif" font-size="9.5" fill="#78350F">• Secure Session Lifetime Management</text>
+
+    <!-- Cloud Service: Firestore Engine -->
+    <rect x="15" y="180" width="290" height="150" rx="4" fill="#FFFFFF" stroke="#0284C7" stroke-width="1.2"/>
+    <text x="25" y="200" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#0369A1">&lt;&lt;service&gt;&gt; Cloud Firestore NoSQL</text>
+    <text x="25" y="216" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• Multi-Tenant Documents &amp; Collections</text>
+    <text x="25" y="230" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• Subcollections: users/{uid}/meals/{id}</text>
+    <text x="25" y="244" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• 4 Composite Query Indexes</text>
+    <text x="25" y="258" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• Read: 50K/day free tier quota</text>
+    <text x="25" y="272" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• Write: 20K/day free tier quota</text>
+    <text x="25" y="286" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• Delete: 20K/day free tier quota</text>
+    <text x="25" y="300" font-family="system-ui, sans-serif" font-size="9.5" fill="#075985">• 1 GiB total storage capacity</text>
+    <text x="25" y="316" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0284C7">• Zero Firebase Storage Bucket!</text>
+
+    <!-- Cloud Service: Rules Engine -->
+    <rect x="15" y="340" width="290" height="85" rx="4" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.2"/>
+    <text x="25" y="360" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#991B1B">&lt;&lt;security&gt;&gt; firestore.rules Engine</text>
+    <text x="25" y="376" font-family="system-ui, sans-serif" font-size="9.5" fill="#7F1D1D">• Strict 2-Role System ('admin' vs 'user')</text>
+    <text x="25" y="390" font-family="system-ui, sans-serif" font-size="9.5" fill="#7F1D1D">• Declarative Role &amp; Owner Verification</text>
+    <text x="25" y="404" font-family="system-ui, sans-serif" font-size="9.5" fill="#7F1D1D">• Immutable Audit Logs Enforcement</text>
+    <text x="25" y="418" font-family="system-ui, sans-serif" font-size="9.5" fill="#7F1D1D">• Server-side Evaluation (0 Client Bypass)</text>
+  </g>
+
+  <!-- Connection Links -->
+  <!-- Play Store -> Device (Distribution) -->
+  <path fill="none" d="M 440 200 L 400 200" stroke="#047857" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#arr-gray)"/>
+  <text x="420" y="190" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#047857" text-anchor="middle">installs / updates</text>
+
+  <!-- Device -> Firebase Cloud (TLS Direct SDK) -->
+  <path fill="none" d="M 400 320 L 685 320" stroke="#2563EB" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <path fill="none" d="M 685 340 L 400 340" stroke="#2563EB" stroke-width="2" marker-end="url(#arr-gray)"/>
+  <rect x="470" y="312" width="150" height="36" rx="4" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.2"/>
+  <text x="545" y="327" font-family="system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#1E40AF" text-anchor="middle">Direct Firebase SDK</text>
+  <text x="545" y="341" font-family="system-ui, sans-serif" font-size="8.5" fill="#2563EB" text-anchor="middle">HTTPS / TLS 1.3 / gRPC</text>
+</svg>

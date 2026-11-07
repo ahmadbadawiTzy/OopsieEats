@@ -36,6 +36,8 @@ void main() {
         routes: {
           AppRoutes.dashboard: (_) =>
               const Scaffold(body: Text('DASHBOARD_SCREEN')),
+          AppRoutes.completeProfile: (_) =>
+              const Scaffold(body: Text('COMPLETE_PROFILE_SCREEN')),
           AppRoutes.adminDashboard: (_) =>
               const Scaffold(body: Text('ADMIN_DASHBOARD_SCREEN')),
           AppRoutes.register: (_) =>
@@ -91,9 +93,7 @@ void main() {
       (tester) async {
         final completer = Completer<User?>();
         when(
-          () => mockRepository.loginWithGoogle(
-            rememberMe: any(named: 'rememberMe'),
-          ),
+          () => mockRepository.loginWithGoogle(),
         ).thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(createWidgetUnderTest());
@@ -116,9 +116,7 @@ void main() {
         await tester.tap(googleBtn);
         await tester.pump();
         verify(
-          () => mockRepository.loginWithGoogle(
-            rememberMe: any(named: 'rememberMe'),
-          ),
+          () => mockRepository.loginWithGoogle(),
         ).called(1);
 
         // Complete the future
@@ -130,19 +128,18 @@ void main() {
       },
     );
 
-    testWidgets('successful user login routes to dashboard', (tester) async {
+    testWidgets('successful user login with complete profile routes to dashboard', (tester) async {
       final fakeUser = User(
         id: 101,
         email: 'user@gmail.com',
         fullName: 'Budi Santoso',
         role: 'user',
         isActive: true,
+        isProfileComplete: true,
       );
 
       when(
-        () => mockRepository.loginWithGoogle(
-          rememberMe: any(named: 'rememberMe'),
-        ),
+        () => mockRepository.loginWithGoogle(),
       ).thenAnswer((_) async => fakeUser);
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -159,6 +156,34 @@ void main() {
       expect(find.text('DASHBOARD_SCREEN'), findsOneWidget);
     });
 
+    testWidgets('successful user login with incomplete profile routes to complete profile screen', (tester) async {
+      final fakeUser = User(
+        id: 102,
+        email: 'newuser@gmail.com',
+        fullName: 'New User',
+        role: 'user',
+        isActive: true,
+        isProfileComplete: false,
+      );
+
+      when(
+        () => mockRepository.loginWithGoogle(),
+      ).thenAnswer((_) async => fakeUser);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      final googleBtnFinder = find.widgetWithText(
+        NeoButton,
+        'Lanjutkan dengan Google',
+      );
+      await tester.ensureVisible(googleBtnFinder);
+      await tester.tap(googleBtnFinder);
+      await tester.pumpAndSettle();
+
+      expect(find.text('COMPLETE_PROFILE_SCREEN'), findsOneWidget);
+    });
+
     testWidgets('successful admin login routes to admin dashboard', (
       tester,
     ) async {
@@ -171,9 +196,7 @@ void main() {
       );
 
       when(
-        () => mockRepository.loginWithGoogle(
-          rememberMe: any(named: 'rememberMe'),
-        ),
+        () => mockRepository.loginWithGoogle(),
       ).thenAnswer((_) async => fakeAdmin);
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -194,9 +217,7 @@ void main() {
       'user cancellation does not navigate and displays no error banner',
       (tester) async {
         when(
-          () => mockRepository.loginWithGoogle(
-            rememberMe: any(named: 'rememberMe'),
-          ),
+          () => mockRepository.loginWithGoogle(),
         ).thenAnswer((_) async => null);
 
         await tester.pumpWidget(createWidgetUnderTest());
@@ -225,9 +246,7 @@ void main() {
       'error in Google sign in shows error banner with Indonesian message',
       (tester) async {
         when(
-          () => mockRepository.loginWithGoogle(
-            rememberMe: any(named: 'rememberMe'),
-          ),
+          () => mockRepository.loginWithGoogle(),
         ).thenThrow(
           ApiException(
             statusCode: 503,

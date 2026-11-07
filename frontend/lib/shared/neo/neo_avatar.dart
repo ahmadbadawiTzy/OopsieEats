@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:nutriview/core/neo_tokens.dart';
 import 'package:nutriview/shared/neo/avatar_catalog.dart';
+import 'package:nutriview/shared/neo/user_profile_avatar.dart';
 
-/// Premium Neo-Brutalism Game Character Avatar for NutriView.
-/// - Renders distinct built-in game character art from [AvatarCatalog].
-/// - Strictly ZERO emojis.
-/// - Crisp structural borders and hard offset shadows.
-/// - Scales smoothly across all sizes (from 32dp navbar icon to 120dp profile header).
+/// Neo-Brutalism Avatar for NutriView.
+/// - Prioritizes real user photos via [UserProfileAvatar].
+/// - Displays clean uppercase initials when no photo is uploaded.
+/// - Preserves backward compatibility for legacy game character presets.
 class NeoAvatar extends StatelessWidget {
   final String? photoUrl;
   final String? avatarPreset;
@@ -29,6 +29,17 @@ class NeoAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // If no character preset is requested, render the modern customer-first UserProfileAvatar
+    if (avatarPreset == null || avatarPreset!.trim().isEmpty) {
+      return UserProfileAvatar(
+        photoUrl: photoUrl,
+        name: name,
+        size: size,
+        borderWidth: borderWidth,
+        shadowOffset: shadowOffset,
+        onTap: onTap,
+      );
+    }
     final effectiveBorderWidth =
         borderWidth ?? (size >= 64 ? 2.5 : (size >= 40 ? 2.0 : 1.5));
     final effectiveShadow =

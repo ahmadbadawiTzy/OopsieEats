@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720">
+  <defs>
+    <marker id="arr-sync" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#0F172A"/>
+    </marker>
+    <marker id="arr-reply" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#2563EB"/>
+    </marker>
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect width="1100" height="720" fill="#F8FAFC"/>
+  <rect x="15" y="15" width="1070" height="690" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+
+  <!-- Title Header -->
+  <rect x="15" y="15" width="1070" height="55" rx="10" fill="#0F172A"/>
+  <rect x="15" y="55" width="1070" height="15" fill="#0F172A"/>
+  <text x="35" y="48" font-family="system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">NutriView — UML Sequence Diagram: Computer Vision &amp; Meal Logging</text>
+  <text x="1065" y="48" font-family="system-ui, sans-serif" font-size="13" font-weight="500" fill="#94A3B8" text-anchor="end">Asynchronous Isolate Offloading &amp; Multi-Tenant Write</text>
+
+  <!-- Participants Definition (X positions) -->
+  <!-- User: 90, ScannerScreen: 230, ScanFlowProvider: 390, Worker Isolate: 560, FoodRepo: 720, MealRepo: 870, Firestore: 1000 -->
+  
+  <!-- Participant Boxes -->
+  <!-- 1. User -->
+  <g transform="translate(45, 90)">
+    <rect x="0" y="0" width="90" height="38" rx="4" fill="#0F172A"/>
+    <text x="45" y="24" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">actor User</text>
+  </g>
+
+  <!-- 2. ScannerScreen -->
+  <g transform="translate(175, 90)">
+    <rect x="0" y="0" width="110" height="38" rx="4" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="55" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1E40AF" text-anchor="middle">&lt;&lt;boundary&gt;&gt;</text>
+    <text x="55" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1E40AF" text-anchor="middle">ScannerScreen</text>
+  </g>
+
+  <!-- 3. ScanFlowProvider -->
+  <g transform="translate(325, 90)">
+    <rect x="0" y="0" width="130" height="38" rx="4" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+    <text x="65" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1E40AF" text-anchor="middle">&lt;&lt;control&gt;&gt;</text>
+    <text x="65" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#1E40AF" text-anchor="middle">ScanFlowProvider</text>
+  </g>
+
+  <!-- 4. Worker Isolate / YOLO26n -->
+  <g transform="translate(490, 90)">
+    <rect x="0" y="0" width="140" height="38" rx="4" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5"/>
+    <text x="70" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#92400E" text-anchor="middle">&lt;&lt;isolate&gt;&gt;</text>
+    <text x="70" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#92400E" text-anchor="middle">Worker Isolate (YOLO)</text>
+  </g>
+
+  <!-- 5. FoodRepository -->
+  <g transform="translate(665, 90)">
+    <rect x="0" y="0" width="110" height="38" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5"/>
+    <text x="55" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">&lt;&lt;entity&gt;&gt;</text>
+    <text x="55" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155">FoodRepository</text>
+  </g>
+
+  <!-- 6. MealRepository -->
+  <g transform="translate(815, 90)">
+    <rect x="0" y="0" width="110" height="38" rx="4" fill="#F1F5F9" stroke="#64748B" stroke-width="1.5"/>
+    <text x="55" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155" text-anchor="middle">&lt;&lt;entity&gt;&gt;</text>
+    <text x="55" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155">MealRepository</text>
+  </g>
+
+  <!-- 7. Cloud Firestore / Cache -->
+  <g transform="translate(945, 90)">
+    <rect x="0" y="0" width="120" height="38" rx="4" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5"/>
+    <text x="60" y="16" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#065F46" text-anchor="middle">&lt;&lt;database&gt;&gt;</text>
+    <text x="60" y="30" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#065F46">Cloud Firestore</text>
+  </g>
+
+  <!-- Lifeline dashed lines -->
+  <line x1="90" y1="128" x2="90" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="230" y1="128" x2="230" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="390" y1="128" x2="390" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="560" y1="128" x2="560" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="720" y1="128" x2="720" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="870" y1="128" x2="870" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <line x1="1005" y1="128" x2="1005" y2="670" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+  <!-- Activation Bars -->
+  <!-- User -->
+  <rect x="85" y="145" width="10" height="70" fill="#CBD5E1" stroke="#475569" stroke-width="1"/>
+  <rect x="85" y="380" width="10" height="90" fill="#CBD5E1" stroke="#475569" stroke-width="1"/>
+
+  <!-- ScannerScreen -->
+  <rect x="225" y="145" width="10" height="85" fill="#BFDBFE" stroke="#2563EB" stroke-width="1"/>
+  <rect x="225" y="360" width="10" height="130" fill="#BFDBFE" stroke="#2563EB" stroke-width="1"/>
+
+  <!-- ScanFlowProvider -->
+  <rect x="385" y="160" width="10" height="190" fill="#BFDBFE" stroke="#2563EB" stroke-width="1"/>
+  <rect x="385" y="470" width="10" height="175" fill="#BFDBFE" stroke="#2563EB" stroke-width="1"/>
+
+  <!-- Worker Isolate -->
+  <rect x="555" y="180" width="10" height="95" fill="#FDE68A" stroke="#D97706" stroke-width="1"/>
+
+  <!-- FoodRepo -->
+  <rect x="715" y="295" width="10" height="40" fill="#E2E8F0" stroke="#64748B" stroke-width="1"/>
+
+  <!-- MealRepo -->
+  <rect x="865" y="520" width="10" height="100" fill="#E2E8F0" stroke="#64748B" stroke-width="1"/>
+
+  <!-- Firestore -->
+  <rect x="1000" y="540" width="10" height="60" fill="#A7F3D0" stroke="#10B981" stroke-width="1"/>
+
+  <!-- Sequence Messages -->
+  <!-- 1. User -> ScannerScreen -->
+  <line x1="95" y1="155" x2="225" y2="155" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="160" y="150" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0F172A" text-anchor="middle">1: Capture / Pick Image</text>
+
+  <!-- 2. ScannerScreen -> ScanFlowProvider -->
+  <line x1="235" y1="170" x2="385" y2="170" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="310" y="165" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0F172A" text-anchor="middle">2: detectFood(imageBytes)</text>
+
+  <!-- 3. ScanFlowProvider -> Worker Isolate -->
+  <line x1="395" y1="185" x2="555" y2="185" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="475" y="180" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#B45309" text-anchor="middle">3: Isolate.run(_preprocess &amp; TFLite)</text>
+
+  <!-- Self-call on Worker Isolate -->
+  <path d="M 565 200 L 595 200 L 595 240 L 565 240" stroke="#D97706" stroke-width="1.3" fill="none" marker-end="url(#arr-sync)"/>
+  <text x="600" y="215" font-family="system-ui, sans-serif" font-size="8.5" fill="#78350F">Interpreter.run()</text>
+  <text x="600" y="228" font-family="system-ui, sans-serif" font-size="8.5" fill="#78350F">NMS IoU 0.45</text>
+
+  <!-- 4. Worker Isolate -> ScanFlowProvider (Reply) -->
+  <line x1="555" y1="270" x2="395" y2="270" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="475" y="265" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">4: Return List&lt;RawDetection&gt;</text>
+
+  <!-- 5. ScanFlowProvider -> FoodRepo -->
+  <line x1="395" y1="305" x2="715" y2="305" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="555" y="300" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#0F172A" text-anchor="middle">5: matchWithCatalog(classes)</text>
+
+  <!-- 6. FoodRepo -> ScanFlowProvider (Reply) -->
+  <line x1="715" y1="330" x2="395" y2="330" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="555" y="325" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">6: Return List&lt;DetectionItem&gt; (Nutrition Data)</text>
+
+  <!-- 7. ScanFlowProvider -> ScannerScreen (Reply) -->
+  <line x1="385" y1="355" x2="235" y2="355" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="310" y="350" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">7: Render DetectionConfirmationScreen</text>
+
+  <!-- User interaction: Review & Confirm Portions -->
+  <line x1="225" y1="390" x2="95" y2="390" stroke="#0F172A" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="160" y="385" font-family="system-ui, sans-serif" font-size="9" fill="#475569" text-anchor="middle">Show Bounding Boxes</text>
+
+  <line x1="95" y1="420" x2="225" y2="420" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="160" y="415" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0F172A" text-anchor="middle">8: Confirm Grams (e.g. 150g)</text>
+
+  <!-- Alt Block: Error Handling & Graceful Degradation -->
+  <rect x="70" y="435" width="985" height="45" rx="4" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="80" y="450" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#92400E">[alt: Confidence &lt; 0.30 or Wrong Detection]</text>
+  <text x="80" y="465" font-family="system-ui, sans-serif" font-size="8.5" fill="#78350F">User taps "Koreksi Makanan" ➔ Opens FoodSearchModal ➔ Queries seed_foods.json / foods catalog manually</text>
+
+  <!-- 9. ScannerScreen -> ScanFlowProvider (Save Meal) -->
+  <line x1="235" y1="495" x2="385" y2="495" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="310" y="490" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0F172A" text-anchor="middle">9: saveMeal(type, date, items)</text>
+
+  <!-- 10. ScanFlowProvider -> MealRepo -->
+  <line x1="395" y1="525" x2="865" y2="525" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="630" y="520" font-family="system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#0F172A" text-anchor="middle">10: createMeal(mealRecord)</text>
+
+  <!-- 11. MealRepo -> Firestore -->
+  <line x1="875" y1="545" x2="1000" y2="545" stroke="#0F172A" stroke-width="1.5" marker-end="url(#arr-sync)"/>
+  <text x="935" y="540" font-family="system-ui, sans-serif" font-size="9" font-weight="600" fill="#065F46" text-anchor="middle">11: set(users/{uid}/meals/{id})</text>
+
+  <!-- 12. Firestore -> MealRepo (Reply: Sync or Cached) -->
+  <line x1="1000" y1="585" x2="875" y2="585" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="935" y="580" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">12: Success (Sync / Bounded Cache)</text>
+
+  <!-- 13. MealRepo -> ScanFlowProvider -->
+  <line x1="865" y1="610" x2="395" y2="610" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="630" y="605" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">13: Return MealRecord DTO</text>
+
+  <!-- 14. ScanFlowProvider -> ScannerScreen / Dashboard -->
+  <line x1="385" y1="635" x2="235" y2="635" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-reply)"/>
+  <text x="310" y="630" font-family="system-ui, sans-serif" font-size="9" fill="#1D4ED8" text-anchor="middle">14: Push MealResult &amp; Refresh Dashboard</text>
+</svg>

@@ -1,9 +1,48 @@
 rules_version = '2';
 
+// ===============================================================
+// Assumed Data Model & Architecture (NutriView Profile & DB)
+// ===============================================================
+//
+// Collection: users/{userId}
+// Document ID: Firebase Auth UID (strict multi-tenant isolation)
+// Fields:
+//   - id: int/number (required, immutable) - Hash/numeric identifier
+//   - uid: string (required, immutable) - Firebase Auth UID, must match userId
+//   - email: string (required, immutable) - User email address
+//   - full_name: string (required, 1-100 chars) - User display name
+//   - role: string (required, 'user' | 'admin') - Role; non-admin can only create 'user' & cannot mutate
+//   - is_active: bool (required) - Account status; only admin can deactivate/activate
+//   - is_profile_complete: bool (optional/required) - Biodata completion state flag
+//   - photo_url: string (optional, <= 500 chars) - Profile picture temporary signed URL
+//   - photo_path: string (optional, <= 500 chars) - Supabase storage object path
+//   - avatar_preset: string (optional, <= 50 chars) - Avatar identifier
+//   - profile: map (optional) - Physical biodata sub-map
+//       * sex: string ('male' | 'female') [REQUIRED if profile map present]
+//       * age: number (1 - 120) [REQUIRED if profile map present]
+//       * birth_date: string (optional, <= 35 chars, ISO-8601)
+//       * height_cm: number (50.0 - 250.0) [REQUIRED if profile map present]
+//       * weight_kg: number (20.0 - 300.0) [REQUIRED if profile map present]
+//       * activity_level: string ('sedentary'|'light'|'moderate'|'active'|'very_active') [REQUIRED if profile map present]
+//       * goal: string ('lose_weight'|'maintain_weight'|'gain_weight') [REQUIRED if profile map present]
+//       * profession: string (optional, <= 50 chars)
+//   - daily_target: map (optional) - Computed nutrition targets (calories, macros, basis)
+//   - created_at: string/timestamp (required, immutable) - Account creation timestamp
+//   - updated_at: string/timestamp (required) - Last modification timestamp
+//   - deactivation_reason: string (optional, <= 500 chars) - Reason for deactivation by admin
+//
+// Subcollection: users/{userId}/meals/{mealId}
+// Document ID: Meal record ID
+// Scope: Strictly isolated to userId == request.auth.uid
+//
+// ===============================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // -----------------------------------------------------------
+    // Core Helper Functions
+    // -----------------------------------------------------------
     function isSignedIn() {
       return request.auth != null;
     }
@@ -24,24 +63,128 @@ service cloud.firestore {
         getUserData().is_active == true;
     }
 
-    // --- Users & Profiles ---
+    // String length & type helper
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    function isValidDateOrTimestamp(val) {
+      return (val is timestamp) || (val is string && val.size() >= 10 && val.size() <= 40);
+    }
+
+    // -----------------------------------------------------------
+    // Profile & Biodata Validators
+    // -----------------------------------------------------------
+    function isValidProfile(profileMap) {
+      return profileMap is map &&
+        profileMap.keys().hasOnly(['age', 'birth_date', 'sex', 'weight_kg', 'height_cm', 'activity_level', 'goal', 'profession']) &&
+        profileMap.sex in ['male', 'female'] &&
+        profileMap.age is number && profileMap.age >= 1 && profileMap.age <= 120 &&
+        profileMap.height_cm is number && profileMap.height_cm >= 50.0 && profileMap.height_cm <= 250.0 &&
+        profileMap.weight_kg is number && profileMap.weight_kg >= 20.0 && profileMap.weight_kg <= 300.0 &&
+        profileMap.activity_level in ['sedentary', 'light', 'moderate', 'active', 'very_active'] &&
+        profileMap.goal in ['lose_weight', 'maintain_weight', 'gain_weight'] &&
+        isValidOptionalString(profileMap, 'birth_date', 35) &&
+        isValidOptionalString(profileMap, 'profession', 50);
+    }
+
+    function isValidDailyTarget(targetMap) {
+      return targetMap is map &&
+        targetMap.keys().hasOnly(['calories_kcal', 'protein_g', 'carbs_g', 'fat_g', 'basis']) &&
+        targetMap.calories_kcal is number && targetMap.calories_kcal >= 0 &&
+        targetMap.protein_g is number && targetMap.protein_g >= 0 &&
+        targetMap.carbs_g is number && targetMap.carbs_g >= 0 &&
+        targetMap.fat_g is number && targetMap.fat_g >= 0 &&
+        (!('basis' in targetMap) || targetMap.basis is map);
+    }
+
+    // Validate allowed fields for users collection to prevent schema pollution
+    function hasOnlyAllowedUserFields(data) {
+      return data.keys().hasOnly([
+        'id', 'uid', 'email', 'full_name', 'role', 'is_active',
+        'is_profile_complete', 'photo_url', 'photo_path', 'avatar_preset',
+        'profile', 'daily_target', 'created_at', 'updated_at',
+        'deactivation_reason'
+      ]);
+    }
+
+    // Validate User Document Creation
+    function isValidUserCreate(userId) {
+      let data = request.resource.data;
+      return hasOnlyAllowedUserFields(data) &&
+        request.auth.uid == userId &&
+        data.role == 'user' &&
+        data.is_active == true &&
+        (!('uid' in data) || data.uid == userId) &&
+        isValidString(data.full_name, 1, 100) &&
+        isValidString(data.email, 3, 100) &&
+        isValidDateOrTimestamp(data.created_at) &&
+        isValidDateOrTimestamp(data.updated_at) &&
+        (!('is_profile_complete' in data) || data.is_profile_complete is bool) &&
+        (!('photo_url' in data) || isValidOptionalString(data, 'photo_url', 500)) &&
+        (!('photo_path' in data) || isValidOptionalString(data, 'photo_path', 500)) &&
+        (!('avatar_preset' in data) || isValidOptionalString(data, 'avatar_preset', 50)) &&
+        (!('profile' in data) || data.profile == null || isValidProfile(data.profile)) &&
+        (!('daily_target' in data) || data.daily_target == null || isValidDailyTarget(data.daily_target));
+    }
+
+    // Validate User Document Update by Owner
+    function isValidUserUpdateByOwner(userId) {
+      let data = request.resource.data;
+      let prev = resource.data;
+      return hasOnlyAllowedUserFields(data) &&
+        request.auth.uid == userId &&
+        // Anti-Privilege Escalation & Account Tampering: role and is_active must NOT change
+        data.role == prev.role &&
+        data.is_active == prev.is_active &&
+        // Immutable Identity fields: uid, id, email, created_at
+        (!('uid' in prev) || data.uid == prev.uid) &&
+        (!('id' in prev) || data.id == prev.id) &&
+        (!('email' in prev) || data.email == prev.email) &&
+        (!('created_at' in prev) || data.created_at == prev.created_at) &&
+        // Updatable fields validation
+        isValidString(data.full_name, 1, 100) &&
+        isValidDateOrTimestamp(data.updated_at) &&
+        (!('is_profile_complete' in data) || data.is_profile_complete is bool) &&
+        isValidOptionalString(data, 'photo_url', 500) &&
+        isValidOptionalString(data, 'photo_path', 500) &&
+        isValidOptionalString(data, 'avatar_preset', 50) &&
+        (!('profile' in data) || data.profile == null || isValidProfile(data.profile)) &&
+        (!('daily_target' in data) || data.daily_target == null || isValidDailyTarget(data.daily_target));
+    }
+
+    // Validate User Document Update by Admin
+    function isValidUserUpdateByAdmin() {
+      let data = request.resource.data;
+      return hasOnlyAllowedUserFields(data) &&
+        data.role in ['admin', 'user'] &&
+        data.is_active is bool &&
+        isValidDateOrTimestamp(data.updated_at) &&
+        isValidOptionalString(data, 'deactivation_reason', 500);
+    }
+
+    // ===========================================================
+    // Collection Match Rules
+    // ===========================================================
+
+    // --- Users & Profiles Collection ---
     match /users/{userId} {
       // User can read own doc; Admin can view all users
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
 
       // Registration: User can only create their own record as regular 'user' and active
-      // Strict anti-privilege escalation at registration time
-      allow create: if isSignedIn() && request.auth.uid == userId
-                    && request.resource.data.role == 'user'
-                    && request.resource.data.is_active == true;
+      // Validates schema, data types, string length bounds, and anti-privilege escalation
+      allow create: if isSignedIn() && isValidUserCreate(userId);
 
-      // Profile updates: User cannot self-elevate role or toggle active state
-      // Admin can manage user records and toggle account activation
+      // Profile updates: Protected against privilege escalation, schema pollution, and type juggling
+      // Admin can manage user activation status and assign roles
       allow update: if isSignedIn() && (
-        (request.auth.uid == userId
-          && request.resource.data.role == resource.data.role
-          && request.resource.data.is_active == resource.data.is_active)
-        || isAdmin()
+        isValidUserUpdateByOwner(userId) ||
+        (isAdmin() && isValidUserUpdateByAdmin())
       );
 
       // Account deletion: Owner can delete their own account, Admin can purge
@@ -53,7 +196,7 @@ service cloud.firestore {
       }
     }
 
-    // Top-level Profiles mapping (if used independently)
+    // Top-level Profiles mapping (legacy backward compatibility)
     match /profiles/{userId} {
       allow read, write: if isOwner(userId) || isAdmin();
     }

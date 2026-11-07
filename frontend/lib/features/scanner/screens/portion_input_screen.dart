@@ -11,6 +11,66 @@ import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
 import 'package:nutriview/core/app_icons.dart';
 
+import 'package:flutter/services.dart';
+
+/// Custom formatter ensuring ergonomic numeric input for portion in grams:
+/// - Allows digits and decimal separator (. or ,)
+/// - Normalizes comma to period
+/// - Replaces leading zero when typing digits (e.g. typing 5 when 0 -> replaces to 5)
+/// - Allows 0.x decimals (e.g. 0.5)
+/// - Clamps maximum value to 5000g
+class PortionNumberInputFormatter extends TextInputFormatter {
+  static final RegExp _validPattern = RegExp(r'^\d*([.,]\d*)?$');
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String newText = newValue.text;
+    if (newText.isEmpty) {
+      return newValue;
+    }
+
+    // Normalize comma to decimal point
+    if (newText.contains(',')) {
+      newText = newText.replaceAll(',', '.');
+    }
+
+    // Disallow multiple decimal points
+    if ('.'.allMatches(newText).length > 1) {
+      return oldValue;
+    }
+
+    if (!_validPattern.hasMatch(newText)) {
+      return oldValue;
+    }
+
+    // Auto-replace leading zero when typing positive numbers: e.g. "05" -> "5"
+    if (newText.length > 1 && newText.startsWith('0') && !newText.startsWith('0.')) {
+      newText = newText.replaceFirst(RegExp(r'^0+'), '');
+      if (newText.isEmpty) newText = '0';
+    }
+
+    // Enforce 5000g max ceiling
+    final parsed = double.tryParse(newText);
+    if (parsed != null && parsed > 5000) {
+      return oldValue;
+    }
+
+    final selectionOffset = (newText == newValue.text)
+        ? newValue.selection.baseOffset
+        : newText.length;
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(
+        offset: selectionOffset.clamp(0, newText.length),
+      ),
+    );
+  }
+}
+
 class PortionInputScreen extends StatefulWidget {
   const PortionInputScreen({super.key});
 
@@ -20,6 +80,7 @@ class PortionInputScreen extends StatefulWidget {
 
 class _PortionInputScreenState extends State<PortionInputScreen> {
   final Map<int, TextEditingController> _controllers = {};
+  final Map<int, FocusNode> _focusNodes = {};
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -27,11 +88,23 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
     super.initState();
     final items = context.read<ScanFlowProvider>().confirmedItems;
     for (int i = 0; i < items.length; i++) {
-      final portion = items[i].portionGrams ?? 150.0;
-      if (items[i].portionGrams == null) {
-        items[i].portionGrams = 150.0;
-      }
-      _controllers[i] = TextEditingController(text: portion.toInt().toString());
+      final portion = items[i].portionGrams ?? 0.0;
+      final initialText = portion > 0
+          ? (portion == portion.roundToDouble()
+              ? portion.toInt().toString()
+              : portion.toString())
+          : '0';
+      _controllers[i] = TextEditingController(text: initialText);
+      final node = FocusNode();
+      node.addListener(() {
+        if (node.hasFocus && _controllers[i]?.text == '0') {
+          _controllers[i]?.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: _controllers[i]!.text.length,
+          );
+        }
+      });
+      _focusNodes[i] = node;
     }
   }
 
@@ -40,20 +113,56 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
     for (final controller in _controllers.values) {
       controller.dispose();
     }
+    for (final node in _focusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
+  TextEditingController _getOrCreateController(int index, double currentGrams) {
+    if (!_controllers.containsKey(index)) {
+      final text = currentGrams > 0
+          ? (currentGrams == currentGrams.roundToDouble()
+              ? currentGrams.toInt().toString()
+              : currentGrams.toString())
+          : '0';
+      _controllers[index] = TextEditingController(text: text);
+    }
+    return _controllers[index]!;
+  }
+
+  FocusNode _getOrCreateFocusNode(int index) {
+    if (!_focusNodes.containsKey(index)) {
+      final node = FocusNode();
+      node.addListener(() {
+        if (node.hasFocus && _controllers[index]?.text == '0') {
+          _controllers[index]?.selection = TextSelection(
+            baseOffset: 0,
+            extentOffset: _controllers[index]!.text.length,
+          );
+        }
+      });
+      _focusNodes[index] = node;
+    }
+    return _focusNodes[index]!;
+  }
+
   void _onGramsChanged(int index, String val) {
-    final grams = double.tryParse(val.trim());
+    final sanitized = val.trim().replaceAll(',', '.');
+    final grams = double.tryParse(sanitized);
     if (grams != null && grams > 0) {
       context.read<ScanFlowProvider>().updatePortion(index, grams);
     } else {
-      context.read<ScanFlowProvider>().updatePortion(index, 0);
+      context.read<ScanFlowProvider>().updatePortion(index, 0.0);
     }
   }
 
   void _setQuickPortion(int index, double grams) {
-    _controllers[index]?.text = grams.toInt().toString();
+    final text = grams == grams.roundToDouble()
+        ? grams.toInt().toString()
+        : grams.toString();
+    _controllers[index]?.text = text;
+    _controllers[index]?.selection = TextSelection.collapsed(offset: text.length);
     context.read<ScanFlowProvider>().updatePortion(index, grams);
   }
 
@@ -62,9 +171,21 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
 
     final flow = context.read<ScanFlowProvider>();
     for (int i = 0; i < flow.confirmedItems.length; i++) {
-      final text = _controllers[i]?.text.trim() ?? '';
+      final text = _controllers[i]?.text.trim().replaceAll(',', '.') ?? '';
       final grams = double.tryParse(text) ?? 0.0;
       flow.updatePortion(i, grams);
+    }
+
+    if (!flow.validatePortions()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Semua porsi makanan harus lebih besar dari 0 gram (maksimal 5000g).',
+          ),
+          backgroundColor: NeoTokens.coralRed,
+        ),
+      );
+      return;
     }
 
     final success = await flow.submitMeal();
@@ -333,8 +454,16 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
 
                     const NeoSectionHeader(
                       title: 'Atur Porsi Makanan (gram)',
-                      subtitle: 'Pilih preset porsi cepat atau ketik gramatur manual untuk melihat estimasi gizi langsung.',
                       accentColor: NeoTokens.mintGreen,
+                    ),
+                    const SizedBox(height: 2),
+                    const Text(
+                      'Pilih preset porsi cepat atau ketik gramatur manual untuk melihat estimasi gizi langsung.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: NeoTokens.textMuted,
+                      ),
                     ),
                     const SizedBox(height: NeoTokens.space8),
 
@@ -344,9 +473,12 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final confirmedItem = items[index];
-                        final controller = _controllers[index] ??=
-                            TextEditingController();
                         final currentGrams = confirmedItem.portionGrams ?? 0.0;
+                        final controller = _getOrCreateController(
+                          index,
+                          currentGrams,
+                        );
+                        final focusNode = _getOrCreateFocusNode(index);
 
                         return NeoCard(
                           margin: const EdgeInsets.symmetric(
@@ -358,11 +490,11 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Container(
-                                    width: 44,
-                                    height: 44,
+                                    width: 42,
+                                    height: 42,
                                     decoration: BoxDecoration(
                                       color: NeoTokens.vividYellow,
                                       borderRadius: BorderRadius.circular(
@@ -379,7 +511,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                       color: NeoTokens.black,
                                     ),
                                   ),
-                                  const SizedBox(width: NeoTokens.space12),
+                                  const SizedBox(width: NeoTokens.space10),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -387,14 +519,16 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                       children: [
                                         Text(
                                           confirmedItem.foodName,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
-                                            fontSize: 16,
+                                            fontSize: 15,
                                             fontWeight: FontWeight.w900,
                                             color: NeoTokens.textDark,
                                             letterSpacing: -0.2,
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 3),
                                         NeoBadge(
                                           label:
                                               confirmedItem.source == 'detected'
@@ -421,7 +555,7 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                   ),
                                   const SizedBox(width: NeoTokens.space8),
                                   SizedBox(
-                                    width: 100,
+                                    width: 95,
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: NeoTokens.white,
@@ -432,14 +566,35 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                           color: NeoTokens.black,
                                           width: NeoTokens.borderWidthThin,
                                         ),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: NeoTokens.black,
+                                            offset: Offset(1.5, 1.5),
+                                            blurRadius: 0,
+                                          ),
+                                        ],
                                       ),
                                       child: TextFormField(
                                         controller: controller,
+                                        focusNode: focusNode,
                                         keyboardType:
                                             const TextInputType.numberWithOptions(
                                               decimal: true,
                                             ),
                                         textAlign: TextAlign.end,
+                                        inputFormatters: [
+                                          PortionNumberInputFormatter(),
+                                        ],
+                                        onTap: () {
+                                          if (controller.text == '0') {
+                                            controller.selection =
+                                                TextSelection(
+                                                  baseOffset: 0,
+                                                  extentOffset:
+                                                      controller.text.length,
+                                                );
+                                          }
+                                        },
                                         onChanged: (val) =>
                                             _onGramsChanged(index, val),
                                         style: const TextStyle(
@@ -454,14 +609,14 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                             fontWeight: FontWeight.w800,
                                             color: NeoTokens.black,
                                           ),
-                                          hintText: '150',
+                                          hintText: '0',
                                           border: InputBorder.none,
                                           enabledBorder: InputBorder.none,
                                           focusedBorder: InputBorder.none,
                                           errorBorder: InputBorder.none,
                                           focusedErrorBorder: InputBorder.none,
                                           contentPadding: EdgeInsets.symmetric(
-                                            horizontal: 10,
+                                            horizontal: 8,
                                             vertical: 8,
                                           ),
                                         ),
@@ -470,9 +625,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                               val.trim().isEmpty) {
                                             return 'Wajib isi';
                                           }
-                                          final num = double.tryParse(
-                                            val.trim(),
-                                          );
+                                          final sanitized = val.trim().replaceAll(',', '.');
+                                          final num = double.tryParse(sanitized);
                                           if (num == null ||
                                               num <= 0 ||
                                               num > 5000) {
@@ -531,26 +685,46 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceAround,
                                         children: [
-                                          _buildMacroItem(
-                                            'Kalori',
-                                            '${confirmedItem.estimatedCalories.round()} kkal',
-                                            NeoTokens.textDark,
-                                            isBold: true,
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: _buildMacroItem(
+                                                'Kalori',
+                                                '${confirmedItem.estimatedCalories.round()} kkal',
+                                                NeoTokens.textDark,
+                                                isBold: true,
+                                              ),
+                                            ),
                                           ),
-                                          _buildMacroItem(
-                                            'Protein',
-                                            '${confirmedItem.estimatedProtein.toStringAsFixed(1)}g',
-                                            NeoTokens.cobaltBlue,
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: _buildMacroItem(
+                                                'Protein',
+                                                '${confirmedItem.estimatedProtein.toStringAsFixed(1)}g',
+                                                NeoTokens.cobaltBlue,
+                                              ),
+                                            ),
                                           ),
-                                          _buildMacroItem(
-                                            'Karbo',
-                                            '${confirmedItem.estimatedCarbs.toStringAsFixed(1)}g',
-                                            NeoTokens.vividYellow,
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: _buildMacroItem(
+                                                'Karbo',
+                                                '${confirmedItem.estimatedCarbs.toStringAsFixed(1)}g',
+                                                NeoTokens.vividYellow,
+                                              ),
+                                            ),
                                           ),
-                                          _buildMacroItem(
-                                            'Lemak',
-                                            '${confirmedItem.estimatedFat.toStringAsFixed(1)}g',
-                                            NeoTokens.coralRed,
+                                          Expanded(
+                                            child: FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: _buildMacroItem(
+                                                'Lemak',
+                                                '${confirmedItem.estimatedFat.toStringAsFixed(1)}g',
+                                                NeoTokens.coralRed,
+                                              ),
+                                            ),
                                           ),
                                         ],
                                       )
@@ -580,20 +754,24 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const Row(
-                              children: [
+                            Row(
+                              children: const [
                                 Icon(
                                   AppIcons.calculate,
                                   size: AppIcons.sizeControl,
                                   color: NeoTokens.black,
                                 ),
                                 SizedBox(width: 8),
-                                Text(
-                                  'Total Estimasi Gizi Menu Ini',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
-                                    color: NeoTokens.black,
+                                Expanded(
+                                  child: Text(
+                                    'Total Estimasi Gizi Menu Ini',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w900,
+                                      color: NeoTokens.black,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -602,25 +780,45 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                _buildSummaryMacro(
-                                  'Energi',
-                                  '${flow.totalEstimatedCalories.round()}',
-                                  'kkal',
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _buildSummaryMacro(
+                                      'Energi',
+                                      '${flow.totalEstimatedCalories.round()}',
+                                      'kkal',
+                                    ),
+                                  ),
                                 ),
-                                _buildSummaryMacro(
-                                  'Protein',
-                                  flow.totalEstimatedProtein.toStringAsFixed(1),
-                                  'g',
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _buildSummaryMacro(
+                                      'Protein',
+                                      flow.totalEstimatedProtein.toStringAsFixed(1),
+                                      'g',
+                                    ),
+                                  ),
                                 ),
-                                _buildSummaryMacro(
-                                  'Karbo',
-                                  flow.totalEstimatedCarbs.toStringAsFixed(1),
-                                  'g',
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _buildSummaryMacro(
+                                      'Karbo',
+                                      flow.totalEstimatedCarbs.toStringAsFixed(1),
+                                      'g',
+                                    ),
+                                  ),
                                 ),
-                                _buildSummaryMacro(
-                                  'Lemak',
-                                  flow.totalEstimatedFat.toStringAsFixed(1),
-                                  'g',
+                                Expanded(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: _buildSummaryMacro(
+                                      'Lemak',
+                                      flow.totalEstimatedFat.toStringAsFixed(1),
+                                      'g',
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),

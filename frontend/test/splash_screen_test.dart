@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/core/theme.dart';
+import 'package:nutriview/data/models/user.dart';
 import 'package:nutriview/data/repositories/auth_repository.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
 import 'package:nutriview/features/splash/screens/splash_screen.dart';
@@ -42,6 +43,8 @@ void main() {
               {
                 AppRoutes.dashboard: (_) =>
                     const Scaffold(body: Text('DASHBOARD_SCREEN')),
+                AppRoutes.completeProfile: (_) =>
+                    const Scaffold(body: Text('COMPLETE_PROFILE_SCREEN')),
                 AppRoutes.adminDashboard: (_) =>
                     const Scaffold(body: Text('ADMIN_DASHBOARD_SCREEN')),
                 AppRoutes.login: (_) =>
@@ -130,7 +133,7 @@ void main() {
     );
 
     testWidgets(
-      'navigates to AppRoutes.dashboard when standard user is authenticated',
+      'navigates to AppRoutes.dashboard when standard user has complete profile',
       (tester) async {
         when(() => mockAuthRepository.isLoggedIn())
             .thenAnswer((_) async => true);
@@ -140,6 +143,14 @@ void main() {
             .thenAnswer((_) async => 'Ahmad Badawi');
         when(() => mockAuthRepository.getUserEmail())
             .thenAnswer((_) async => 'ahmad@example.com');
+
+        authProvider.setCurrentUser(User(
+          id: 1,
+          email: 'ahmad@example.com',
+          fullName: 'Ahmad Badawi',
+          role: 'user',
+          isProfileComplete: true,
+        ));
 
         await tester.pumpWidget(
           buildTestApp(
@@ -153,6 +164,41 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('DASHBOARD_SCREEN'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'navigates to AppRoutes.completeProfile when authenticated standard user has incomplete profile',
+      (tester) async {
+        when(() => mockAuthRepository.isLoggedIn())
+            .thenAnswer((_) async => true);
+        when(() => mockAuthRepository.getRole())
+            .thenAnswer((_) async => 'user');
+        when(() => mockAuthRepository.getUserName())
+            .thenAnswer((_) async => 'Ahmad Badawi');
+        when(() => mockAuthRepository.getUserEmail())
+            .thenAnswer((_) async => 'ahmad@example.com');
+
+        authProvider.setCurrentUser(User(
+          id: 1,
+          email: 'ahmad@example.com',
+          fullName: 'Ahmad Badawi',
+          role: 'user',
+          isProfileComplete: false,
+        ));
+
+        await tester.pumpWidget(
+          buildTestApp(
+            child: const SplashScreen(
+              minimumDuration: Duration(milliseconds: 200),
+            ),
+          ),
+        );
+
+        await tester.pump();
+        await tester.pumpAndSettle();
+
+        expect(find.text('COMPLETE_PROFILE_SCREEN'), findsOneWidget);
       },
     );
 

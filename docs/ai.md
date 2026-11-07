@@ -1,6 +1,15 @@
 # Engineering Specification — NutriView
 
-> Dokumen ini adalah **sumber kebenaran rekayasa dan arsitektur**. Kebutuhan produk ada di `prd.md`. Dokumen ini ditujukan bagi pengembang dan **AI coding agent**. Kata **WAJIB** / **DILARANG** bersifat mengikat; **SEBAIKNYA** bersifat anjuran.
+> [!NOTE] **DOKUMEN HISTORIS (HISTORICAL DOCUMENTATION)**  
+> Dokumen ini adalah arsip spesifikasi rekayasa teknis backend modular monolith (FastAPI, SQLAlchemy 2.0, MySQL, Docker) yang digunakan pada fase prototipe awal.  
+> Seluruh infrastruktur backend telah digantikan oleh **Firebase Serverless (Authentication + Cloud Firestore)** dan deteksi makanan dijalankan secara **on-device melalui Flutter TFLite (`tflite_flutter`)**.  
+> Untuk spesifikasi rekayasa teknis sistem yang aktif saat ini, silakan merujuk pada:
+> - [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) — Arsitektur sistem Flutter & Edge AI.
+> - [`docs/DATABASE_AND_BACKEND.md`](DATABASE_AND_BACKEND.md) — Struktur data & otorisasi Firestore.
+> - [`docs/MACHINE_LEARNING.md`](MACHINE_LEARNING.md) — Pipeline inferensi TFLite & formulasi gizi.
+> - [`docs/DEVELOPMENT_GUIDE.md`](DEVELOPMENT_GUIDE.md) — Standar kode & implementasi SOLID.
+
+> Dokumen ini dipertahankan sebagai referensi riwayat arsitektur. Kebutuhan produk historis ada di `prd.md`.
 
 ---
 

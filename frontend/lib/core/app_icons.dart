@@ -86,6 +86,8 @@ class AppIcons {
   static const IconData moreVert = Icons.more_vert_rounded;
   static const IconData arrowOutward = Icons.arrow_outward_rounded;
   static const IconData manageSearch = Icons.manage_search_rounded;
+  static const IconData fullscreen = Icons.fullscreen_rounded;
+  static const IconData settings = Icons.settings_rounded;
 
   // ---------------------------------------------------------------------------
   // Authentication & form fields (outline style, one visual family)
@@ -97,6 +99,7 @@ class AppIcons {
   static const IconData visibilityOff = Icons.visibility_off_rounded;
   static const IconData fingerprint = Icons.fingerprint_rounded;
   static const IconData face = Icons.face_rounded;
+  static const IconData phone = Icons.phone_rounded;
 
   // ---------------------------------------------------------------------------
   // People, roles & account
@@ -133,6 +136,7 @@ class AppIcons {
   static const IconData trackChanges = Icons.track_changes_rounded;
   static const IconData bolt = Icons.bolt_rounded;
   static const IconData factCheck = Icons.fact_check_rounded;
+  static const IconData analytics = Icons.analytics_rounded;
 
   // ---------------------------------------------------------------------------
   // Scanner & camera

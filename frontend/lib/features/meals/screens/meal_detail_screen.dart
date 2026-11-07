@@ -10,6 +10,7 @@ import 'package:nutriview/shared/neo/neo_card.dart';
 import 'package:nutriview/shared/neo/neo_section_header.dart';
 import 'package:nutriview/shared/widgets/error_view.dart';
 import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:nutriview/shared/widgets/neo_image_thumbnail.dart';
 
 class MealDetailScreen extends StatefulWidget {
   final int mealId;
@@ -103,6 +104,12 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (_meal!.image != null) ...[
+                    NeoImageHeroCard(
+                      imageMetadata: _meal!.image!,
+                    ),
+                    const SizedBox(height: NeoTokens.space16),
+                  ],
                   NeoCard(
                     backgroundColor: NeoTokens.mintGreen,
                     padding: const EdgeInsets.all(NeoTokens.space16),

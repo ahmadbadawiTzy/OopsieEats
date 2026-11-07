@@ -41,8 +41,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (user != null && mounted) {
-      // Direct new user to fill their profile
-      Navigator.pushReplacementNamed(context, AppRoutes.profile);
+      // Direct new user to mandatory biodata completion onboarding
+      Navigator.pushReplacementNamed(context, AppRoutes.completeProfile);
     }
   }
 

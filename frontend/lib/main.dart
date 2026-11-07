@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:nutriview/core/config.dart';
+import 'package:nutriview/core/config/supabase_config.dart';
 import 'package:nutriview/core/ml/yolo_detector.dart';
 import 'package:nutriview/core/routes.dart';
 import 'package:nutriview/core/theme.dart';
@@ -16,10 +17,13 @@ import 'package:nutriview/data/repositories/dashboard_repository.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
 import 'package:nutriview/data/repositories/meal_repository.dart';
 import 'package:nutriview/data/repositories/profile_repository.dart';
+import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nutriview/features/admin/data/admin_repository.dart';
 import 'package:nutriview/features/admin/presentation/screens/admin_dashboard_screen.dart';
 import 'package:nutriview/features/article/screens/article_detail_screen.dart';
 import 'package:nutriview/features/auth/providers/auth_provider.dart';
+import 'package:nutriview/features/auth/screens/complete_profile_screen.dart';
 import 'package:nutriview/features/auth/screens/login_screen.dart';
 import 'package:nutriview/features/auth/screens/register_screen.dart';
 import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
@@ -42,24 +46,38 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null);
 
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    // Send official auth emails (password reset, verification) in Indonesian
-    try {
-      await fb.FirebaseAuth.instance.setLanguageCode('id');
-    } catch (_) {}
-    // Production bounded cache: 100MB prevents unbounded memory and disk footprint
-    FirebaseFirestore.instance.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: 104857600,
-    );
-  } catch (e) {
-    debugPrint('Firebase initialization warning: $e');
-  }
+  // 1. Parallelize initial synchronous and network configurations
+  await Future.wait([
+    initializeDateFormatting('id_ID', null),
+    () async {
+      try {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        // Non-blocking fire-and-forget Firebase configurations
+        fb.FirebaseAuth.instance.setLanguageCode('id').catchError((_) {});
+        FirebaseFirestore.instance.settings = const Settings(
+          persistenceEnabled: true,
+          cacheSizeBytes: 104857600,
+        );
+      } catch (e) {
+        debugPrint('Firebase initialization warning: $e');
+      }
+    }(),
+    () async {
+      if (SupabaseConfig.isConfigured) {
+        try {
+          await Supabase.initialize(
+            url: SupabaseConfig.url,
+            publishableKey: SupabaseConfig.anonKey,
+          );
+        } catch (e) {
+          debugPrint('Supabase initialization warning: $e');
+        }
+      }
+    }(),
+  ]);
 
   final yoloDetector = YoloDetector();
   // Asynchronously warmup YOLO in background without blocking first frame/startup
@@ -67,11 +85,25 @@ void main() async {
     debugPrint('Background YOLO detector initialization warning: $e');
   });
 
+  final storageService = SupabaseStorageService();
   final apiClient = ApiClient();
-  final authRepository = AuthRepository(apiClient);
+  final authRepository = AuthRepository(
+    apiClient,
+    null,
+    null,
+    null,
+    null,
+    storageService,
+  );
   final profileRepository = ProfileRepository(apiClient);
   final foodRepository = FoodRepository(apiClient, null, yoloDetector);
-  final mealRepository = MealRepository(apiClient, null, null, foodRepository);
+  final mealRepository = MealRepository(
+    apiClient,
+    null,
+    null,
+    foodRepository,
+    storageService,
+  );
   final dashboardRepository = DashboardRepository(apiClient);
   final articleRepository = ArticleRepository(client: apiClient);
   final adminRepository = AdminRepository(client: apiClient);
@@ -81,6 +113,7 @@ void main() async {
     dashboardRepository.invalidateUserCache();
     foodRepository.invalidateCache();
     articleRepository.invalidateCache();
+    storageService.clearUrlCache();
   };
 
   apiClient.onUnauthorized = () {
@@ -95,6 +128,7 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<ApiClient>.value(value: apiClient),
+        Provider<SupabaseStorageService>.value(value: storageService),
         Provider<YoloDetector>.value(value: yoloDetector),
         Provider<AuthRepository>.value(value: authRepository),
         Provider<ProfileRepository>.value(value: profileRepository),
@@ -114,6 +148,7 @@ void main() async {
           create: (_) => ScanFlowProvider(
             foodRepository: foodRepository,
             mealRepository: mealRepository,
+            storageService: storageService,
           ),
         ),
         ChangeNotifierProvider<MealHistoryProvider>(
@@ -137,8 +172,34 @@ class NutriViewApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      initialRoute: AppRoutes.initial,
       onGenerateRoute: (settings) {
+        final auth = context.read<AuthProvider>();
+
+        // Profile completion guard: If user is authenticated, not admin,
+        // and has not completed biodata profile, protect core feature routes.
+        final isProtectedFeature = settings.name == AppRoutes.dashboard ||
+            settings.name == AppRoutes.articles ||
+            settings.name == AppRoutes.profile ||
+            settings.name == AppRoutes.scanner ||
+            settings.name == AppRoutes.detectionConfirm ||
+            settings.name == AppRoutes.portionInput ||
+            settings.name == AppRoutes.mealResult ||
+            settings.name == AppRoutes.mealHistory ||
+            settings.name == AppRoutes.mealDetail;
+
+        final profileProvider = context.read<ProfileProvider>();
+        final isProfileCompleted = auth.isProfileComplete || profileProvider.isProfileComplete;
+
+        if (auth.isLoggedIn &&
+            !auth.isAdmin &&
+            !isProfileCompleted &&
+            isProtectedFeature) {
+          return MaterialPageRoute(
+            settings: const RouteSettings(name: AppRoutes.completeProfile),
+            builder: (_) => const CompleteProfileScreen(),
+          );
+        }
+
         switch (settings.name) {
           case AppRoutes.initial:
             return MaterialPageRoute(builder: (_) => const SplashScreen());
@@ -146,6 +207,11 @@ class NutriViewApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const LoginScreen());
           case AppRoutes.register:
             return MaterialPageRoute(builder: (_) => const RegisterScreen());
+          case AppRoutes.completeProfile:
+            return MaterialPageRoute(
+              settings: settings,
+              builder: (_) => const CompleteProfileScreen(),
+            );
           case AppRoutes.dashboard:
             return MaterialPageRoute(builder: (_) => const DashboardScreen());
           case AppRoutes.articles:

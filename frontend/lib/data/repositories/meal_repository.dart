@@ -7,22 +7,28 @@ import 'package:nutriview/core/nutrition_calculator.dart';
 import 'package:nutriview/data/api_client.dart';
 import 'package:nutriview/data/models/meal.dart';
 import 'package:nutriview/data/repositories/food_repository.dart';
+import 'package:nutriview/data/services/supabase_storage_service.dart';
 
 class MealRepository {
   final ApiClient _apiClient;
   final fb.FirebaseAuth? _customAuth;
   final FirebaseFirestore? _customFirestore;
   final FoodRepository _foodRepository;
+  final SupabaseStorageService? _storageService;
 
   MealRepository([
     ApiClient? apiClient,
     fb.FirebaseAuth? auth,
     FirebaseFirestore? firestore,
     FoodRepository? foodRepository,
+    SupabaseStorageService? storageService,
   ]) : _apiClient = apiClient ?? ApiClient(),
        _customAuth = auth,
        _customFirestore = firestore,
-       _foodRepository = foodRepository ?? FoodRepository(apiClient, firestore);
+       _foodRepository = foodRepository ?? FoodRepository(apiClient, firestore),
+       _storageService = storageService;
+
+  SupabaseStorageService? get storageService => _storageService;
 
   fb.FirebaseAuth? get _auth {
     if (_customAuth != null) return _customAuth;
@@ -35,6 +41,8 @@ class MealRepository {
     if (Firebase.apps.isNotEmpty) return FirebaseFirestore.instance;
     return null;
   }
+
+  Future<String> getCurrentUserId() => _getUid();
 
   Future<String> _getUid() async {
     final user = _auth?.currentUser;
@@ -56,9 +64,11 @@ class MealRepository {
     required String mealType,
     required DateTime consumedAt,
     required List<Map<String, dynamic>> items,
+    MealImageMetadata? imageMetadata,
+    int? customMealId,
   }) async {
     final uid = await _getUid();
-    final mealId = DateTime.now().millisecondsSinceEpoch;
+    final mealId = customMealId ?? DateTime.now().millisecondsSinceEpoch;
     final consumedDate = DateFormat('yyyy-MM-dd').format(consumedAt);
 
     double totalCalories = 0.0;
@@ -68,13 +78,17 @@ class MealRepository {
 
     final List<Map<String, dynamic>> processedItems = [];
 
+    final foodDetails = await Future.wait(
+      items.map((raw) => _foodRepository.getFoodDetail((raw['food_id'] as num).toInt())),
+    );
+
     for (var i = 0; i < items.length; i++) {
       final rawItem = items[i];
       final foodId = (rawItem['food_id'] as num).toInt();
       final portionGrams = (rawItem['portion_grams'] as num).toDouble();
       final confidence = (rawItem['detection_confidence'] as num?)?.toDouble();
 
-      final foodDetail = await _foodRepository.getFoodDetail(foodId);
+      final foodDetail = foodDetails[i];
       final nutrition = NutritionCalculator.calculatePortionNutrition(
         portionGrams: portionGrams,
         caloriesPer100g: foodDetail.caloriesPer100g,
@@ -114,7 +128,7 @@ class MealRepository {
       'fat_g': NutritionCalculator.roundHalfUp(totalFat, 1),
     };
 
-    final mealData = {
+    final mealData = <String, dynamic>{
       'id': mealId,
       'meal_type': mealType,
       'consumed_at': consumedAt.toIso8601String(),
@@ -122,6 +136,7 @@ class MealRepository {
       'items': processedItems,
       'totals': totalsMap,
       'created_at': DateTime.now().toIso8601String(),
+      if (imageMetadata != null) 'image': imageMetadata.toJson(),
     };
 
     final db = _firestore;
@@ -135,6 +150,30 @@ class MealRepository {
     }
 
     return MealRecord.fromJson(mealData);
+  }
+
+  /// Deletes a meal document from Firestore and cascades to remove its image from Supabase Storage.
+  Future<void> deleteMeal(int mealId) async {
+    final uid = await _getUid();
+    final db = _firestore;
+    if (db == null) return;
+
+    final docRef = db.collection('users').doc(uid).collection('meals').doc(mealId.toString());
+    final snapshot = await docRef.get();
+    String? imagePath;
+    if (snapshot.exists && snapshot.data() != null) {
+      final data = snapshot.data()!;
+      if (data['image'] != null && data['image'] is Map) {
+        final imgMap = Map<String, dynamic>.from(data['image'] as Map);
+        imagePath = imgMap['path'] as String?;
+      }
+    }
+
+    await docRef.delete();
+
+    if (imagePath != null && imagePath.isNotEmpty) {
+      await _storageService?.deleteFoodImage(imagePath);
+    }
   }
 
   Future<List<MealRecord>> getMeals({
