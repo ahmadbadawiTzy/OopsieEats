@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-1.80 6.20 94.40 100.60" width="472" height="503"><defs>
+  <radialGradient id="gRice" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="#FFC15A"/><stop offset=".6" stop-color="#E88A25"/><stop offset="1" stop-color="#B8561A"/></radialGradient>
+  <radialGradient id="gMeat" cx=".3" cy=".25" r=".95"><stop offset="0" stop-color="#E39547"/><stop offset=".55" stop-color="#A9591F"/><stop offset="1" stop-color="#6E3411"/></radialGradient>
+  <radialGradient id="gBall" cx=".3" cy=".25" r=".95"><stop offset="0" stop-color="#C79468"/><stop offset=".6" stop-color="#8A5732"/><stop offset="1" stop-color="#5C3519"/></radialGradient>
+  <radialGradient id="gFry" cx=".3" cy=".2" r=".95"><stop offset="0" stop-color="#FFE17A"/><stop offset=".55" stop-color="#F2A52B"/><stop offset="1" stop-color="#CB6A12"/></radialGradient>
+  <radialGradient id="gGreen" cx=".3" cy=".25" r=".95"><stop offset="0" stop-color="#9CF08A"/><stop offset=".6" stop-color="#37B552"/><stop offset="1" stop-color="#1D8A3A"/></radialGradient>
+  <radialGradient id="gRed" cx=".3" cy=".25" r=".95"><stop offset="0" stop-color="#FF8A7A"/><stop offset=".55" stop-color="#F0302A"/><stop offset="1" stop-color="#B3140F"/></radialGradient>
+  <radialGradient id="gMango" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="#FFE66B"/><stop offset=".55" stop-color="#FFA21F"/><stop offset="1" stop-color="#F0561A"/></radialGradient>
+  <radialGradient id="gMelon" cx=".5" cy=".1" r="1"><stop offset="0" stop-color="#FF7C86"/><stop offset="1" stop-color="#E5233A"/></radialGradient>
+  <radialGradient id="gChoc" cx=".3" cy=".2" r="1"><stop offset="0" stop-color="#8A4A26"/><stop offset="1" stop-color="#4A230F"/></radialGradient>
+  <linearGradient id="gBowl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E9DFC8"/></linearGradient>
+  <linearGradient id="gClay" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E4814A"/><stop offset="1" stop-color="#B34F22"/></linearGradient>
+
+  <!-- Nasi goreng (piring) -->
+  <symbol overflow="visible" id="nasiGoreng" viewBox="0 0 120 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <ellipse cx="60" cy="70" rx="55" ry="25" fill="#fff"/>
+      <ellipse cx="60" cy="68" rx="40" ry="16" fill="#F1E8D2" stroke-width="2.5"/>
+      <circle cx="26" cy="76" r="9" fill="#C8F59A"/><circle cx="26" cy="76" r="4.5" fill="#EFFFD4" stroke-width="2"/>
+      <circle cx="40" cy="84" r="8" fill="#C8F59A"/><circle cx="40" cy="84" r="4" fill="#EFFFD4" stroke-width="2"/>
+      <path d="M22 66 C20 36 42 20 62 20 C84 20 100 40 98 66 C86 80 34 80 22 66Z" fill="url(#gRice)"/>
+      <path d="M54 22 C48 8 70 4 78 14 C90 14 90 32 76 34 C64 40 48 34 54 22Z" fill="#fff"/>
+      <circle cx="70" cy="22" r="8.5" fill="#FFC400"/>
+    </g>
+    <g fill="#FFE5A8" opacity=".95"><ellipse cx="38" cy="54" rx="4" ry="2" transform="rotate(30 38 54)"/><ellipse cx="50" cy="64" rx="4" ry="2" transform="rotate(-20 50 64)"/><ellipse cx="82" cy="52" rx="4" ry="2" transform="rotate(40 82 52)"/><ellipse cx="68" cy="66" rx="4" ry="2" transform="rotate(10 68 66)"/><ellipse cx="32" cy="64" rx="3.5" ry="1.8"/><ellipse cx="90" cy="64" rx="3.5" ry="1.8" transform="rotate(-30 90 64)"/></g>
+    <g stroke="#0A0A0A" stroke-width="1.8"><circle cx="46" cy="44" r="3" fill="#3FC95A"/><circle cx="58" cy="52" r="3" fill="#3FC95A"/><circle cx="86" cy="60" r="3" fill="#3FC95A"/><rect x="72" y="46" width="6" height="6" rx="1" fill="#FF8A2B" transform="rotate(20 75 49)"/><rect x="36" y="58" width="6" height="6" rx="1" fill="#FF8A2B" transform="rotate(-15 39 61)"/><rect x="52" y="40" width="6" height="3.5" rx="1.5" fill="#E8261D"/></g>
+    <path d="M32 44 C38 32 46 28 56 26" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".5"/>
+    <ellipse cx="66" cy="19" rx="3" ry="2" fill="#fff" opacity=".7"/>
+  </symbol>
+
+  <!-- Nasi goreng (tanpa piring, untuk di atas piring foto) -->
+  <symbol overflow="visible" id="nasiOnly" viewBox="0 0 100 80">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M6 54 C4 26 26 8 50 8 C74 8 96 26 94 54 C82 68 18 68 6 54Z" fill="url(#gRice)"/>
+      <path d="M40 10 C34 -4 58 -8 68 2 C82 2 82 22 66 24 C52 30 34 24 40 10Z" fill="#fff"/>
+      <circle cx="58" cy="12" r="8.5" fill="#FFC400"/>
+    </g>
+    <g fill="#FFE5A8"><ellipse cx="24" cy="42" rx="4" ry="2" transform="rotate(30 24 42)"/><ellipse cx="38" cy="54" rx="4" ry="2" transform="rotate(-20 38 54)"/><ellipse cx="78" cy="42" rx="4" ry="2" transform="rotate(40 78 42)"/><ellipse cx="60" cy="54" rx="4" ry="2" transform="rotate(10 60 54)"/><ellipse cx="86" cy="52" rx="3.5" ry="1.8"/></g>
+    <g stroke="#0A0A0A" stroke-width="1.8"><circle cx="34" cy="32" r="3" fill="#3FC95A"/><circle cx="48" cy="42" r="3" fill="#3FC95A"/><circle cx="76" cy="52" r="3" fill="#3FC95A"/><rect x="64" y="34" width="6" height="6" rx="1" fill="#FF8A2B" transform="rotate(20 67 37)"/><rect x="22" y="50" width="6" height="6" rx="1" fill="#FF8A2B" transform="rotate(-15 25 53)"/></g>
+    <ellipse cx="56" cy="9" rx="3" ry="2" fill="#fff" opacity=".7"/>
+  </symbol>
+
+  <!-- Sate -->
+  <symbol overflow="visible" id="sate" viewBox="0 0 120 100">
+    <g transform="rotate(-16 60 50)" stroke="#0A0A0A" stroke-linejoin="round" stroke-linecap="round">
+      <g id="skw"><line x1="4" y1="22" x2="116" y2="22" stroke-width="9"/><line x1="4" y1="22" x2="116" y2="22" stroke="#E8B867" stroke-width="4.2"/>
+        <rect x="22" y="9" width="22" height="26" rx="7" fill="url(#gMeat)" stroke-width="4"/><rect x="44" y="9" width="22" height="26" rx="7" fill="url(#gMeat)" stroke-width="4"/><rect x="66" y="9" width="22" height="26" rx="7" fill="url(#gMeat)" stroke-width="4"/>
+        <path d="M27 15 l6 3 M50 28 l7 -2 M72 14 l7 3 M80 28 l5 -3" stroke-width="2.4" opacity=".6"/>
+      </g>
+      <use href="#skw" y="30"/><use href="#skw" y="60"/>
+    </g>
+    <g fill="#fff" opacity=".55"><ellipse cx="38" cy="26" rx="4" ry="2" transform="rotate(-16 38 26)"/><ellipse cx="62" cy="21" rx="4" ry="2" transform="rotate(-16 62 21)"/></g>
+  </symbol>
+
+  <!-- Bakso -->
+  <symbol overflow="visible" id="bakso" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M32 18 C26 12 38 8 32 2 M50 20 C44 12 56 8 50 0 M68 18 C62 12 74 8 68 2" fill="none" stroke-width="3" opacity=".9"/>
+      <path d="M6 48 H94 C94 78 74 94 50 94 C26 94 6 78 6 48Z" fill="url(#gBowl)"/>
+      <path d="M8 58 H92 C90 64 88 68 84 72 H16 C12 68 10 64 8 58Z" fill="#17C964" stroke-width="3"/>
+      <ellipse cx="50" cy="48" rx="44" ry="11" fill="#FFB85C"/>
+      <circle cx="30" cy="40" r="15" fill="url(#gBall)"/><circle cx="56" cy="36" r="16" fill="url(#gBall)"/><circle cx="76" cy="44" r="13" fill="url(#gBall)"/>
+    </g>
+    <g fill="#fff" opacity=".6"><ellipse cx="25" cy="34" rx="4.5" ry="2.6" transform="rotate(-30 25 34)"/><ellipse cx="51" cy="29" rx="5" ry="2.8" transform="rotate(-30 51 29)"/><ellipse cx="72" cy="39" rx="4" ry="2.2" transform="rotate(-30 72 39)"/></g>
+    <g fill="none" stroke="#2FBF4A" stroke-width="2.6"><circle cx="42" cy="50" r="3"/><circle cx="66" cy="52" r="3"/><circle cx="18" cy="49" r="3"/><circle cx="86" cy="50" r="2.6"/></g>
+  </symbol>
+
+  <!-- Pisang goreng -->
+  <symbol overflow="visible" id="pisang" viewBox="0 0 120 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M22 44 C20 26 44 14 72 18 C100 22 116 40 106 54 C92 68 34 66 22 44Z" fill="url(#gFry)"/>
+      <path d="M8 74 C4 56 30 42 62 46 C92 50 112 68 100 84 C84 98 20 96 8 74Z" fill="url(#gFry)"/>
+    </g>
+    <g fill="#B8560C" opacity=".55"><ellipse cx="40" cy="30" rx="4" ry="2.6"/><ellipse cx="62" cy="26" rx="3.4" ry="2.2"/><ellipse cx="84" cy="34" rx="3.6" ry="2.4"/><ellipse cx="28" cy="66" rx="4" ry="2.6"/><ellipse cx="54" cy="62" rx="3.4" ry="2.4"/><ellipse cx="78" cy="66" rx="4" ry="2.8"/><ellipse cx="92" cy="74" rx="3" ry="2"/><ellipse cx="46" cy="80" rx="4.2" ry="2.4"/><ellipse cx="68" cy="84" rx="3.4" ry="2"/></g>
+    <path d="M32 40 C42 28 58 24 74 26" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/>
+    <path d="M20 70 C30 58 46 54 62 56" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/>
+  </symbol>
+
+  <!-- Klepon -->
+  <symbol overflow="visible" id="klepon" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M4 66 C12 50 36 46 52 56 C72 46 92 52 96 66 C84 90 20 92 4 66Z" fill="#2F9F4F"/>
+      <path d="M12 68 C34 62 66 62 90 68" fill="none" stroke-width="2.4" opacity=".55"/>
+      <circle cx="30" cy="54" r="19" fill="url(#gGreen)"/><circle cx="68" cy="54" r="19" fill="url(#gGreen)"/><circle cx="49" cy="30" r="19" fill="url(#gGreen)"/>
+    </g>
+    <g fill="#fff"><rect x="20" y="46" width="4" height="2.2" rx="1" transform="rotate(20 22 47)"/><rect x="34" y="60" width="4" height="2.2" rx="1" transform="rotate(-30 36 61)"/><rect x="58" y="46" width="4" height="2.2" rx="1"/><rect x="74" y="58" width="4" height="2.2" rx="1" transform="rotate(30 76 59)"/><rect x="40" y="22" width="4" height="2.2" rx="1" transform="rotate(-20 42 23)"/><rect x="54" y="36" width="4" height="2.2" rx="1" transform="rotate(25 56 37)"/><rect x="66" y="60" width="3" height="2" rx="1"/><rect x="26" y="52" width="3" height="2" rx="1"/></g>
+    <g fill="#fff" opacity=".6"><ellipse cx="22" cy="46" rx="4" ry="2.4" transform="rotate(-40 22 46)"/><ellipse cx="60" cy="46" rx="4" ry="2.4" transform="rotate(-40 60 46)"/><ellipse cx="41" cy="22" rx="4" ry="2.4" transform="rotate(-40 41 22)"/></g>
+  </symbol>
+
+  <!-- Martabak -->
+  <symbol overflow="visible" id="martabak" viewBox="0 0 110 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <g transform="translate(18 -2) rotate(8 50 50)">
+        <path d="M14 56 L14 74 C14 80 86 80 86 74 L86 56Z" fill="#F4B53D"/>
+        <path d="M14 62 H86 M14 68 H86" stroke-width="2.4" fill="none"/>
+        <path d="M14 56 L86 56 L98 42 L28 42Z" fill="url(#gFry)"/>
+        <path d="M30 46 L80 46 M26 50 L88 50" stroke="url(#gChoc)" stroke-width="5" fill="none"/>
+        <path d="M44 44 L40 53 M58 44 L54 53 M72 44 L68 53" stroke="#FFF4C8" stroke-width="3.4" fill="none"/>
+      </g>
+      <path d="M6 76 L6 94 C6 100 84 100 84 94 L84 76Z" fill="#F4B53D"/>
+      <path d="M6 82 H84 M6 88 H84" stroke-width="2.4" fill="none"/>
+      <path d="M6 76 L84 76 L96 60 L20 60Z" fill="url(#gFry)"/>
+      <path d="M24 64 L84 64 M20 70 L88 70" stroke="url(#gChoc)" stroke-width="5.4" fill="none"/>
+      <path d="M38 62 L33 72 M52 62 L47 72 M66 62 L61 72" stroke="#FFF4C8" stroke-width="3.6" fill="none"/>
+    </g>
+  </symbol>
+
+  <!-- Ayam goreng -->
+  <symbol overflow="visible" id="ayam" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M36 70 L18 88" stroke-width="11"/><path d="M36 70 L18 88" stroke="#fff" stroke-width="4.5"/>
+      <circle cx="12" cy="84" r="7" fill="#fff"/><circle cx="20" cy="93" r="7" fill="#fff"/>
+      <path d="M18 62 C4 36 32 8 62 14 C90 20 94 50 70 64 C58 70 44 72 34 78 C26 76 20 68 18 62Z" fill="url(#gFry)"/>
+    </g>
+    <g fill="#B8560C" opacity=".55"><ellipse cx="40" cy="30" rx="4.4" ry="2.8"/><ellipse cx="62" cy="28" rx="3.6" ry="2.4"/><ellipse cx="74" cy="46" rx="3.6" ry="2.4"/><ellipse cx="34" cy="52" rx="3.6" ry="2.2"/><ellipse cx="52" cy="50" rx="4" ry="2.4"/><ellipse cx="50" cy="66" rx="3" ry="2"/></g>
+    <path d="M26 44 C32 28 48 20 64 22" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+  </symbol>
+
+  <!-- Rendang -->
+  <symbol overflow="visible" id="rendang" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M6 50 H94 C94 78 74 92 50 92 C26 92 6 78 6 50Z" fill="url(#gClay)"/>
+      <ellipse cx="50" cy="50" rx="44" ry="12" fill="#7A2E12"/>
+      <rect x="16" y="26" width="26" height="26" rx="8" fill="url(#gChoc)" transform="rotate(-10 29 39)"/>
+      <rect x="40" y="18" width="28" height="28" rx="8" fill="url(#gChoc)" transform="rotate(8 54 32)"/>
+      <rect x="62" y="30" width="24" height="24" rx="8" fill="url(#gChoc)" transform="rotate(-6 74 42)"/>
+    </g>
+    <g fill="#fff" opacity=".35"><ellipse cx="26" cy="30" rx="5" ry="2.6" transform="rotate(-30 26 30)"/><ellipse cx="50" cy="23" rx="5" ry="2.6" transform="rotate(-20 50 23)"/></g>
+    <g fill="none" stroke="#E8261D" stroke-width="3"><circle cx="30" cy="56" r="3.4"/><circle cx="60" cy="54" r="3.4"/></g>
+    <path d="M10 64 H90" stroke="#FFD23F" stroke-width="3.5" fill="none" stroke-dasharray="6 5" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- Semangka -->
+  <symbol overflow="visible" id="semangka" viewBox="0 0 100 70">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M4 12 H96 C96 46 74 66 50 66 C26 66 4 46 4 12Z" fill="#2EA84A"/>
+      <path d="M10 12 H90 C88 40 70 58 50 58 C30 58 12 40 10 12Z" fill="#EAFBD6" stroke-width="2.5"/>
+      <path d="M15 12 H85 C82 36 68 52 50 52 C32 52 18 36 15 12Z" fill="url(#gMelon)" stroke-width="0"/>
+    </g>
+    <g fill="#0A0A0A"><ellipse cx="34" cy="24" rx="2.6" ry="4.2" transform="rotate(-20 34 24)"/><ellipse cx="50" cy="32" rx="2.6" ry="4.2"/><ellipse cx="66" cy="24" rx="2.6" ry="4.2" transform="rotate(20 66 24)"/><ellipse cx="42" cy="42" rx="2.4" ry="3.8" transform="rotate(-10 42 42)"/><ellipse cx="58" cy="42" rx="2.4" ry="3.8" transform="rotate(10 58 42)"/></g>
+    <path d="M20 16 C26 28 34 34 42 36" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+  </symbol>
+
+  <!-- Mangga -->
+  <symbol overflow="visible" id="mangga" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M32 20 C62 6 94 32 88 62 C82 92 40 98 22 72 C10 54 14 28 32 20Z" fill="url(#gMango)"/>
+      <path d="M32 20 C28 10 36 4 44 6 C48 14 44 20 38 22Z" fill="#2FB04A"/>
+      <path d="M44 8 C56 0 72 4 76 14 C64 18 52 16 44 8Z" fill="#37C257"/>
+    </g>
+    <path d="M24 38 C26 30 32 26 40 24" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" opacity=".65"/>
+  </symbol>
+
+  <!-- Cabai -->
+  <symbol overflow="visible" id="cabai" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M22 22 C54 12 84 34 86 64 C87 82 78 92 68 88 C72 70 58 44 20 38 C14 32 16 26 22 22Z" fill="url(#gRed)"/>
+      <path d="M22 22 C14 18 8 8 10 4 C18 4 26 10 30 18Z" fill="#2FB04A"/>
+    </g>
+    <path d="M30 28 C52 28 70 42 76 60" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+  </symbol>
+
+  <!-- Tomat -->
+  <symbol overflow="visible" id="tomat" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <circle cx="50" cy="56" r="38" fill="url(#gRed)"/>
+      <path d="M50 26 L56 16 L62 26 L74 22 L68 32 L78 38 L66 40 L60 48 L50 40 L40 48 L34 40 L22 38 L32 32 L26 22 L38 26 L44 16Z" fill="#2FB04A" transform="translate(0 -4) scale(1 .85) translate(0 8)"/>
+    </g>
+    <path d="M24 52 C26 40 34 34 44 32" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" opacity=".6"/>
+  </symbol>
+
+  <!-- Wortel -->
+  <symbol overflow="visible" id="wortel" viewBox="0 0 100 100">
+    <g stroke="#0A0A0A" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M22 34 C34 22 52 26 60 34 C70 46 62 62 40 82 C30 92 14 96 8 92 C4 86 8 70 18 56 C20 48 20 40 22 34Z" fill="url(#gMango)" transform="rotate(20 50 50)"/>
+      <path d="M72 26 C80 12 92 10 94 14 C92 22 84 28 76 30Z M70 34 C82 32 94 38 94 44 C88 48 78 44 72 38Z" fill="#37C257"/>
+    </g>
+    <g stroke="#B8420F" stroke-width="2.4" stroke-linecap="round" fill="none"><path d="M26 56 l8 -4 M36 70 l8 -4 M20 70 l6 -3"/></g>
+  </symbol>
+
+  <!-- icons -->
+  <symbol overflow="visible" id="arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7" fill="none" stroke="#0A0A0A" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  <symbol overflow="visible" id="check" viewBox="0 0 24 24"><path d="M4 13l5 5L20 6" fill="none" stroke="#0A0A0A" stroke-width="4.5" stroke-linecap="square"/></symbol>
+  <symbol overflow="visible" id="star" viewBox="0 0 40 40"><path d="M20 2l5.4 11.6L38 15.4l-9.2 8.6L31 37 20 30.8 9 37l2.2-13L2 15.4l12.6-1.8Z" fill="#FFD23F" stroke="#0A0A0A" stroke-width="3" stroke-linejoin="round"/></symbol>
+</defs><use href="#ayam" x="0" y="0" width="100.0" height="100.0"/></svg>
