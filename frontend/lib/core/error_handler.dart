@@ -47,6 +47,8 @@ class ApiException implements Exception {
         return 'Verifikasi biometrik tidak cocok. Coba lagi atau gunakan kata sandi.';
       case 'BIOMETRIC_ACCOUNT_MISMATCH':
         return 'Biometrik terdaftar untuk akun berbeda. Silakan masuk dengan kata sandi.';
+      case 'WRONG_PASSWORD':
+        return 'Kata sandi salah. Silakan coba lagi.';
       case 'VALIDATION_ERROR':
         if (details != null && details!.isNotEmpty) {
           final first = details!.first;
@@ -56,6 +58,23 @@ class ApiException implements Exception {
         }
         return message;
       default:
+        // Sanitize any raw technical details, stack traces, queries, or API keys
+        final hasLeak = message.contains('Exception') ||
+            message.contains('Error:') ||
+            message.contains('http://') ||
+            message.contains('https://') ||
+            message.contains('AIza') ||
+            message.contains('sb_') ||
+            message.contains('Bearer') ||
+            message.contains('package:') ||
+            message.contains('SELECT') ||
+            message.contains('INSERT') ||
+            message.contains('UPDATE') ||
+            message.contains('DELETE') ||
+            message.contains('firestore');
+        if (hasLeak) {
+          return 'Terjadi kesalahan pada sistem. Silakan coba lagi.';
+        }
         return message.isNotEmpty ? message : 'Terjadi kesalahan pada sistem.';
     }
   }

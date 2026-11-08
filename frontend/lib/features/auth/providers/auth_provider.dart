@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
 
 /// Explicit lifecycle states for the NutriView authentication engine.
 /// Explicit lifecycle states for the NutriView authentication engine.
@@ -36,9 +36,12 @@ enum AuthLifecycleState {
   error;
 
   /// Backward-compatibility aliases
-  static const AuthLifecycleState uninitialized = AuthLifecycleState.initializing;
-  static const AuthLifecycleState authenticating = AuthLifecycleState.loadingProfile;
-  static const AuthLifecycleState biometricLocked = AuthLifecycleState.biometricRequired;
+  static const AuthLifecycleState uninitialized =
+      AuthLifecycleState.initializing;
+  static const AuthLifecycleState authenticating =
+      AuthLifecycleState.loadingProfile;
+  static const AuthLifecycleState biometricLocked =
+      AuthLifecycleState.biometricRequired;
 }
 
 class AuthProvider extends ChangeNotifier {
@@ -296,7 +299,7 @@ class AuthProvider extends ChangeNotifier {
       _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       if (e.code == 'SESSION_EXPIRED') {
         _resetSessionState();
         _lifecycleState = AuthLifecycleState.sessionExpired;
@@ -348,7 +351,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       notifyListeners();
       return false;
     } catch (_) {
@@ -359,20 +362,14 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Normal email/password identity login.
-  Future<User?> login(
-    String email,
-    String password,
-  ) async {
+  Future<User?> login(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
     _lifecycleState = AuthLifecycleState.authenticating;
     notifyListeners();
 
     try {
-      final user = await _repository.login(
-        email: email,
-        password: password,
-      );
+      final user = await _repository.login(email: email, password: password);
       _isLoggedIn = true;
       _currentUser = user;
       _savedRole = user.role;
@@ -385,7 +382,7 @@ class AuthProvider extends ChangeNotifier {
       _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } catch (e) {
@@ -424,7 +421,7 @@ class AuthProvider extends ChangeNotifier {
       _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } catch (_) {
@@ -460,7 +457,7 @@ class AuthProvider extends ChangeNotifier {
         // User quietly dismissed dialog, stay in locked state calmly without red banner
         _errorMessage = null;
       } else {
-        _errorMessage = e.friendlyMessage;
+        _setErrorMessage(e.friendlyMessage);
       }
 
       if (e.code == 'SESSION_EXPIRED') {
@@ -489,7 +486,7 @@ class AuthProvider extends ChangeNotifier {
       await _repository.sendPasswordResetEmail(email);
       return true;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       return false;
     } catch (_) {
       _errorMessage = 'Gagal terhubung ke server pemulihan kata sandi.';
@@ -524,7 +521,7 @@ class AuthProvider extends ChangeNotifier {
       _lifecycleState = AuthLifecycleState.authenticated;
       return user;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       _lifecycleState = AuthLifecycleState.unauthenticated;
       return null;
     } catch (e) {
@@ -547,7 +544,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> deleteAccount({String? password, bool useGoogleReauth = false}) async {
+  Future<bool> deleteAccount({
+    String? password,
+    bool useGoogleReauth = false,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     _errorCode = null;
@@ -564,7 +564,7 @@ class AuthProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (e) {
       _errorCode = e.code;
-      _errorMessage = e.friendlyMessage;
+      _setErrorMessage(e.friendlyMessage);
       return false;
     } catch (_) {
       _errorCode = 'UNKNOWN_ERROR';
@@ -582,6 +582,12 @@ class AuthProvider extends ChangeNotifier {
     _lifecycleState = AuthLifecycleState.sessionExpired;
     onLogout?.call();
     notifyListeners();
+  }
+
+  void _setErrorMessage(String? msg) {
+    _errorMessage = msg != null
+        ? AuthRepository.sanitizeErrorMessage(msg)
+        : null;
   }
 
   void _resetSessionState() {

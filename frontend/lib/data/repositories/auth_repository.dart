@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/services/biometric_service.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/services/biometric_service.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -66,6 +66,41 @@ class AuthRepository {
   GoogleSignIn get googleSignIn => _googleSignIn;
   BiometricService get biometricService => _biometricService;
   SupabaseStorageService? get storageService => _storageService;
+
+  /// Sanitizes any raw error message to prevent leaking internal stack traces,
+  /// Firestore/SQL query syntax, internal URLs, or API keys to the presentation layer.
+  static String sanitizeErrorMessage(
+    String? raw, {
+    String fallback = 'Terjadi kesalahan pada sistem. Silakan coba lagi.',
+  }) {
+    if (raw == null || raw.trim().isEmpty) return fallback;
+    final trimmed = raw.trim();
+
+    // Check for sensitive technical patterns that must never be exposed to users
+    final hasStackTrace = trimmed.contains('#0 ') ||
+        trimmed.contains('package:') ||
+        trimmed.contains('dart:') ||
+        trimmed.contains('Exception: ') ||
+        trimmed.contains('Error: ');
+    final hasDbQuery = RegExp(
+      r'\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|TABLE|COLUMN|POSTGRES|FIRESTORE|SQLITE)\b',
+      caseSensitive: false,
+    ).hasMatch(trimmed);
+    final hasApiKey = RegExp(
+      r'(AIza[0-9A-Za-z-_]{35}|sb_[a-zA-Z0-9_-]{20,}|Bearer\s+[a-zA-Z0-9_\-\.]+)',
+      caseSensitive: false,
+    ).hasMatch(trimmed);
+    final hasUrl = trimmed.contains('http://') || trimmed.contains('https://');
+    final hasRawFirebaseCode = RegExp(
+      r'\[(firebase_auth|cloud_firestore|storage)/[a-zA-Z0-9_\-]+\]',
+    ).hasMatch(trimmed);
+
+    if (hasStackTrace || hasDbQuery || hasApiKey || hasUrl || hasRawFirebaseCode) {
+      return fallback;
+    }
+
+    return trimmed;
+  }
 
   Future<User> register({
     required String email,
@@ -130,7 +165,10 @@ class AuthRepository {
         throw ApiException(
           statusCode: 400,
           code: 'REGISTER_FAILED',
-          message: e.message ?? 'Pendaftaran gagal.',
+          message: sanitizeErrorMessage(
+            e.message,
+            fallback: 'Pendaftaran gagal. Silakan periksa data Anda dan coba lagi.',
+          ),
         );
       }
     } catch (e) {
@@ -143,10 +181,7 @@ class AuthRepository {
     }
   }
 
-  Future<User> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<User> login({required String email, required String password}) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -267,8 +302,7 @@ class AuthRepository {
         throw ApiException(
           statusCode: 400,
           code: 'GOOGLE_SIGN_IN_FAILED',
-          message:
-              'Gagal melakukan autentikasi Google: ${e.description ?? e.code.name}',
+          message: 'Gagal melakukan autentikasi Google. Silakan coba lagi.',
         );
       }
 
@@ -393,7 +427,10 @@ class AuthRepository {
         throw ApiException(
           statusCode: 400,
           code: 'AUTH_FAILED',
-          message: e.message ?? 'Autentikasi gagal.',
+          message: sanitizeErrorMessage(
+            e.message,
+            fallback: 'Autentikasi gagal. Silakan coba lagi.',
+          ),
         );
       }
     } catch (e) {
@@ -463,8 +500,10 @@ class AuthRepository {
         throw ApiException(
           statusCode: 400,
           code: 'RESET_FAILED',
-          message:
-              e.message ?? 'Gagal mengirim instruksi pemulihan kata sandi.',
+          message: sanitizeErrorMessage(
+            e.message,
+            fallback: 'Gagal mengirim instruksi pemulihan kata sandi.',
+          ),
         );
       }
     } catch (e) {
@@ -580,7 +619,7 @@ class AuthRepository {
     // Execute hardware biometric prompt
     final reason =
         localizedReason ??
-        'Pindai sidik jari atau wajah Anda untuk membuka NutriView.';
+        'Pindai sidik jari atau wajah Anda untuk membuka OopsieEats.';
     final authenticated = await _biometricService.authenticate(
       localizedReason: reason,
     );
@@ -654,7 +693,8 @@ class AuthRepository {
   /// Verifies password for an existing session during password fallback without requiring email re-entry.
   Future<User> verifyPasswordFallback(String password) async {
     final fbUser = _auth.currentUser;
-    final savedEmail = await _apiClient.getUserEmail() ??
+    final savedEmail =
+        await _apiClient.getUserEmail() ??
         await _apiClient.getBiometricEmail() ??
         '';
 
@@ -707,16 +747,16 @@ class AuthRepository {
           throw ApiException(
             statusCode: 400,
             code: e.code,
-            message: e.message ?? 'Verifikasi kata sandi gagal.',
+            message: sanitizeErrorMessage(
+              e.message,
+              fallback: 'Verifikasi kata sandi gagal.',
+            ),
           );
         }
       }
     } else {
       // Session dropped: Fallback to direct sign-in with preserved email & password
-      return await login(
-        email: emailToVerify,
-        password: password,
-      );
+      return await login(email: emailToVerify, password: password);
     }
 
     // Resolve user profile & role
@@ -828,7 +868,8 @@ class AuthRepository {
       throw ApiException(
         statusCode: 400,
         code: 'GOOGLE_SIGN_IN_FAILED',
-        message: 'Gagal melakukan autentikasi Google: ${e.description ?? e.code.name}',
+        message:
+            'Gagal melakukan autentikasi Google: ${e.description ?? e.code.name}',
       );
     }
 
@@ -850,13 +891,17 @@ class AuthRepository {
         throw ApiException(
           statusCode: 403,
           code: 'USER_MISMATCH',
-          message: 'Akun Google yang dipilih berbeda dengan akun yang sedang aktif.',
+          message:
+              'Akun Google yang dipilih berbeda dengan akun yang sedang aktif.',
         );
       }
       throw ApiException(
         statusCode: 400,
         code: e.code,
-        message: e.message ?? 'Verifikasi Google gagal.',
+        message: sanitizeErrorMessage(
+          e.message,
+          fallback: 'Verifikasi Google gagal.',
+        ),
       );
     }
   }
@@ -895,12 +940,18 @@ class AuthRepository {
       throw ApiException(
         statusCode: 400,
         code: e.code,
-        message: e.message ?? 'Verifikasi kata sandi gagal.',
+        message: sanitizeErrorMessage(
+          e.message,
+          fallback: 'Verifikasi kata sandi gagal.',
+        ),
       );
     }
   }
 
-  Future<void> deleteAccount({String? password, bool useGoogleReauth = false}) async {
+  Future<void> deleteAccount({
+    String? password,
+    bool useGoogleReauth = false,
+  }) async {
     final user = _auth.currentUser;
     if (user == null) {
       debugPrint(
@@ -917,9 +968,13 @@ class AuthRepository {
 
     // 1. Reauthentication handling
     if (useGoogleReauth) {
-      debugPrint('[AccountDeletion] Stage 1: Reauthenticating with Google credentials.');
+      debugPrint(
+        '[AccountDeletion] Stage 1: Reauthenticating with Google credentials.',
+      );
       await reauthenticateWithGoogle();
-      debugPrint('[AccountDeletion] Stage 1: Google reauthentication successful.');
+      debugPrint(
+        '[AccountDeletion] Stage 1: Google reauthentication successful.',
+      );
     } else if (password != null && password.isNotEmpty) {
       debugPrint(
         '[AccountDeletion] Stage 1: Reauthenticating with provided password credentials.',
@@ -1047,7 +1102,10 @@ class AuthRepository {
       throw ApiException(
         statusCode: 400,
         code: 'DELETE_ACCOUNT_FAILED',
-        message: e.message ?? 'Gagal menghapus akun autentikasi.',
+        message: sanitizeErrorMessage(
+          e.message,
+          fallback: 'Gagal menghapus akun autentikasi.',
+        ),
       );
     }
 
