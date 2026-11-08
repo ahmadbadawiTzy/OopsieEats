@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/shared/widgets/error_view.dart';
-import 'package:nutriview/shared/widgets/loading_indicator.dart';
-import 'package:nutriview/shared/widgets/neo_image_thumbnail.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/shared/widgets/error_view.dart';
+import 'package:oopsieeats/shared/widgets/loading_indicator.dart';
+import 'package:oopsieeats/shared/widgets/neo_image_thumbnail.dart';
 
 sealed class _HistoryListItem {}
 
@@ -66,9 +66,8 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
     try {
       final now = DateTime.now();
       final todayStr = DateFormat('yyyy-MM-dd').format(now);
-      final yesterdayStr = DateFormat(
-        'yyyy-MM-dd',
-      ).format(now.subtract(const Duration(days: 1)));
+      final yesterdayStr = DateFormat('yyyy-MM-dd')
+          .format(now.subtract(const Duration(days: 1)));
 
       if (yyyyMmDd == todayStr) {
         return 'HARI INI • ${DateFormat('d MMM yyyy', 'id_ID').format(now).toUpperCase()}';
@@ -421,10 +420,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
                   decoration: BoxDecoration(
                     color: NeoTokens.cobalt,
                     borderRadius: BorderRadius.circular(2),
-                    border: Border.all(
-                      color: NeoTokens.ink,
-                      width: 1,
-                    ),
+                    border: Border.all(color: NeoTokens.ink, width: 1),
                   ),
                 ),
                 const SizedBox(width: NeoTokens.space8),
@@ -522,11 +518,7 @@ class _MealHistoryScreenState extends State<MealHistoryScreen> {
       padding: const EdgeInsets.all(NeoTokens.space12),
       shadowOffset: NeoTokens.shadowOffsetSmall,
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          AppRoutes.mealDetail,
-          arguments: meal.id,
-        );
+        Navigator.pushNamed(context, AppRoutes.mealDetail, arguments: meal.id);
       },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

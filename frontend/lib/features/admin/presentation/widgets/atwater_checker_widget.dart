@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 class AtwaterCheckerWidget extends StatelessWidget {
   final double calories;

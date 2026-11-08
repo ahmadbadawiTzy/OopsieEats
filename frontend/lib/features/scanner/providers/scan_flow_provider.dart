@@ -1,14 +1,15 @@
 import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 class ConfirmedFoodItem {
   int? foodId;
@@ -145,7 +146,9 @@ class ScanFlowProvider extends ChangeNotifier {
         imageQuality: 85,
       );
 
-      if (picked == null && !kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      if (picked == null &&
+          !kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.android) {
         final LostDataResponse lostData = await _picker.retrieveLostData();
         if (!lostData.isEmpty && lostData.file != null) {
           picked = lostData.file;
@@ -307,7 +310,9 @@ class ScanFlowProvider extends ChangeNotifier {
             _imageBytes = await _imageFile!.readAsBytes();
           }
         } catch (e) {
-          debugPrint('ScanFlowProvider: error reloading image bytes from file: $e');
+          debugPrint(
+            'ScanFlowProvider: error reloading image bytes from file: $e',
+          );
         }
       }
 
@@ -343,8 +348,7 @@ class ScanFlowProvider extends ChangeNotifier {
           );
         } catch (storageErr) {
           debugPrint('SupabaseStorage upload failure: $storageErr');
-          _errorMessage =
-              'Gagal mengunggah foto makanan ke penyimpanan cloud. Periksa koneksi internet Anda dan coba lagi.';
+          _errorMessage = 'Gagal mengunggah foto makanan ke penyimpanan cloud. Periksa koneksi internet Anda dan coba lagi.';
           _isProcessing = false;
           notifyListeners();
           return false;

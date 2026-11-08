@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/auth/screens/login_screen.dart';
-import 'package:nutriview/features/auth/widgets/forgot_password_modal.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/auth/screens/login_screen.dart';
+import 'package:oopsieeats/features/auth/widgets/forgot_password_modal.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 

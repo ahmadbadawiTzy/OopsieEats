@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
-import 'package:nutriview/shared/widgets/neo_image_thumbnail.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/shared/widgets/neo_image_thumbnail.dart';
 
 void main() {
   Widget buildTestableWidget(Widget child, {SupabaseStorageService? storageService}) {

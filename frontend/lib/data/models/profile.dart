@@ -1,4 +1,4 @@
-import 'package:nutriview/core/age_calculator.dart';
+import 'package:oopsieeats/core/age_calculator.dart';
 
 class UserProfile {
   static const List<String> predefinedProfessions = [

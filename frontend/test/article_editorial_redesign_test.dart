@@ -3,12 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
-import 'package:nutriview/features/article/screens/article_detail_screen.dart';
-import 'package:nutriview/features/article/screens/article_list_screen.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
+import 'package:oopsieeats/features/article/screens/article_detail_screen.dart';
+import 'package:oopsieeats/features/article/screens/article_list_screen.dart';
 
 class MockArticleRepository extends Mock implements ArticleRepository {}
 

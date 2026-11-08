@@ -4,12 +4,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/data/services/biometric_service.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/data/services/biometric_service.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
 
 class MockLocalAuthentication extends Mock implements LocalAuthentication {}
 
@@ -126,6 +126,8 @@ void main() {
     });
 
     test('isBiometricEnabled defaults to false (opt-in requirement)', () async {
+      when(() => mockStorage.read(key: 'oopsieeats_biometric_enabled'))
+          .thenAnswer((_) async => null);
       when(() => mockStorage.read(key: 'nutriview_biometric_enabled'))
           .thenAnswer((_) async => null);
       expect(await apiClient.isBiometricEnabled(), isFalse);
@@ -134,7 +136,7 @@ void main() {
     test('saveBiometricEnabled persists true/false', () async {
       when(
         () => mockStorage.write(
-          key: 'nutriview_biometric_enabled',
+          key: 'oopsieeats_biometric_enabled',
           value: any(named: 'value'),
         ),
       ).thenAnswer((_) async {});
@@ -142,7 +144,7 @@ void main() {
       await apiClient.saveBiometricEnabled(true);
       verify(
         () => mockStorage.write(
-          key: 'nutriview_biometric_enabled',
+          key: 'oopsieeats_biometric_enabled',
           value: 'true',
         ),
       ).called(1);
@@ -150,7 +152,7 @@ void main() {
       await apiClient.saveBiometricEnabled(false);
       verify(
         () => mockStorage.write(
-          key: 'nutriview_biometric_enabled',
+          key: 'oopsieeats_biometric_enabled',
           value: 'false',
         ),
       ).called(1);
@@ -159,11 +161,11 @@ void main() {
     test('saveBiometricEmail and getBiometricEmail roundtrip', () async {
       when(
         () => mockStorage.write(
-          key: 'nutriview_biometric_user_email',
+          key: 'oopsieeats_biometric_user_email',
           value: 'user@example.com',
         ),
       ).thenAnswer((_) async {});
-      when(() => mockStorage.read(key: 'nutriview_biometric_user_email'))
+      when(() => mockStorage.read(key: 'oopsieeats_biometric_user_email'))
           .thenAnswer((_) async => 'user@example.com');
 
       await apiClient.saveBiometricEmail('user@example.com');
@@ -174,11 +176,11 @@ void main() {
     test('saveBiometricUid and getBiometricUid roundtrip', () async {
       when(
         () => mockStorage.write(
-          key: 'nutriview_biometric_uid',
+          key: 'oopsieeats_biometric_uid',
           value: 'user_uid_123',
         ),
       ).thenAnswer((_) async {});
-      when(() => mockStorage.read(key: 'nutriview_biometric_uid'))
+      when(() => mockStorage.read(key: 'oopsieeats_biometric_uid'))
           .thenAnswer((_) async => 'user_uid_123');
 
       await apiClient.saveBiometricUid('user_uid_123');
@@ -189,11 +191,11 @@ void main() {
     test('saveBiometricPrompted and hasPromptedBiometric roundtrip', () async {
       when(
         () => mockStorage.write(
-          key: 'nutriview_biometric_prompted',
+          key: 'oopsieeats_biometric_prompted',
           value: 'true',
         ),
       ).thenAnswer((_) async {});
-      when(() => mockStorage.read(key: 'nutriview_biometric_prompted'))
+      when(() => mockStorage.read(key: 'oopsieeats_biometric_prompted'))
           .thenAnswer((_) async => 'true');
 
       await apiClient.saveBiometricPrompted(true);
@@ -206,6 +208,14 @@ void main() {
           .thenAnswer((_) async {});
 
       await apiClient.clearBiometricPreference();
+      verify(() => mockStorage.delete(key: 'oopsieeats_biometric_enabled'))
+          .called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_biometric_user_email'))
+          .called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_biometric_uid'))
+          .called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_biometric_prompted'))
+          .called(1);
       verify(() => mockStorage.delete(key: 'nutriview_biometric_enabled'))
           .called(1);
       verify(() => mockStorage.delete(key: 'nutriview_biometric_user_email'))

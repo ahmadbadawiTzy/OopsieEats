@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/splash/screens/splash_screen.dart';
-import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/splash/screens/splash_screen.dart';
+import 'package:oopsieeats/features/splash/widgets/neo_splash_badge.dart';
 import 'package:provider/provider.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
@@ -97,7 +97,7 @@ void main() {
         await tester.pump();
 
         expect(find.byType(NutriViewLogoMark), findsOneWidget);
-        expect(find.text('NutriView'), findsOneWidget);
+        expect(find.text('OopsieEats'), findsOneWidget);
         expect(find.text("Know what's on your plate."), findsOneWidget);
 
         // Strictly verify zero technical jargon

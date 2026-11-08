@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/models/meal.dart';
+import 'package:oopsieeats/features/scanner/providers/scan_flow_provider.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/models/meal.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
 
 class MockFoodRepository extends Mock implements FoodRepository {}
 

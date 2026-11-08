@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:image/image.dart' as img;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/nutrition_calculator.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

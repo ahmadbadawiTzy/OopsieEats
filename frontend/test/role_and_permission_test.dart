@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/features/admin/data/admin_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/features/admin/data/admin_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
 
 class MockApiClient extends Mock implements ApiClient {}
 

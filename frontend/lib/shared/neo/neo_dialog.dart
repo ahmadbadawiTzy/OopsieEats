@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 /// Neo-Brutalist Confirmation Dialog.
 /// Features a heavy black border, deep hard shadow, and high-impact action buttons.

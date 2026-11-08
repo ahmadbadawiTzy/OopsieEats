@@ -1,4 +1,4 @@
-import 'package:nutriview/data/models/meal.dart';
+import 'package:oopsieeats/data/models/meal.dart';
 
 class NutrientProgress {
   final double consumed;

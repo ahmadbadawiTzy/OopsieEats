@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/shared/neo/avatar_catalog.dart';
+import 'package:oopsieeats/shared/neo/avatar_catalog.dart';
 
 void main() {
   group('AvatarCatalog Tests', () {

@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/splash/widgets/neo_splash_badge.dart';
 
 /// Clean, consumer-focused Neo-Brutalism Splash Screen for NutriView.
 /// Displays an iconic nutrition Apple mark, confident editorial wordmark,
@@ -34,6 +35,7 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<Offset> _textSlide;
 
   bool _isNavigating = false;
+  bool _hasCompletedOnboarding = true;
 
   @override
   void initState() {
@@ -117,6 +119,10 @@ class _SplashScreenState extends State<SplashScreen>
       try {
         profileProvider = context.read<ProfileProvider>();
       } catch (_) {}
+      ApiClient? apiClient;
+      try {
+        apiClient = context.read<ApiClient>();
+      } catch (_) {}
 
       await authProvider.checkAuthStatus().timeout(widget.authTimeout);
 
@@ -124,14 +130,24 @@ class _SplashScreenState extends State<SplashScreen>
           !authProvider.isAdmin &&
           profileProvider != null) {
         try {
-          await profileProvider
-              .loadProfile()
-              .timeout(const Duration(seconds: 4));
+          await profileProvider.loadProfile().timeout(
+            const Duration(seconds: 4),
+          );
           if (profileProvider.user != null) {
             authProvider.setCurrentUser(profileProvider.user!);
           }
         } catch (e) {
           debugPrint('[SplashScreen] Profile load fallback: $e');
+        }
+      } else if (!authProvider.isLoggedIn) {
+        if (apiClient != null) {
+          try {
+            _hasCompletedOnboarding = await apiClient.hasCompletedOnboarding();
+          } catch (_) {
+            _hasCompletedOnboarding = false;
+          }
+        } else {
+          _hasCompletedOnboarding = true;
         }
       }
     } catch (e) {
@@ -149,7 +165,8 @@ class _SplashScreenState extends State<SplashScreen>
       profileProvider = context.read<ProfileProvider>();
     } catch (_) {}
 
-    final bool isProfileComplete = authProvider.isProfileComplete ||
+    final bool isProfileComplete =
+        authProvider.isProfileComplete ||
         (profileProvider?.isProfileComplete ?? false);
 
     final String targetRoute;
@@ -167,7 +184,9 @@ class _SplashScreenState extends State<SplashScreen>
         targetRoute = AppRoutes.dashboard;
       }
     } else {
-      targetRoute = AppRoutes.login;
+      targetRoute = _hasCompletedOnboarding
+          ? AppRoutes.login
+          : AppRoutes.onboarding;
     }
 
     Navigator.of(context).pushReplacementNamed(targetRoute);
@@ -198,7 +217,7 @@ class _SplashScreenState extends State<SplashScreen>
                   // 1. Logo Mark
                   ScaleTransition(
                     scale: _logoScale,
-                    child: NutriViewLogoMark(
+                    child: OopsieEatsLogoMark(
                       size: logoSize,
                       leafAngle: _leafAngle.value,
                     ),
@@ -214,7 +233,7 @@ class _SplashScreenState extends State<SplashScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'NutriView',
+                            'OopsieEats',
                             style: TextStyle(
                               fontSize: isCompact ? 32 : 38,
                               fontWeight: FontWeight.w900,

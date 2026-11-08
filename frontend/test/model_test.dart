@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/data/models/profile.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/data/models/profile.dart';
 
 void main() {
   group('Model Serialization Tests', () {

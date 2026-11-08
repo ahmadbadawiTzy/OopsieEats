@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/auth/screens/login_screen.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/auth/screens/login_screen.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 import 'package:provider/provider.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -20,7 +20,7 @@ void main() {
     authProvider = AuthProvider(mockAuthRepository);
   });
 
-  testWidgets('LoginScreen displays NutriView title and input fields', (
+  testWidgets('LoginScreen displays OopsieEats title and input fields', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -35,7 +35,7 @@ void main() {
       ),
     );
 
-    expect(find.text('NutriView'), findsOneWidget);
+    expect(find.text('OopsieEats'), findsOneWidget);
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Kata Sandi'), findsOneWidget);
     expect(find.text('Masuk'), findsOneWidget);

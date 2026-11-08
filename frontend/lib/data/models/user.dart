@@ -1,4 +1,4 @@
-import 'package:nutriview/data/models/profile.dart';
+import 'package:oopsieeats/data/models/profile.dart';
 
 class User {
   final int id;
@@ -35,7 +35,8 @@ class User {
           )
         : null;
 
-    final bool computedComplete = parsedProfile != null &&
+    final bool computedComplete =
+        parsedProfile != null &&
         parsedProfile.heightCm >= 50 &&
         parsedProfile.weightKg >= 20 &&
         (parsedProfile.birthDate != null || parsedProfile.age > 0) &&
@@ -48,7 +49,8 @@ class User {
       fullName: json['full_name'] as String? ?? '',
       role: json['role'] as String? ?? 'user',
       isActive: json['is_active'] as bool? ?? true,
-      isProfileComplete: json['is_profile_complete'] as bool? ?? computedComplete,
+      isProfileComplete:
+          json['is_profile_complete'] as bool? ?? computedComplete,
       profile: parsedProfile,
       photoUrl: json['photo_url'] as String?,
       photoPath: json['photo_path'] as String?,

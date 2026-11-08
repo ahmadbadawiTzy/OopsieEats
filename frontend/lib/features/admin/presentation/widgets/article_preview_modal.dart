@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 class ArticlePreviewModal extends StatelessWidget {
   final Map<String, dynamic> article;
@@ -44,7 +44,7 @@ class ArticlePreviewModal extends StatelessWidget {
     final String summary = article['summary'] as String? ?? '';
     final String content = article['content'] as String? ?? '';
     final String author =
-        article['author_name'] as String? ?? 'Tim Gizi NutriView';
+        article['author_name'] as String? ?? 'Tim Gizi OopsieEats';
     final String category =
         article['category_name'] as String? ?? 'Gizi & Nutrisi';
     final int readTime = (article['read_time_minutes'] as num?)?.toInt() ?? 3;

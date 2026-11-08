@@ -1,4 +1,4 @@
-import 'package:nutriview/data/models/profile.dart';
+import 'package:oopsieeats/data/models/profile.dart';
 
 class NutritionCalculator {
   static const Map<String, double> activityFactors = {

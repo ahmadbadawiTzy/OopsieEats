@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/config.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/shared/neo/neo_back_button.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_section_header.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/config.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/scanner/providers/scan_flow_provider.dart';
+import 'package:oopsieeats/shared/neo/neo_back_button.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_section_header.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 class MealResultScreen extends StatelessWidget {
   const MealResultScreen({super.key});

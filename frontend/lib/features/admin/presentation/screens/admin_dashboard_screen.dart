@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/admin/data/admin_repository.dart';
-import 'package:nutriview/features/admin/presentation/widgets/atwater_checker_widget.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/features/admin/presentation/widgets/admin_components.dart';
-import 'package:nutriview/features/admin/presentation/widgets/admin_sidebar.dart';
-import 'package:nutriview/features/admin/presentation/widgets/admin_stat_card.dart';
-import 'package:nutriview/features/admin/presentation/widgets/article_preview_modal.dart';
-import 'package:nutriview/features/admin/presentation/widgets/category_manager_modal.dart';
-import 'package:nutriview/features/admin/presentation/widgets/food_detail_modal.dart';
-import 'package:nutriview/features/admin/presentation/widgets/media_manager_modal.dart';
-import 'package:nutriview/features/admin/presentation/widgets/user_detail_modal.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/admin/data/admin_repository.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/atwater_checker_widget.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/admin_components.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/admin_sidebar.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/admin_stat_card.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/article_preview_modal.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/category_manager_modal.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/food_detail_modal.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/media_manager_modal.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/user_detail_modal.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final String adminEmail;
@@ -1319,7 +1319,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
             elevation: 0,
             titleSpacing: 0,
             title: const Text(
-              'NutriView',
+              'OopsieEats',
               style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 20,
@@ -1960,7 +1960,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
                           'protein_g': pro,
                           'carbs_g': carb,
                           'fat_g': fat,
-                          'source': 'Simulator Atwater NutriView',
+                          'source': 'Simulator Atwater OopsieEats',
                         },
                       },
                     );

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 /// Machine-checked version of the NutriView design-system rules documented in
 /// `lib/core/app_icons.dart`. These fail the build when a second icon family,

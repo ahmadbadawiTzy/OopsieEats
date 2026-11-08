@@ -1,5 +1,5 @@
-name: nutriview
-description: "NutriView - Food Nutrition Recognition & Daily Tracking App"
+name: oopsieeats
+description: "OopsieEats - Food Nutrition Recognition & Daily Tracking App"
 publish_to: 'none'
 version: 1.0.0+2002
 
@@ -35,3 +35,5 @@ flutter:
     - assets/data/
     - assets/images/
     - assets/images/about/
+    - assets/onboarding/photos/
+    - assets/onboarding/food/

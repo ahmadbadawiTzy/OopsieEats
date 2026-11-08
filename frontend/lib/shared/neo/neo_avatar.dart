@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/avatar_catalog.dart';
-import 'package:nutriview/shared/neo/user_profile_avatar.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/avatar_catalog.dart';
+import 'package:oopsieeats/shared/neo/user_profile_avatar.dart';
 
 /// Neo-Brutalism Avatar for NutriView.
 /// - Prioritizes real user photos via [UserProfileAvatar].

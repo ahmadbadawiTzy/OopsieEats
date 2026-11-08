@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// Neo-Brutalist Section Header.
 /// Features a bold title with high-contrast accent indicator and optional action widget.

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/features/scanner/screens/food_search_modal.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/features/scanner/providers/scan_flow_provider.dart';
+import 'package:oopsieeats/features/scanner/screens/food_search_modal.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 /// Clean, honest Neo-Brutalist Food Scanner & Intake Hub.
 /// Replaces misleading fake optical viewfinder with clear, functional action paths:

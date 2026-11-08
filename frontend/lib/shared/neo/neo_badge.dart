@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 enum NeoBadgeColor { mint, yellow, coral, sky, lavender, white, dark }
 

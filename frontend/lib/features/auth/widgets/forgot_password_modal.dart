@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 /// Tactile Neo-Brutalist modal bottom sheet for requesting a secure
 /// Firebase Authentication password reset action link.

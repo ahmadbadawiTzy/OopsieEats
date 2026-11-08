@@ -3,15 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/features/profile/widgets/unified_biodata_form.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/profile/widgets/unified_biodata_form.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 class MockAuthProvider extends Mock implements AuthProvider {}
@@ -80,7 +80,7 @@ void main() {
       // Headers & Educational Card
       expect(find.text('Satu Langkah Terakhir!'), findsOneWidget);
       expect(
-        find.textContaining('NutriView membutuhkan data fisik Anda untuk mengestimasi kebutuhan kalori harian'),
+        find.textContaining('OopsieEats membutuhkan data fisik Anda untuk mengestimasi kebutuhan kalori harian'),
         findsOneWidget,
       );
 

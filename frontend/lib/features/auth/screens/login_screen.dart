@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/features/auth/widgets/biometric_enrollment_modal.dart';
-import 'package:nutriview/features/auth/widgets/forgot_password_modal.dart';
-import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/features/auth/widgets/biometric_enrollment_modal.dart';
+import 'package:oopsieeats/features/auth/widgets/forgot_password_modal.dart';
+import 'package:oopsieeats/features/splash/widgets/neo_splash_badge.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -137,14 +137,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final isComplete =
         user?.isProfileComplete == true || auth.isProfileComplete;
-    final targetRoute =
-        isComplete ? AppRoutes.dashboard : AppRoutes.completeProfile;
+    final targetRoute = isComplete
+        ? AppRoutes.dashboard
+        : AppRoutes.completeProfile;
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      targetRoute,
-      (route) => false,
-    );
+    Navigator.pushNamedAndRemoveUntil(context, targetRoute, (route) => false);
   }
 
   Future<void> _showSwitchAccountDialog(
@@ -205,10 +202,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Neo Hero Brand Logo Mark
-                  const Center(child: NutriViewLogoMark(size: 96)),
+                  const Center(child: OopsieEatsLogoMark(size: 96)),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
-                    'NutriView',
+                    'OopsieEats',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 34,
@@ -808,10 +805,7 @@ class _LoginScreenState extends State<LoginScreen> {
             decoration: InputDecoration(
               labelText: 'Kata Sandi',
               hintText: 'Masukkan kata sandi akun',
-              prefixIcon: const Icon(
-                AppIcons.lock,
-                size: AppIcons.sizeControl,
-              ),
+              prefixIcon: const Icon(AppIcons.lock, size: AppIcons.sizeControl),
               suffixIcon: IconButton(
                 icon: Icon(
                   _obscureFallbackPassword
@@ -951,7 +945,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: NeoTokens.space4),
           const Text(
-            'Gunakan akun NutriView Anda untuk melanjutkan',
+            'Gunakan akun OopsieEats Anda untuk melanjutkan',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -1173,5 +1167,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-

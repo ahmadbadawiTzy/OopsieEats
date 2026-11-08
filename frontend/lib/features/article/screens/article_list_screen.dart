@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 /// Overkill Neo-Brutalism Editorial Nutrition Journal for NutriView Users.
 /// Designed according to Section 15 specifications:
@@ -321,7 +321,9 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
             borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
             border: Border.all(
               color: NeoTokens.ink,
-              width: isSelected ? NeoTokens.borderWidth : NeoTokens.borderWidthThin,
+              width: isSelected
+                  ? NeoTokens.borderWidth
+                  : NeoTokens.borderWidthThin,
             ),
             boxShadow: isSelected
                 ? const [
@@ -432,8 +434,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
         };
       } else if (isCategoryFiltered) {
         title = 'Belum Ada Artikel';
-        description =
-            'Belum ada artikel pada kategori ini. Silakan pilih kategori lain atau tampilkan semua.';
+        description = 'Belum ada artikel pada kategori ini. Silakan pilih kategori lain atau tampilkan semua.';
         buttonText = 'Tampilkan Semua Kategori';
         onAction = () => _onCategorySelected(null);
       } else {
@@ -509,7 +510,9 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
     // and subsequent articles are displayed in the editorial magazine list layout.
     final hasFeatured = _searchQuery.isEmpty && _articles.isNotEmpty;
     final featuredArticle = hasFeatured ? _articles.first : null;
-    final remainingArticles = hasFeatured ? _articles.skip(1).toList() : _articles;
+    final remainingArticles = hasFeatured
+        ? _articles.skip(1).toList()
+        : _articles;
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -557,12 +560,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(
-          child: Container(
-            height: 1.5,
-            color: NeoTokens.ink,
-          ),
-        ),
+        Expanded(child: Container(height: 1.5, color: NeoTokens.ink)),
       ],
     );
   }
@@ -595,7 +593,9 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
               runSpacing: 4,
               children: [
                 NeoBadge(
-                  label: (article.categoryName != null && article.categoryName!.isNotEmpty)
+                  label:
+                      (article.categoryName != null &&
+                          article.categoryName!.isNotEmpty)
                       ? article.categoryName!
                       : 'Nutrisi',
                   color: NeoBadgeColor.mint,
@@ -635,7 +635,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
             ),
 
             // Editorial Excerpt
-            if (article.excerpt != null && article.excerpt!.trim().isNotEmpty) ...[
+            if (article.excerpt != null &&
+                article.excerpt!.trim().isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 article.excerpt!.trim(),
@@ -656,7 +657,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (article.authorName != null && article.authorName!.isNotEmpty)
+                if (article.authorName != null &&
+                    article.authorName!.isNotEmpty)
                   Expanded(
                     child: Row(
                       children: [
@@ -698,7 +700,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   /// Asymmetrical split layout with thumbnail on the left and typography on the right.
   Widget _buildEditorialListItem(ArticleItem article) {
     final formattedDate = _formatPublishedDate(article.publishedAt);
-    final hasCover = article.coverImageUrl != null &&
+    final hasCover =
+        article.coverImageUrl != null &&
         article.coverImageUrl!.trim().startsWith(RegExp(r'^https?:\/\/'));
 
     return RepaintBoundary(
@@ -752,7 +755,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
                         runSpacing: 4,
                         children: [
                           NeoBadge(
-                            label: (article.categoryName != null &&
+                            label:
+                                (article.categoryName != null &&
                                     article.categoryName!.isNotEmpty)
                                 ? article.categoryName!
                                 : 'Nutrisi',
@@ -821,7 +825,8 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
               spacing: 8,
               runSpacing: 6,
               children: [
-                if (article.authorName != null && article.authorName!.isNotEmpty)
+                if (article.authorName != null &&
+                    article.authorName!.isNotEmpty)
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -898,11 +903,7 @@ class _ArticleListScreenState extends State<ArticleListScreen> {
   }
 
   void _navigateToDetail(ArticleItem article) {
-    Navigator.pushNamed(
-      context,
-      AppRoutes.articleDetail,
-      arguments: article,
-    );
+    Navigator.pushNamed(context, AppRoutes.articleDetail, arguments: article);
   }
 
   String _formatPublishedDate(String? rawDate) {

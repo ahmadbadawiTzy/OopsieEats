@@ -1,10 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';

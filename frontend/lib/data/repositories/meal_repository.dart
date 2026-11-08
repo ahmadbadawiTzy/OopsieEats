@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/nutrition_calculator.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 class MealRepository {
   final ApiClient _apiClient;
@@ -79,7 +79,9 @@ class MealRepository {
     final List<Map<String, dynamic>> processedItems = [];
 
     final foodDetails = await Future.wait(
-      items.map((raw) => _foodRepository.getFoodDetail((raw['food_id'] as num).toInt())),
+      items.map(
+        (raw) => _foodRepository.getFoodDetail((raw['food_id'] as num).toInt()),
+      ),
     );
 
     for (var i = 0; i < items.length; i++) {
@@ -158,7 +160,11 @@ class MealRepository {
     final db = _firestore;
     if (db == null) return;
 
-    final docRef = db.collection('users').doc(uid).collection('meals').doc(mealId.toString());
+    final docRef = db
+        .collection('users')
+        .doc(uid)
+        .collection('meals')
+        .doc(mealId.toString());
     final snapshot = await docRef.get();
     String? imagePath;
     if (snapshot.exists && snapshot.data() != null) {

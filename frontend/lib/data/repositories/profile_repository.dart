@@ -1,13 +1,14 @@
 import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/nutrition_calculator.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/core/profile_photo_logger.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/core/profile_photo_logger.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 class ProfileRepository {
   final ApiClient _apiClient;
@@ -85,7 +86,8 @@ class ProfileRepository {
             '',
         role: data['role'] as String? ?? 'user',
         isActive: data['is_active'] as bool? ?? true,
-        isProfileComplete: (data['is_profile_complete'] as bool?) ??
+        isProfileComplete:
+            (data['is_profile_complete'] as bool?) ??
             (profile != null &&
                 profile.heightCm >= 50 &&
                 profile.weightKg >= 20 &&

@@ -1,4 +1,4 @@
-package com.nutriview.nutriview
+package com.oopsieeats.app
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

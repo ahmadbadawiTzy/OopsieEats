@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:nutriview/core/config/creator_config.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
+import 'package:oopsieeats/core/config/creator_config.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/features/splash/widgets/neo_splash_badge.dart';
 
 /// Dedicated "Tentang Aplikasi" screen showcasing NutriView consumer identity
 /// and the authentic creator profile for Ahmad Badawi.
@@ -25,7 +25,7 @@ class AboutScreen extends StatelessWidget {
       backgroundColor: NeoTokens.warmBackground,
       appBar: AppBar(
         leading: NeoBackButton.leading(context),
-        title: const Text('Tentang NutriView'),
+        title: const Text('Tentang OopsieEats'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
           child: Container(color: NeoTokens.black, height: 2),
@@ -40,14 +40,14 @@ class AboutScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ================================================================
-            // SECTION 1: NUTRIVIEW APP IDENTITY
+            // SECTION 1: OOPSIEEATS APP IDENTITY
             // ================================================================
             NeoCard(
               backgroundColor: NeoTokens.white,
               padding: const EdgeInsets.all(NeoTokens.space20),
               child: Column(
                 children: [
-                  const NutriViewLogoMark(size: 64),
+                  const OopsieEatsLogoMark(size: 64),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
                     CreatorConfig.appName,
@@ -361,7 +361,7 @@ class AboutScreen extends StatelessWidget {
             // Footer note
             Center(
               child: Text(
-                '© 2026 ${CreatorConfig.creatorName} · NutriView',
+                '© 2026 ${CreatorConfig.creatorName} · OopsieEats',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

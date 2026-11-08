@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/shared/neo/neo_back_button.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_section_header.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/scanner/providers/scan_flow_provider.dart';
+import 'package:oopsieeats/shared/neo/neo_back_button.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_section_header.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 import 'package:flutter/services.dart';
 
@@ -47,7 +47,9 @@ class PortionNumberInputFormatter extends TextInputFormatter {
     }
 
     // Auto-replace leading zero when typing positive numbers: e.g. "05" -> "5"
-    if (newText.length > 1 && newText.startsWith('0') && !newText.startsWith('0.')) {
+    if (newText.length > 1 &&
+        newText.startsWith('0') &&
+        !newText.startsWith('0.')) {
       newText = newText.replaceFirst(RegExp(r'^0+'), '');
       if (newText.isEmpty) newText = '0';
     }
@@ -91,8 +93,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
       final portion = items[i].portionGrams ?? 0.0;
       final initialText = portion > 0
           ? (portion == portion.roundToDouble()
-              ? portion.toInt().toString()
-              : portion.toString())
+                ? portion.toInt().toString()
+                : portion.toString())
           : '0';
       _controllers[i] = TextEditingController(text: initialText);
       final node = FocusNode();
@@ -123,8 +125,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
     if (!_controllers.containsKey(index)) {
       final text = currentGrams > 0
           ? (currentGrams == currentGrams.roundToDouble()
-              ? currentGrams.toInt().toString()
-              : currentGrams.toString())
+                ? currentGrams.toInt().toString()
+                : currentGrams.toString())
           : '0';
       _controllers[index] = TextEditingController(text: text);
     }
@@ -162,7 +164,9 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
         ? grams.toInt().toString()
         : grams.toString();
     _controllers[index]?.text = text;
-    _controllers[index]?.selection = TextSelection.collapsed(offset: text.length);
+    _controllers[index]?.selection = TextSelection.collapsed(
+      offset: text.length,
+    );
     context.read<ScanFlowProvider>().updatePortion(index, grams);
   }
 
@@ -625,8 +629,12 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                               val.trim().isEmpty) {
                                             return 'Wajib isi';
                                           }
-                                          final sanitized = val.trim().replaceAll(',', '.');
-                                          final num = double.tryParse(sanitized);
+                                          final sanitized = val
+                                              .trim()
+                                              .replaceAll(',', '.');
+                                          final num = double.tryParse(
+                                            sanitized,
+                                          );
                                           if (num == null ||
                                               num <= 0 ||
                                               num > 5000) {
@@ -795,7 +803,8 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                     fit: BoxFit.scaleDown,
                                     child: _buildSummaryMacro(
                                       'Protein',
-                                      flow.totalEstimatedProtein.toStringAsFixed(1),
+                                      flow.totalEstimatedProtein
+                                          .toStringAsFixed(1),
                                       'g',
                                     ),
                                   ),
@@ -805,7 +814,9 @@ class _PortionInputScreenState extends State<PortionInputScreen> {
                                     fit: BoxFit.scaleDown,
                                     child: _buildSummaryMacro(
                                       'Karbo',
-                                      flow.totalEstimatedCarbs.toStringAsFixed(1),
+                                      flow.totalEstimatedCarbs.toStringAsFixed(
+                                        1,
+                                      ),
                                       'g',
                                     ),
                                   ),

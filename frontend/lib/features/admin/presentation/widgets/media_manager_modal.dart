@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/features/admin/data/admin_repository.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/features/admin/data/admin_repository.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 class MediaManagerModal extends StatefulWidget {
   final AdminRepository adminRepo;

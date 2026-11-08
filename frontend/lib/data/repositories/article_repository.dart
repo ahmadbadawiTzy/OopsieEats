@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/article.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/article.dart';
 
 class ArticleRepository {
   final FirebaseFirestore? _customFirestore;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// Neo-Brutalist Stat Card for Admin Dashboard HUD.
 class AdminStatCard extends StatelessWidget {

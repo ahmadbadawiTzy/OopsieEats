@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/food.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_icon_button.dart';
-import 'package:nutriview/shared/widgets/loading_indicator.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/food.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_icon_button.dart';
+import 'package:oopsieeats/shared/widgets/loading_indicator.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 class FoodSearchModal extends StatefulWidget {
   final FoodRepository foodRepository;

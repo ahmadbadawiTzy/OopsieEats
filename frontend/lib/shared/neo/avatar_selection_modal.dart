@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/avatar_catalog.dart';
-import 'package:nutriview/shared/neo/neo_avatar.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/avatar_catalog.dart';
+import 'package:oopsieeats/shared/neo/neo_avatar.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/core/app_icons.dart';
 
 /// Modal bottom sheet allowing users to choose an authentic Neo-Brutalism
 /// game-style avatar character from [AvatarCatalog].
@@ -103,7 +103,7 @@ class _AvatarSelectionModalState extends State<AvatarSelectionModal> {
                         ),
                         SizedBox(height: 2),
                         Text(
-                          'Pilih karakter unik untuk identitas profilmu di NutriView.',
+                          'Pilih karakter unik untuk identitas profilmu di OopsieEats.',
                           style: TextStyle(
                             fontSize: 12,
                             color: NeoTokens.textMuted,

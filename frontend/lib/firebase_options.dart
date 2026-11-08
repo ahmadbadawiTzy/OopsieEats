@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB7Vu136ZplCHuV5d-nPuwQBr2Xq0_YI08',
-    appId: '1:350308179098:android:95f5dda5c337a14a7e5323',
+    appId: '1:350308179098:android:52fbbbd2d02639e47e5323',
     messagingSenderId: '350308179098',
     projectId: 'nutriview-943cd',
     storageBucket: 'nutriview-943cd.firebasestorage.app',

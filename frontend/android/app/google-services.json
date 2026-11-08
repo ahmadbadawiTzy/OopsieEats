@@ -41,6 +41,43 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:350308179098:android:52fbbbd2d02639e47e5323",
+        "android_client_info": {
+          "package_name": "com.oopsieeats.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "350308179098-md8oblv9248foinfud509k81l5q98gij.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oopsieeats.app",
+            "certificate_hash": "a2a4f886da6aedf627d5280e0dac7b02108a3c7b"
+          }
+        },
+        {
+          "client_id": "350308179098-rj47kjc7qkab0loht39si2ek37qj7gku.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7Vu136ZplCHuV5d-nPuwQBr2Xq0_YI08"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "350308179098-rj47kjc7qkab0loht39si2ek37qj7gku.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

@@ -3,22 +3,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/data/repositories/dashboard_repository.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/dashboard/screens/dashboard_screen.dart';
-import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/data/repositories/dashboard_repository.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/dashboard/screens/dashboard_screen.dart';
+import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 class MockProfileRepository extends Mock implements ProfileRepository {}

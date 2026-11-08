@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
 
 class MealHistoryProvider extends ChangeNotifier {
   final MealRepository _repository;

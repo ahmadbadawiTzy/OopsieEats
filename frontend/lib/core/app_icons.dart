@@ -196,6 +196,7 @@ class AppIcons {
   static const IconData infoOutline = Icons.info_outline_rounded;
   static const IconData checkCircle = Icons.check_circle_rounded;
   static const IconData checkCircleOutline = Icons.check_circle_outline_rounded;
+  static const IconData check = Icons.check_rounded;
   static const IconData priorityHigh = Icons.priority_high_rounded;
   static const IconData helpOutline = Icons.help_outline_rounded;
   static const IconData lightbulbOutline = Icons.lightbulb_outline_rounded;

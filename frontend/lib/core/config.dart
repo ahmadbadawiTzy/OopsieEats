@@ -1,5 +1,5 @@
 class AppConfig {
-  static const String appName = 'NutriView';
+  static const String appName = 'OopsieEats';
 
   static const String disclaimerText =
       'Hasil analisis aplikasi bersifat estimasi dan bukan saran medis. '

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/age_calculator.dart';
+import 'package:oopsieeats/core/age_calculator.dart';
 
 void main() {
   group('AgeCalculator Unit Tests', () {

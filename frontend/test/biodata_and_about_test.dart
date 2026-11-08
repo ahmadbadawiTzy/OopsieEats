@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/config/creator_config.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/features/profile/screens/about_screen.dart';
-import 'package:nutriview/features/profile/screens/biodata_screen.dart';
+import 'package:oopsieeats/core/config/creator_config.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/profile/screens/about_screen.dart';
+import 'package:oopsieeats/features/profile/screens/biodata_screen.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 
@@ -29,7 +29,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // App identity
-      expect(find.text('NutriView'), findsWidgets);
+      expect(find.text('OopsieEats'), findsWidgets);
       expect(find.textContaining(CreatorConfig.appVersion), findsWidgets);
       expect(find.text('Nilai Utama Aplikasi'), findsOneWidget);
 

@@ -1,18 +1,19 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/shared/neo/user_profile_avatar.dart';
-import 'package:nutriview/shared/widgets/loading_indicator.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/profile_photo_logger.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/shared/neo/user_profile_avatar.dart';
+import 'package:oopsieeats/shared/widgets/loading_indicator.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/profile_photo_logger.dart';
 
 /// Redesigned Profile Screen acting as the central user identity hub:
 /// - Prominent centered game avatar character
@@ -78,7 +79,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ProfileProvider profileProvider,
     AuthProvider authProvider,
   ) async {
-    final hasPhoto = (profileProvider.user?.photoUrl?.isNotEmpty == true) ||
+    final hasPhoto =
+        (profileProvider.user?.photoUrl?.isNotEmpty == true) ||
         (authProvider.currentUser?.photoUrl?.isNotEmpty == true);
 
     await showModalBottomSheet<void>(
@@ -132,10 +134,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 const Text(
                   'Pilih foto asli dari kamera atau galeri untuk profil Anda.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: NeoTokens.textMuted,
-                  ),
+                  style: TextStyle(fontSize: 13, color: NeoTokens.textMuted),
                 ),
                 const SizedBox(height: NeoTokens.space20),
                 _buildPhotoOption(
@@ -151,7 +150,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       path: 'source:camera',
                     );
                     Navigator.pop(sheetContext);
-                    _pickImage(ImageSource.camera, profileProvider, authProvider);
+                    _pickImage(
+                      ImageSource.camera,
+                      profileProvider,
+                      authProvider,
+                    );
                   },
                 ),
                 const SizedBox(height: NeoTokens.space12),
@@ -168,7 +171,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       path: 'source:gallery',
                     );
                     Navigator.pop(sheetContext);
-                    _pickImage(ImageSource.gallery, profileProvider, authProvider);
+                    _pickImage(
+                      ImageSource.gallery,
+                      profileProvider,
+                      authProvider,
+                    );
                   },
                 ),
                 if (hasPhoto) ...[
@@ -231,7 +238,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
                 border: Border.all(color: NeoTokens.black, width: 1.5),
               ),
-              child: Icon(icon, color: NeoTokens.black, size: AppIcons.sizeToolbar),
+              child: Icon(
+                icon,
+                color: NeoTokens.black,
+                size: AppIcons.sizeToolbar,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -258,7 +269,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            const Icon(AppIcons.chevronRight, size: AppIcons.sizeControl, color: NeoTokens.black),
+            const Icon(
+              AppIcons.chevronRight,
+              size: AppIcons.sizeControl,
+              color: NeoTokens.black,
+            ),
           ],
         ),
       ),
@@ -415,7 +430,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: NeoTokens.lime,
-                        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          NeoTokens.radiusSmall,
+                        ),
                         border: Border.all(color: NeoTokens.black, width: 2),
                       ),
                       child: const Icon(
@@ -453,10 +470,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     height: 160,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: NeoTokens.black,
-                        width: 2.5,
-                      ),
+                      border: Border.all(color: NeoTokens.black, width: 2.5),
                       boxShadow: const [
                         BoxShadow(
                           color: NeoTokens.black,
@@ -509,8 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirmed = await NeoDialog.show(
       context,
       title: 'Hapus Foto Profil?',
-      message:
-          'Foto profil Anda akan dihapus permanen dan tampilan akan kembali menggunakan inisial nama Anda.',
+      message: 'Foto profil Anda akan dihapus permanen dan tampilan akan kembali menggunakan inisial nama Anda.',
       confirmText: 'Ya, Hapus',
       cancelText: 'Batal',
       confirmColor: NeoTokens.alert,
@@ -539,7 +552,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final confirmed = await NeoDialog.show(
       context,
       title: 'Keluar dari Akun?',
-      message: 'Apakah Anda yakin ingin keluar dari akun NutriView? Anda perlu masuk kembali untuk mengakses data gizi Anda.',
+      message: 'Apakah Anda yakin ingin keluar dari akun OopsieEats? Anda perlu masuk kembali untuk mengakses data gizi Anda.',
       confirmText: 'Ya, Logout',
       cancelText: 'Batal',
       confirmColor: NeoTokens.alert,
@@ -787,8 +800,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         rootNavigator: true,
       ).pop(); // dismiss loading dialog
 
-      final isGoogleOnly =
-          auth.hasGoogleProvider && !auth.hasPasswordProvider;
+      final isGoogleOnly = auth.hasGoogleProvider && !auth.hasPasswordProvider;
 
       if (isGoogleOnly) {
         _showLoadingDialog('Memverifikasi akun Google & menghapus data...');
@@ -863,7 +875,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? user!.fullName
         : (user?.email.isNotEmpty == true
               ? user!.email.split('@').first
-              : 'Pengguna NutriView');
+              : 'Pengguna OopsieEats');
 
     return Scaffold(
       backgroundColor: NeoTokens.warmBackground,
@@ -924,18 +936,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         alignment: Alignment.bottomRight,
                         children: [
                           UserProfileAvatar(
-                            photoUrl: user?.photoUrl ?? auth.currentUser?.photoUrl,
+                            photoUrl:
+                                user?.photoUrl ?? auth.currentUser?.photoUrl,
                             name: displayName,
                             size: 96,
                             borderWidth: 3.0,
                             shadowOffset: const Offset(4, 4),
-                            onTap: () => _openPhotoActionSheet(profileProvider, auth),
+                            onTap: () =>
+                                _openPhotoActionSheet(profileProvider, auth),
                           ),
                           Positioned(
                             right: -4,
                             bottom: -4,
                             child: GestureDetector(
-                              onTap: () => _openPhotoActionSheet(profileProvider, auth),
+                              onTap: () =>
+                                  _openPhotoActionSheet(profileProvider, auth),
                               child: Container(
                                 width: 36,
                                 height: 36,
@@ -1090,7 +1105,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         variant: NeoButtonVariant.secondary,
                         prefixIcon: AppIcons.cameraAlt,
                         height: 44,
-                        onPressed: () => _openPhotoActionSheet(profileProvider, auth),
+                        onPressed: () =>
+                            _openPhotoActionSheet(profileProvider, auth),
                       ),
                     ),
                   ],
@@ -1196,7 +1212,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Lengkapi tanggal lahir, tinggi, dan berat badan agar NutriView dapat menghitung kebutuhan kalori harianmu secara akurat.',
+                        'Lengkapi tanggal lahir, tinggi, dan berat badan agar OopsieEats dapat menghitung kebutuhan kalori harianmu secara akurat.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
@@ -1432,7 +1448,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _menuTile(
                       icon: AppIcons.info,
                       iconColor: NeoTokens.skyBlue,
-                      title: 'Tentang NutriView & Pembuat',
+                      title: 'Tentang OopsieEats & Pembuat',
                       subtitle: 'Profil Ahmad Badawi, tujuan & versi aplikasi',
                       onTap: () =>
                           Navigator.pushNamed(context, AppRoutes.about),

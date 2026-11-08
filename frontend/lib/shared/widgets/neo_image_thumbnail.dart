@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 /// Neo-Brutalist Image Thumbnail for food inspection photos stored in Supabase Storage.
 ///
@@ -58,10 +58,7 @@ class NeoImageThumbnail extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(
-            color: NeoTokens.black,
-            width: borderWidth,
-          ),
+          border: Border.all(color: NeoTokens.black, width: borderWidth),
           boxShadow: [
             BoxShadow(
               color: NeoTokens.black,
@@ -78,18 +75,11 @@ class NeoImageThumbnail extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder({
-    required IconData icon,
-    required double iconSize,
-  }) {
+  Widget _buildPlaceholder({required IconData icon, required double iconSize}) {
     return Container(
       color: backgroundColor,
       alignment: Alignment.center,
-      child: Icon(
-        icon,
-        size: iconSize,
-        color: NeoTokens.inkSecondary,
-      ),
+      child: Icon(icon, size: iconSize, color: NeoTokens.inkSecondary),
     );
   }
 }
@@ -252,81 +242,86 @@ class NeoImageHeroCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-                  _HeroImageLoader(
-                    metadata: imageMetadata,
-                    onTap: () => _showEnlargedDialog(context),
-                  ),
-                  Positioned(
-                    top: 10,
-                    left: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: NeoTokens.hazard,
-                        borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
-                        border: Border.all(
-                          color: NeoTokens.black,
-                          width: NeoTokens.borderWidth,
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            AppIcons.cameraAlt,
-                            size: AppIcons.sizeSmall,
-                            color: NeoTokens.black,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Foto Pemeriksaan',
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: NeoTokens.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: GestureDetector(
-                      onTap: () => _showEnlargedDialog(context),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: NeoTokens.white,
-                          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
-                          border: Border.all(
-                            color: NeoTokens.black,
-                            width: NeoTokens.borderWidth,
-                          ),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: NeoTokens.black,
-                              offset: Offset(1.5, 1.5),
-                              blurRadius: 0,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          AppIcons.fullscreen,
-                          size: AppIcons.sizeSmall,
-                          color: NeoTokens.black,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              _HeroImageLoader(
+                metadata: imageMetadata,
+                onTap: () => _showEnlargedDialog(context),
               ),
-            ),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: NeoTokens.hazard,
+                    borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                    border: Border.all(
+                      color: NeoTokens.black,
+                      width: NeoTokens.borderWidth,
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        AppIcons.cameraAlt,
+                        size: AppIcons.sizeSmall,
+                        color: NeoTokens.black,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Foto Pemeriksaan',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: NeoTokens.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () => _showEnlargedDialog(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: NeoTokens.white,
+                      borderRadius: BorderRadius.circular(
+                        NeoTokens.radiusSmall,
+                      ),
+                      border: Border.all(
+                        color: NeoTokens.black,
+                        width: NeoTokens.borderWidth,
+                      ),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: NeoTokens.black,
+                          offset: Offset(1.5, 1.5),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      AppIcons.fullscreen,
+                      size: AppIcons.sizeSmall,
+                      color: NeoTokens.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      }
+        ),
+      ),
+    );
+  }
 
   void _showEnlargedDialog(BuildContext context) {
     showDialog(
@@ -358,7 +353,10 @@ class NeoImageHeroCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     color: NeoTokens.lime,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -383,10 +381,7 @@ class NeoImageHeroCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    color: NeoTokens.black,
-                    height: 2,
-                  ),
+                  Container(color: NeoTokens.black, height: 2),
                   InteractiveViewer(
                     maxScale: 4.0,
                     child: _HeroImageLoader(

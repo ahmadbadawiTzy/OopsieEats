@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 /// Overkill Neo-Brutalism Editorial Article Detail Reader for NutriView Users.
 /// Prioritizes clear reading experience, strong typography hierarchy,
@@ -36,7 +36,8 @@ class ArticleDetailScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (article.categoryName != null && article.categoryName!.isNotEmpty)
+                if (article.categoryName != null &&
+                    article.categoryName!.isNotEmpty)
                   NeoBadge(
                     label: article.categoryName!.toUpperCase(),
                     color: NeoBadgeColor.mint,
@@ -53,7 +54,8 @@ class ArticleDetailScreen extends StatelessWidget {
                     fontSize: 11,
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   ),
-                if (article.publishedAt != null && article.publishedAt!.isNotEmpty)
+                if (article.publishedAt != null &&
+                    article.publishedAt!.isNotEmpty)
                   Text(
                     article.publishedAt!.split('T').first,
                     style: const TextStyle(
@@ -81,7 +83,8 @@ class ArticleDetailScreen extends StatelessWidget {
             const SizedBox(height: NeoTokens.space10),
 
             // Author Attribution
-            if (article.authorName != null && article.authorName!.isNotEmpty) ...[
+            if (article.authorName != null &&
+                article.authorName!.isNotEmpty) ...[
               Row(
                 children: [
                   const Icon(
@@ -246,7 +249,9 @@ class ArticleDetailScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(NeoTokens.space10),
                     decoration: BoxDecoration(
                       color: NeoTokens.warmBackground,
-                      borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        NeoTokens.radiusSmall,
+                      ),
                       border: Border.all(
                         color: NeoTokens.ink,
                         width: NeoTokens.borderWidthThin,

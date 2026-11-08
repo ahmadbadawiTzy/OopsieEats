@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/features/admin/presentation/screens/admin_dashboard_screen.dart';
-import 'package:nutriview/features/admin/presentation/widgets/atwater_checker_widget.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/admin/presentation/widgets/admin_components.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/features/admin/presentation/screens/admin_dashboard_screen.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/atwater_checker_widget.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/admin/presentation/widgets/admin_components.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -65,13 +65,13 @@ void main() {
     }
 
     testWidgets(
-      'renders Top AppBar with NutriView title and Hamburger button',
+      'renders Top AppBar with OopsieEats title and Hamburger button',
       (tester) async {
         await tester.pumpWidget(createAdminTestWidget());
         await tester.pump();
 
         // Top Header checks
-        expect(find.text('NutriView'), findsOneWidget);
+        expect(find.text('OopsieEats'), findsOneWidget);
         expect(find.byTooltip('Buka Menu Admin'), findsOneWidget);
 
         // Verify redundant badges and actions are removed from AppBar

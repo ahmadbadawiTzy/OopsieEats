@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
-import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
-import 'package:nutriview/features/meals/screens/meal_history_screen.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
+import 'package:oopsieeats/features/meals/screens/meal_history_screen.dart';
 
 class MockMealRepository extends Mock implements MealRepository {}
 class MockSupabaseStorageService extends Mock implements SupabaseStorageService {}

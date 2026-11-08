@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// AppTheme configuration for NutriView.
 /// Re-engineered with authentic Neo-Brutalism design system foundations:

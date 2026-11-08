@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// Neo-Brutalist Progress Bar.
 /// Features a crisp black border, flat fill color, and animated value progression.

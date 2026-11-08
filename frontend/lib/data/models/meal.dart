@@ -1,4 +1,4 @@
-export 'package:nutriview/data/models/profile.dart' show DailyTarget;
+export 'package:oopsieeats/data/models/profile.dart' show DailyTarget;
 
 class MealNutritionTotals {
   final double caloriesKcal;
@@ -157,19 +157,23 @@ class MealRecord {
     'meal_type': mealType,
     'consumed_at': consumedAt,
     'consumed_date': consumedDate,
-    'items': items.map((i) => {
-      'id': i.id,
-      'food_id': i.foodId,
-      'food_name': i.foodName,
-      'portion_grams': i.portionGrams,
-      'calories_kcal': i.caloriesKcal,
-      'protein_g': i.proteinG,
-      'carbs_g': i.carbsG,
-      'fat_g': i.fatG,
-      'source': i.source,
-      if (i.detectionConfidence != null)
-        'detection_confidence': i.detectionConfidence,
-    }).toList(),
+    'items': items
+        .map(
+          (i) => {
+            'id': i.id,
+            'food_id': i.foodId,
+            'food_name': i.foodName,
+            'portion_grams': i.portionGrams,
+            'calories_kcal': i.caloriesKcal,
+            'protein_g': i.proteinG,
+            'carbs_g': i.carbsG,
+            'fat_g': i.fatG,
+            'source': i.source,
+            if (i.detectionConfidence != null)
+              'detection_confidence': i.detectionConfidence,
+          },
+        )
+        .toList(),
     'totals': {
       'calories_kcal': totals.caloriesKcal,
       'protein_g': totals.proteinG,

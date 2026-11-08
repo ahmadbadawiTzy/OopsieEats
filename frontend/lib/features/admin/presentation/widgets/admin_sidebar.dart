@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 class AdminSidebar extends StatelessWidget {
   final int selectedIndex;
@@ -103,7 +103,7 @@ class AdminSidebar extends StatelessWidget {
                     const SizedBox(width: 8),
                     const Expanded(
                       child: Text(
-                        'NutriView',
+                        'OopsieEats',
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 18,

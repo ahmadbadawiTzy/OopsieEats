@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/ml/yolo_detector.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/food.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/ml/yolo_detector.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/food.dart';
 
 class FoodRepository {
   final FirebaseFirestore? _customFirestore;

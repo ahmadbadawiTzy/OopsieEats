@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/profile/widgets/unified_biodata_form.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/profile/widgets/unified_biodata_form.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 /// Screen for completing user physical profile and biometric baseline right
 /// after registration or Google sign-in.
@@ -23,8 +23,7 @@ class CompleteProfileScreen extends StatelessWidget {
     final confirmed = await NeoDialog.show(
       context,
       title: 'Keluar dari Sesi?',
-      message:
-          'Pengisian biodata wajib diselesaikan agar NutriView dapat mengestimasi kalori. Keluar sekarang akan membatalkan sesi masuk Anda.',
+      message: 'Pengisian biodata wajib diselesaikan agar OopsieEats dapat mengestimasi kalori. Keluar sekarang akan membatalkan sesi masuk Anda.',
       confirmText: 'Ya, Keluar',
       cancelText: 'Lanjutkan Pengisian',
       confirmColor: NeoTokens.alert,

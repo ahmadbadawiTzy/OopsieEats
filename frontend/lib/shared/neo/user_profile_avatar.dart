@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// Customer-First Neo-Brutalism User Profile Avatar.
 ///
@@ -37,11 +37,18 @@ class UserProfileAvatar extends StatelessWidget {
     // If an email was passed as the fallback name, extract the prefix
     String target = trimmed;
     if (target.contains('@')) {
-      target = target.split('@').first.replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ').trim();
+      target = target
+          .split('@')
+          .first
+          .replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ')
+          .trim();
       if (target.isEmpty) return 'U';
     }
 
-    final parts = target.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    final parts = target
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return 'U';
 
     if (parts.length == 1) {
@@ -105,7 +112,8 @@ class UserProfileAvatar extends StatelessWidget {
     }
 
     Widget content;
-    final hasValidPhoto = photoUrl != null &&
+    final hasValidPhoto =
+        photoUrl != null &&
         photoUrl!.trim().isNotEmpty &&
         (photoUrl!.trim().startsWith('http://') ||
             photoUrl!.trim().startsWith('https://'));

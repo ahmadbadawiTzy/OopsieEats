@@ -3,7 +3,7 @@
     "providers": {
       "emailPassword": true,
       "googleSignIn": {
-        "oAuthBrandDisplayName": "NutriView",
+        "oAuthBrandDisplayName": "OopsieEats",
         "supportEmail": "ahmadbadawi.biu.si@gmail.com"
       }
     }

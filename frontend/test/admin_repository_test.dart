@@ -1,9 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/features/admin/data/admin_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/features/admin/data/admin_repository.dart';
 
 class MockSecureStorage extends Mock implements FlutterSecureStorage {}
 
@@ -31,13 +31,13 @@ void main() {
     });
 
     test('saveToken and getToken manage secure token correctly', () async {
-      when(() => mockStorage.read(key: 'nutriview_access_token'))
+      when(() => mockStorage.read(key: 'oopsieeats_access_token'))
           .thenAnswer((_) async => 'mock_token_123');
 
       await apiClient.saveToken('mock_token_123');
       verify(
         () => mockStorage.write(
-          key: 'nutriview_access_token',
+          key: 'oopsieeats_access_token',
           value: 'mock_token_123',
         ),
       ).called(1);
@@ -47,11 +47,11 @@ void main() {
     });
 
     test('saveUserSession saves role, name, and email', () async {
-      when(() => mockStorage.read(key: 'nutriview_user_role'))
+      when(() => mockStorage.read(key: 'oopsieeats_user_role'))
           .thenAnswer((_) async => 'admin');
-      when(() => mockStorage.read(key: 'nutriview_user_name'))
+      when(() => mockStorage.read(key: 'oopsieeats_user_name'))
           .thenAnswer((_) async => 'Ahmad Badawi');
-      when(() => mockStorage.read(key: 'nutriview_user_email'))
+      when(() => mockStorage.read(key: 'oopsieeats_user_email'))
           .thenAnswer((_) async => 'ahmadbadawi.biu.si@gmail.com');
 
       await apiClient.saveUserSession(
@@ -61,17 +61,17 @@ void main() {
       );
 
       verify(
-        () => mockStorage.write(key: 'nutriview_user_role', value: 'admin'),
+        () => mockStorage.write(key: 'oopsieeats_user_role', value: 'admin'),
       ).called(1);
       verify(
         () => mockStorage.write(
-          key: 'nutriview_user_name',
+          key: 'oopsieeats_user_name',
           value: 'Ahmad Badawi',
         ),
       ).called(1);
       verify(
         () => mockStorage.write(
-          key: 'nutriview_user_email',
+          key: 'oopsieeats_user_email',
           value: 'ahmadbadawi.biu.si@gmail.com',
         ),
       ).called(1);
@@ -83,6 +83,10 @@ void main() {
 
     test('clearToken deletes all session keys', () async {
       await apiClient.clearToken();
+      verify(() => mockStorage.delete(key: 'oopsieeats_access_token')).called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_user_role')).called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_user_name')).called(1);
+      verify(() => mockStorage.delete(key: 'oopsieeats_user_email')).called(1);
       verify(() => mockStorage.delete(key: 'nutriview_access_token')).called(1);
       verify(() => mockStorage.delete(key: 'nutriview_user_role')).called(1);
       verify(() => mockStorage.delete(key: 'nutriview_user_name')).called(1);

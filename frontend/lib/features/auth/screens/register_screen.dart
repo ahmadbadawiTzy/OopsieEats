@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/features/splash/widgets/neo_splash_badge.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/features/splash/widgets/neo_splash_badge.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -57,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         elevation: 0,
         leading: NeoBackButton.leading(context),
         title: const Text(
-          'Daftar Akun NutriView',
+          'Daftar Akun OopsieEats',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w900,
@@ -85,8 +85,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // NutriView Brand Logo Mark
-                  const Center(child: NutriViewLogoMark(size: 64)),
+                  // OopsieEats Brand Logo Mark
+                  const Center(child: OopsieEatsLogoMark(size: 64)),
                   const SizedBox(height: NeoTokens.space12),
                   const Text(
                     'Mulai Perjalanan Gizi Anda',

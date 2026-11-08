@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:nutriview/core/config/supabase_config.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/config/supabase_config.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 
 void main() {
   group('SupabaseConfig & Constants Tests', () {

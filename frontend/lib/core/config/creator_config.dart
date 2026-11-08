@@ -1,22 +1,22 @@
-/// Central configuration for NutriView application info and creator profile.
+/// Central configuration for OopsieEats application info and creator profile.
 /// Allows easy updates without modifying UI presentation code.
 class CreatorConfig {
   // Application Info
-  static const String appName = 'NutriView';
+  static const String appName = 'OopsieEats';
   static const String appVersion = '1.0.0+1';
   static const String appTagline = 'Kenali Makananmu, Pahami Gizinya';
   static const String appDescription =
-      'NutriView membantu kamu mengenali makanan dan memahami informasi nutrisinya agar kamu bisa membuat pilihan makan yang lebih sadar.';
+      'OopsieEats membantu kamu mengenali makanan dan memahami informasi nutrisinya agar kamu bisa membuat pilihan makan yang lebih sadar.';
 
   // Creator Info
   static const String creatorName = 'Ahmad Badawi';
   static const String creatorProfession = 'Software Developer';
   static const String creatorDomains = 'Web · AI · Mobile';
-  static const String creatorRole = 'Developer of NutriView';
+  static const String creatorRole = 'Developer of OopsieEats';
   static const String creatorLocation = 'Indonesia';
 
   static const String creatorBio =
-      'Saya adalah software developer yang tertarik membangun aplikasi dan pengalaman digital yang fungsional, interaktif, dan bermanfaat. Melalui NutriView, saya mengembangkan aplikasi yang membantu pengguna mengenali makanan dan memahami informasi nutrisinya dengan lebih mudah.';
+      'Saya adalah software developer yang tertarik membangun aplikasi dan pengalaman digital yang fungsional, interaktif, dan bermanfaat. Melalui OopsieEats, saya mengembangkan aplikasi yang membantu pengguna mengenali makanan dan memahami informasi nutrisinya dengan lebih mudah.';
 
   // Photo Asset Path
   static const String creatorPhotoAsset =

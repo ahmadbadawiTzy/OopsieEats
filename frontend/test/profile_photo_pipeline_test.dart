@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:mocktail/mocktail.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/profile_photo_logger.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/shared/neo/user_profile_avatar.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/profile_photo_logger.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/shared/neo/user_profile_avatar.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 class MockSupabaseStorageService extends Mock implements SupabaseStorageService {}

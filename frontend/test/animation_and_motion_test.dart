@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo_button.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_progress_bar.dart';
-import 'package:nutriview/shared/neo/neo_dialog.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo_button.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_progress_bar.dart';
+import 'package:oopsieeats/shared/neo/neo_dialog.dart';
 
 void main() {
   group('NeoMotion Design Tokens & Hierarchy', () {

@@ -1,16 +1,16 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
-/// Production Neo-Brutalism Consumer Brand Logo Mark for NutriView.
+/// Production Neo-Brutalism Consumer Brand Logo Mark for OopsieEats.
 /// Features a single, bold, iconic nutrition Apple with thick ink borders,
 /// rich leaf green accent, warm canvas contrast, and crisp offset drop shadow.
-class NutriViewLogoMark extends StatelessWidget {
+class OopsieEatsLogoMark extends StatelessWidget {
   final double size;
   final double leafAngle; // In radians, for gentle secondary motion
 
-  const NutriViewLogoMark({super.key, this.size = 120.0, this.leafAngle = 0.0});
+  const OopsieEatsLogoMark({super.key, this.size = 120.0, this.leafAngle = 0.0});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +27,9 @@ class NutriViewLogoMark extends StatelessWidget {
   }
 }
 
-/// Backwards-compatible alias for existing imports and test references.
-typedef NeoSplashBadge = NutriViewLogoMark;
+/// Backwards-compatible aliases
+typedef NutriViewLogoMark = OopsieEatsLogoMark;
+typedef NeoSplashBadge = OopsieEatsLogoMark;
 
 class _AppleLogoPainter extends CustomPainter {
   final double leafAngle;
