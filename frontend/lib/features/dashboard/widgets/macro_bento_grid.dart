@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_progress_bar.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_progress_bar.dart';
 
 /// Customer-First Bento Grid for Macronutrient Balance and Daily Meal Log Count.
 class MacroBentoGrid extends StatelessWidget {
@@ -278,7 +278,10 @@ class _MacroBentoCard extends StatelessWidget {
             children: [
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: accentColor,
                     borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),

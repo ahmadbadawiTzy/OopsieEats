@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/intl.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/core/nutrition_calculator.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/data/models/meal.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/data/models/meal.dart';
 
 class DashboardRepository {
   final ApiClient _apiClient;
@@ -60,7 +60,13 @@ class DashboardRepository {
     _cachedUserTime = null;
   }
 
-  Future<DailyDashboard> getDailyDashboard(DateTime date) async {
+  Future<DailyDashboard> getDailyDashboard(
+    DateTime date, {
+    bool forceRefresh = false,
+  }) async {
+    if (forceRefresh) {
+      invalidateUserCache();
+    }
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     final uid = await _getUid();
     final db = _firestore;

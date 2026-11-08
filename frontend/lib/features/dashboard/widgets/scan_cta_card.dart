@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
 /// Primary Call-To-Action Card for On-Device Food Scanning.
 /// High-voltage Acid Lime Neo-Brutalist card with tactile affordance,
@@ -45,7 +45,9 @@ class _ScanCtaCardState extends State<ScanCtaCard> {
             boxShadow: [
               BoxShadow(
                 color: NeoTokens.ink,
-                offset: _isPressed ? NeoTokens.shadowOffsetPressed : NeoTokens.shadowOffsetMedium,
+                offset: _isPressed
+                    ? NeoTokens.shadowOffsetPressed
+                    : NeoTokens.shadowOffsetMedium,
                 blurRadius: NeoTokens.shadowBlurRadius,
               ),
             ],

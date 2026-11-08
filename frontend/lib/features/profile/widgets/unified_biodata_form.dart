@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/age_calculator.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/core/age_calculator.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 /// Operational mode for the unified biodata form.
 enum BiodataFormMode {
@@ -122,10 +122,18 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
               ? profile.weightKg.toInt().toString()
               : profile.weightKg.toString();
         }
-        if (profile.sex.isNotEmpty) _sex = profile.sex;
-        if (profile.activityLevel.isNotEmpty) _activityLevel = profile.activityLevel;
-        if (profile.goal.isNotEmpty) _goal = profile.goal;
-        if (profile.profession.isNotEmpty) _profession = profile.profession;
+        if (profile.sex.isNotEmpty) {
+          _sex = profile.sex;
+        }
+        if (profile.activityLevel.isNotEmpty) {
+          _activityLevel = profile.activityLevel;
+        }
+        if (profile.goal.isNotEmpty) {
+          _goal = profile.goal;
+        }
+        if (profile.profession.isNotEmpty) {
+          _profession = profile.profession;
+        }
         _selectedBirthDate = profile.birthDate;
 
         // Backward compatibility if birthDate is null but legacy age is set
@@ -140,7 +148,8 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
       }
     } else {
       // Onboarding Mode: Fields start clean without artificial dummy numbers
-      final credentialName = auth?.currentUser?.fullName ??
+      final credentialName =
+          auth?.currentUser?.fullName ??
           profileProvider.user?.fullName ??
           (auth != null && auth.name != 'User' ? auth.name : '');
 
@@ -159,10 +168,18 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
               ? profile.weightKg.toInt().toString()
               : profile.weightKg.toString();
         }
-        if (profile.sex.isNotEmpty) _sex = profile.sex;
-        if (profile.activityLevel.isNotEmpty) _activityLevel = profile.activityLevel;
-        if (profile.goal.isNotEmpty) _goal = profile.goal;
-        if (profile.profession.isNotEmpty) _profession = profile.profession;
+        if (profile.sex.isNotEmpty) {
+          _sex = profile.sex;
+        }
+        if (profile.activityLevel.isNotEmpty) {
+          _activityLevel = profile.activityLevel;
+        }
+        if (profile.goal.isNotEmpty) {
+          _goal = profile.goal;
+        }
+        if (profile.profession.isNotEmpty) {
+          _profession = profile.profession;
+        }
         _selectedBirthDate = profile.birthDate;
       }
     }
@@ -174,8 +191,8 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
 
   Future<void> _pickBirthDate() async {
     final now = DateTime.now();
-    final initialDate = _selectedBirthDate ??
-        DateTime(now.year - 25, now.month, now.day);
+    final initialDate =
+        _selectedBirthDate ?? DateTime(now.year - 25, now.month, now.day);
     final firstDate = DateTime(now.year - AgeCalculator.maxAge, 1, 1);
     final lastDate = now;
 
@@ -291,7 +308,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
 
       // Trigger dashboard target calculation refresh
       try {
-        context.read<DashboardProvider>().loadDashboard();
+        context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
       } catch (_) {}
 
       NeoSnackBars.success(
@@ -314,8 +331,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
     final confirmed = await NeoDialog.show(
       context,
       title: 'Hapus Biodata Fisik?',
-      message:
-          'Apakah Anda yakin ingin menghapus data biodata fisik (tinggi badan, berat badan, tanggal lahir, dan target gizi)? Akun login dan foto profil Anda tetap aman.',
+      message: 'Apakah Anda yakin ingin menghapus data biodata fisik (tinggi badan, berat badan, tanggal lahir, dan target gizi)? Akun login dan foto profil Anda tetap aman.',
       confirmText: 'Ya, Hapus',
       cancelText: 'Batal',
       confirmColor: NeoTokens.alert,
@@ -337,7 +353,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
 
       if (success) {
         try {
-          context.read<DashboardProvider>().loadDashboard();
+          context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
         } catch (_) {}
         NeoSnackBars.success(context, 'Biodata fisik berhasil dihapus.');
         Navigator.of(context).pop(true);
@@ -358,7 +374,11 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
     } catch (_) {}
 
     final profileProvider = context.watch<ProfileProvider>();
-    final userEmail = auth?.currentUser?.email ?? auth?.email ?? profileProvider.user?.email ?? '';
+    final userEmail =
+        auth?.currentUser?.email ??
+        auth?.email ??
+        profileProvider.user?.email ??
+        '';
     final calculatedAge = AgeCalculator.calculateAge(_selectedBirthDate);
     final hasExistingBiodata = profileProvider.profile != null;
 
@@ -435,13 +455,19 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
           NeoButton(
             text: widget.mode == BiodataFormMode.onboarding
                 ? 'Simpan & Lanjutkan'
-                : (hasExistingBiodata ? 'Simpan Perubahan Biodata' : 'Simpan Biodata Lengkap'),
+                : (hasExistingBiodata
+                      ? 'Simpan Perubahan Biodata'
+                      : 'Simpan Biodata Lengkap'),
             isLoading: _isSaving,
             variant: widget.mode == BiodataFormMode.onboarding
                 ? NeoButtonVariant.primary
                 : NeoButtonVariant.hazard,
-            prefixIcon: widget.mode == BiodataFormMode.edit ? AppIcons.save : null,
-            suffixIcon: widget.mode == BiodataFormMode.onboarding ? AppIcons.arrowForward : null,
+            prefixIcon: widget.mode == BiodataFormMode.edit
+                ? AppIcons.save
+                : null,
+            suffixIcon: widget.mode == BiodataFormMode.onboarding
+                ? AppIcons.arrowForward
+                : null,
             onPressed: (_isSaving || _isDeleting) ? null : _handleSave,
           ),
 
@@ -460,12 +486,11 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
               icon: const Icon(AppIcons.delete, size: AppIcons.sizeLarge),
               label: const Text(
                 'Hapus Biodata Fisik',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
               ),
-              onPressed: (_isSaving || _isDeleting) ? null : _handleDeleteBiodata,
+              onPressed: (_isSaving || _isDeleting)
+                  ? null
+                  : _handleDeleteBiodata,
             ),
           ] else if (widget.mode == BiodataFormMode.onboarding) ...[
             const SizedBox(height: NeoTokens.space12),
@@ -538,7 +563,9 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isOnboarding ? 'Satu Langkah Terakhir!' : 'Informasi Fisik & Kesehatan',
+                      isOnboarding
+                          ? 'Satu Langkah Terakhir!'
+                          : 'Informasi Fisik & Kesehatan',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
@@ -549,7 +576,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
                     const SizedBox(height: NeoTokens.space4),
                     Text(
                       isOnboarding
-                          ? 'NutriView membutuhkan data fisik Anda untuk mengestimasi kebutuhan kalori harian (BMR & TDEE) dan batas makronutrisi secara akurat.'
+                          ? 'OopsieEats membutuhkan data fisik Anda untuk mengestimasi kebutuhan kalori harian (BMR & TDEE) dan batas makronutrisi secara akurat.'
                           : 'Umur dihitung secara akurat dari tanggal lahir untuk menentukan kebutuhan kalori harianmu secara deterministik.',
                       style: const TextStyle(
                         fontSize: 12,
@@ -703,11 +730,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: AppIcons.sizeControl,
-              color: NeoTokens.black,
-            ),
+            Icon(icon, size: AppIcons.sizeControl, color: NeoTokens.black),
             const SizedBox(width: NeoTokens.space8),
             Text(
               label,
@@ -1221,19 +1244,11 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
             ),
             const SizedBox(width: 8),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: NeoTokens.mintGreen,
-                borderRadius: BorderRadius.circular(
-                  NeoTokens.radiusSmall,
-                ),
-                border: Border.all(
-                  color: NeoTokens.black,
-                  width: 1,
-                ),
+                borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
+                border: Border.all(color: NeoTokens.black, width: 1),
               ),
               child: const Text(
                 'PROFIL SOSIAL',
@@ -1250,10 +1265,7 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
         const SizedBox(height: NeoTokens.space4),
         const Text(
           'Profesi ini murni informasi profil dan tidak mengubah hak akses akun.',
-          style: TextStyle(
-            fontSize: 11,
-            color: NeoTokens.textMuted,
-          ),
+          style: TextStyle(fontSize: 11, color: NeoTokens.textMuted),
         ),
         const SizedBox(height: NeoTokens.space8),
         Container(

@@ -1,9 +1,10 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/profile.dart';
-import 'package:nutriview/data/models/user.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/profile.dart';
+import 'package:oopsieeats/data/models/user.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
 
 class ProfileProvider extends ChangeNotifier {
   final ProfileRepository _repository;
@@ -13,6 +14,8 @@ class ProfileProvider extends ChangeNotifier {
   DailyTarget? _dailyTarget;
   bool _isLoading = false;
   String? _errorMessage;
+
+  VoidCallback? onProfileUpdated;
 
   ProfileProvider(this._repository);
 
@@ -62,6 +65,7 @@ class ProfileProvider extends ChangeNotifier {
     try {
       _profile = await _repository.updateProfile(newProfile);
       _dailyTarget = await _repository.getDailyTarget();
+      onProfileUpdated?.call();
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
@@ -158,6 +162,7 @@ class ProfileProvider extends ChangeNotifier {
       );
       _dailyTarget = await _repository.getDailyTarget();
       await loadProfile();
+      onProfileUpdated?.call();
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;
@@ -181,6 +186,7 @@ class ProfileProvider extends ChangeNotifier {
       _profile = null;
       _dailyTarget = null;
       await loadProfile();
+      onProfileUpdated?.call();
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.friendlyMessage;

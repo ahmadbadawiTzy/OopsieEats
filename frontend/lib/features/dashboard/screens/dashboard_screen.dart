@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/features/article/screens/article_list_screen.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/dashboard/widgets/daily_calorie_hero_card.dart';
-import 'package:nutriview/features/dashboard/widgets/dashboard_hero_section.dart';
-import 'package:nutriview/features/dashboard/widgets/latest_articles_section.dart';
-import 'package:nutriview/features/dashboard/widgets/macro_bento_grid.dart';
-import 'package:nutriview/features/dashboard/widgets/scan_cta_card.dart';
-import 'package:nutriview/features/dashboard/widgets/todays_intake_section.dart';
-import 'package:nutriview/features/meals/screens/meal_history_screen.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/features/profile/screens/profile_screen.dart';
-import 'package:nutriview/shared/neo/neo.dart';
-import 'package:nutriview/shared/widgets/error_view.dart';
-import 'package:nutriview/shared/widgets/loading_indicator.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/features/article/screens/article_list_screen.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/dashboard/widgets/daily_calorie_hero_card.dart';
+import 'package:oopsieeats/features/dashboard/widgets/dashboard_hero_section.dart';
+import 'package:oopsieeats/features/dashboard/widgets/latest_articles_section.dart';
+import 'package:oopsieeats/features/dashboard/widgets/macro_bento_grid.dart';
+import 'package:oopsieeats/features/dashboard/widgets/scan_cta_card.dart';
+import 'package:oopsieeats/features/dashboard/widgets/todays_intake_section.dart';
+import 'package:oopsieeats/features/meals/screens/meal_history_screen.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/profile/screens/profile_screen.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
+import 'package:oopsieeats/shared/widgets/error_view.dart';
+import 'package:oopsieeats/shared/widgets/loading_indicator.dart';
 
 /// Main User Shell for NutriView.
 /// Hosts an [IndexedStack] with all 4 user tabs (Beranda, Artikel, Riwayat, Profil),
@@ -51,6 +51,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _currentTab = tab;
       });
+      if (tab == NeoNavTab.home) {
+        context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
+      }
     }
   }
 
@@ -68,6 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           setState(() {
             _currentTab = NeoNavTab.home;
           });
+          context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
         }
       },
       child: Scaffold(
@@ -124,13 +128,10 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
       parent: _animController,
       curve: Curves.easeOut,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.03),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.03), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -232,7 +233,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
         backgroundColor: NeoTokens.warmBackground,
         centerTitle: true,
         title: const Text(
-          'NutriView',
+          'OopsieEats',
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 22,
@@ -316,7 +317,7 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
         color: NeoTokens.ink,
         backgroundColor: NeoTokens.lime,
         onRefresh: () async {
-          await dash.loadDashboard();
+          await dash.loadDashboard(forceRefresh: true);
           await _loadAnnouncementsAndArticles();
           await _loadTodayMeals(dash.selectedDate);
         },
@@ -394,7 +395,9 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
                               }
                             },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [

@@ -4,43 +4,44 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/config.dart';
-import 'package:nutriview/core/config/supabase_config.dart';
-import 'package:nutriview/core/ml/yolo_detector.dart';
-import 'package:nutriview/core/routes.dart';
-import 'package:nutriview/core/theme.dart';
-import 'package:nutriview/data/api_client.dart';
-import 'package:nutriview/data/models/article.dart';
-import 'package:nutriview/data/repositories/article_repository.dart';
-import 'package:nutriview/data/repositories/auth_repository.dart';
-import 'package:nutriview/data/repositories/dashboard_repository.dart';
-import 'package:nutriview/data/repositories/food_repository.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/data/repositories/profile_repository.dart';
-import 'package:nutriview/data/services/supabase_storage_service.dart';
+import 'package:oopsieeats/core/config.dart';
+import 'package:oopsieeats/core/config/supabase_config.dart';
+import 'package:oopsieeats/core/ml/yolo_detector.dart';
+import 'package:oopsieeats/core/routes.dart';
+import 'package:oopsieeats/core/theme.dart';
+import 'package:oopsieeats/data/api_client.dart';
+import 'package:oopsieeats/data/models/article.dart';
+import 'package:oopsieeats/data/repositories/article_repository.dart';
+import 'package:oopsieeats/data/repositories/auth_repository.dart';
+import 'package:oopsieeats/data/repositories/dashboard_repository.dart';
+import 'package:oopsieeats/data/repositories/food_repository.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/data/repositories/profile_repository.dart';
+import 'package:oopsieeats/data/services/supabase_storage_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:nutriview/features/admin/data/admin_repository.dart';
-import 'package:nutriview/features/admin/presentation/screens/admin_dashboard_screen.dart';
-import 'package:nutriview/features/article/screens/article_detail_screen.dart';
-import 'package:nutriview/features/auth/providers/auth_provider.dart';
-import 'package:nutriview/features/auth/screens/complete_profile_screen.dart';
-import 'package:nutriview/features/auth/screens/login_screen.dart';
-import 'package:nutriview/features/auth/screens/register_screen.dart';
-import 'package:nutriview/features/dashboard/providers/dashboard_provider.dart';
-import 'package:nutriview/features/dashboard/screens/dashboard_screen.dart';
-import 'package:nutriview/features/meals/providers/meal_history_provider.dart';
-import 'package:nutriview/features/meals/screens/meal_detail_screen.dart';
-import 'package:nutriview/features/profile/providers/profile_provider.dart';
-import 'package:nutriview/features/profile/screens/about_screen.dart';
-import 'package:nutriview/features/profile/screens/biodata_screen.dart';
-import 'package:nutriview/features/scanner/providers/scan_flow_provider.dart';
-import 'package:nutriview/features/scanner/screens/detection_confirmation_screen.dart';
-import 'package:nutriview/features/scanner/screens/meal_result_screen.dart';
-import 'package:nutriview/features/scanner/screens/portion_input_screen.dart';
-import 'package:nutriview/features/scanner/screens/scanner_screen.dart';
-import 'package:nutriview/features/splash/screens/splash_screen.dart';
-import 'package:nutriview/firebase_options.dart';
-import 'package:nutriview/shared/neo/neo.dart';
+import 'package:oopsieeats/features/admin/data/admin_repository.dart';
+import 'package:oopsieeats/features/admin/presentation/screens/admin_dashboard_screen.dart';
+import 'package:oopsieeats/features/article/screens/article_detail_screen.dart';
+import 'package:oopsieeats/features/auth/providers/auth_provider.dart';
+import 'package:oopsieeats/features/auth/screens/complete_profile_screen.dart';
+import 'package:oopsieeats/features/auth/screens/login_screen.dart';
+import 'package:oopsieeats/features/auth/screens/register_screen.dart';
+import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart';
+import 'package:oopsieeats/features/dashboard/screens/dashboard_screen.dart';
+import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
+import 'package:oopsieeats/features/meals/screens/meal_detail_screen.dart';
+import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/profile/screens/about_screen.dart';
+import 'package:oopsieeats/features/profile/screens/biodata_screen.dart';
+import 'package:oopsieeats/features/scanner/providers/scan_flow_provider.dart';
+import 'package:oopsieeats/features/scanner/screens/detection_confirmation_screen.dart';
+import 'package:oopsieeats/features/scanner/screens/meal_result_screen.dart';
+import 'package:oopsieeats/features/scanner/screens/portion_input_screen.dart';
+import 'package:oopsieeats/features/scanner/screens/scanner_screen.dart';
+import 'package:oopsieeats/features/onboarding/screens/onboarding_screen.dart';
+import 'package:oopsieeats/features/splash/screens/splash_screen.dart';
+import 'package:oopsieeats/firebase_options.dart';
+import 'package:oopsieeats/shared/neo/neo.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -116,6 +117,11 @@ void main() async {
     storageService.clearUrlCache();
   };
 
+  final profileProvider = ProfileProvider(profileRepository);
+  profileProvider.onProfileUpdated = () {
+    dashboardRepository.invalidateUserCache();
+  };
+
   apiClient.onUnauthorized = () {
     authProvider.handleSessionExpired();
     navigatorKey.currentState?.pushNamedAndRemoveUntil(
@@ -138,9 +144,7 @@ void main() async {
         Provider<ArticleRepository>.value(value: articleRepository),
         Provider<AdminRepository>.value(value: adminRepository),
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
-        ChangeNotifierProvider<ProfileProvider>(
-          create: (_) => ProfileProvider(profileRepository),
-        ),
+        ChangeNotifierProvider<ProfileProvider>.value(value: profileProvider),
         ChangeNotifierProvider<DashboardProvider>(
           create: (_) => DashboardProvider(dashboardRepository),
         ),
@@ -155,13 +159,16 @@ void main() async {
           create: (_) => MealHistoryProvider(mealRepository),
         ),
       ],
-      child: const NutriViewApp(),
+      child: const OopsieEatsApp(),
     ),
   );
 }
 
-class NutriViewApp extends StatelessWidget {
-  const NutriViewApp({super.key});
+/// Backward-compatible alias
+typedef NutriViewApp = OopsieEatsApp;
+
+class OopsieEatsApp extends StatelessWidget {
+  const OopsieEatsApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -177,7 +184,8 @@ class NutriViewApp extends StatelessWidget {
 
         // Profile completion guard: If user is authenticated, not admin,
         // and has not completed biodata profile, protect core feature routes.
-        final isProtectedFeature = settings.name == AppRoutes.dashboard ||
+        final isProtectedFeature =
+            settings.name == AppRoutes.dashboard ||
             settings.name == AppRoutes.articles ||
             settings.name == AppRoutes.profile ||
             settings.name == AppRoutes.scanner ||
@@ -188,7 +196,8 @@ class NutriViewApp extends StatelessWidget {
             settings.name == AppRoutes.mealDetail;
 
         final profileProvider = context.read<ProfileProvider>();
-        final isProfileCompleted = auth.isProfileComplete || profileProvider.isProfileComplete;
+        final isProfileCompleted =
+            auth.isProfileComplete || profileProvider.isProfileComplete;
 
         if (auth.isLoggedIn &&
             !auth.isAdmin &&
@@ -203,6 +212,8 @@ class NutriViewApp extends StatelessWidget {
         switch (settings.name) {
           case AppRoutes.initial:
             return MaterialPageRoute(builder: (_) => const SplashScreen());
+          case AppRoutes.onboarding:
+            return MaterialPageRoute(builder: (_) => const OnboardingScreen());
           case AppRoutes.login:
             return MaterialPageRoute(builder: (_) => const LoginScreen());
           case AppRoutes.register:

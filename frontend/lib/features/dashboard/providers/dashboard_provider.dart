@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/error_handler.dart';
-import 'package:nutriview/data/models/dashboard.dart';
-import 'package:nutriview/data/repositories/dashboard_repository.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/data/models/dashboard.dart';
+import 'package:oopsieeats/data/repositories/dashboard_repository.dart';
 
 class DashboardProvider extends ChangeNotifier {
   final DashboardRepository _repository;
@@ -20,7 +20,17 @@ class DashboardProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isProfileIncomplete => _isProfileIncomplete;
 
-  Future<void> loadDashboard({DateTime? date}) async {
+  void invalidateCache() {
+    _repository.invalidateUserCache();
+  }
+
+  Future<void> loadDashboard({
+    DateTime? date,
+    bool forceRefresh = false,
+  }) async {
+    if (forceRefresh) {
+      _repository.invalidateUserCache();
+    }
     if (date != null) {
       _selectedDate = date;
     }
@@ -30,7 +40,10 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _dashboard = await _repository.getDailyDashboard(_selectedDate);
+      _dashboard = await _repository.getDailyDashboard(
+        _selectedDate,
+        forceRefresh: forceRefresh,
+      );
     } on ApiException catch (e) {
       if (e.code == 'PROFILE_INCOMPLETE') {
         _isProfileIncomplete = true;

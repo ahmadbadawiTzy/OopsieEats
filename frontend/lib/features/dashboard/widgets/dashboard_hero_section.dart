@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nutriview/core/app_icons.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/shared/neo/neo_avatar.dart';
+import 'package:oopsieeats/core/app_icons.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/shared/neo/neo_avatar.dart';
 
 /// Customer-First Neo-Brutalist Hero Header for NutriView.
 /// Displays a warm personal greeting, concise motivational guidance,
@@ -34,7 +34,10 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
 
     // If string is an email, take the handle and capitalize nicely
     if (trimmed.contains('@')) {
-      final handle = trimmed.split('@').first.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+      final handle = trimmed
+          .split('@')
+          .first
+          .replaceAll(RegExp(r'[^a-zA-Z]'), '');
       if (handle.isEmpty) return 'Sobat Sehat';
       return handle[0].toUpperCase() + handle.substring(1).toLowerCase();
     }
@@ -50,9 +53,15 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
       container: true,
       label: 'Bagian sapaan pengguna, halo $cleanName',
       child: GestureDetector(
-        onTapDown: widget.onAvatarTap != null ? (_) => setState(() => _isPressed = true) : null,
-        onTapUp: widget.onAvatarTap != null ? (_) => setState(() => _isPressed = false) : null,
-        onTapCancel: widget.onAvatarTap != null ? () => setState(() => _isPressed = false) : null,
+        onTapDown: widget.onAvatarTap != null
+            ? (_) => setState(() => _isPressed = true)
+            : null,
+        onTapUp: widget.onAvatarTap != null
+            ? (_) => setState(() => _isPressed = false)
+            : null,
+        onTapCancel: widget.onAvatarTap != null
+            ? () => setState(() => _isPressed = false)
+            : null,
         onTap: widget.onAvatarTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 120),
@@ -73,7 +82,9 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
             boxShadow: [
               BoxShadow(
                 color: NeoTokens.ink,
-                offset: _isPressed ? NeoTokens.shadowOffsetPressed : NeoTokens.shadowOffsetMedium,
+                offset: _isPressed
+                    ? NeoTokens.shadowOffsetPressed
+                    : NeoTokens.shadowOffsetMedium,
                 blurRadius: NeoTokens.shadowBlurRadius,
               ),
             ],
@@ -85,7 +96,9 @@ class _DashboardHeroSectionState extends State<DashboardHeroSection> {
               NeoAvatar(
                 photoUrl: widget.photoUrl,
                 avatarPreset: widget.avatarPreset,
-                name: widget.userName.isNotEmpty ? widget.userName : 'Sobat Sehat',
+                name: widget.userName.isNotEmpty
+                    ? widget.userName
+                    : 'Sobat Sehat',
                 size: 44,
                 onTap: widget.onAvatarTap,
               ),
