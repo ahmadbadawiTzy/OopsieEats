@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:nutriview/core/neo_tokens.dart';
-import 'package:nutriview/data/models/meal.dart';
-import 'package:nutriview/data/repositories/meal_repository.dart';
-import 'package:nutriview/shared/neo/neo_back_button.dart';
-import 'package:nutriview/shared/neo/neo_badge.dart';
-import 'package:nutriview/shared/neo/neo_card.dart';
-import 'package:nutriview/shared/neo/neo_section_header.dart';
-import 'package:nutriview/shared/widgets/error_view.dart';
-import 'package:nutriview/shared/widgets/loading_indicator.dart';
-import 'package:nutriview/shared/widgets/neo_image_thumbnail.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
+import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/repositories/meal_repository.dart';
+import 'package:oopsieeats/shared/neo/neo_back_button.dart';
+import 'package:oopsieeats/shared/neo/neo_badge.dart';
+import 'package:oopsieeats/shared/neo/neo_card.dart';
+import 'package:oopsieeats/shared/neo/neo_section_header.dart';
+import 'package:oopsieeats/shared/widgets/error_view.dart';
+import 'package:oopsieeats/shared/widgets/loading_indicator.dart';
+import 'package:oopsieeats/shared/widgets/neo_image_thumbnail.dart';
 
 class MealDetailScreen extends StatefulWidget {
   final int mealId;
@@ -41,17 +41,21 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     try {
       final repo = context.read<MealRepository>();
       final result = await repo.getMealDetail(widget.mealId);
+      if (!mounted) return;
       setState(() {
         _meal = result;
       });
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         _error = 'Gagal memuat detail catatan makan.';
       });
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -105,9 +109,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (_meal!.image != null) ...[
-                    NeoImageHeroCard(
-                      imageMetadata: _meal!.image!,
-                    ),
+                    NeoImageHeroCard(imageMetadata: _meal!.image!),
                     const SizedBox(height: NeoTokens.space16),
                   ],
                   NeoCard(

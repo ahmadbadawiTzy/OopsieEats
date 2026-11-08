@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:nutriview/data/models/food.dart';
+import 'package:oopsieeats/data/models/food.dart';
 
 class RawDetection {
   final int classId;
