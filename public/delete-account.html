@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Penghapusan Akun & Data — OopsieEats</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F4F6F0;
+      --card-bg: #FFFFFF;
+      --ink: #111827;
+      --ink-secondary: #4B5563;
+      --primary: #10B981;
+      --primary-light: #D1FAE5;
+      --danger: #EF4444;
+      --danger-light: #FEE2E2;
+      --border: #E5E7EB;
+      --accent: #F59E0B;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      padding: 32px 16px;
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #E0E7FF;
+      color: #3730A3;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .brand-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--ink-secondary);
+      font-size: 15px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-list {
+      list-style: none;
+      counter-reset: steps;
+      margin: 16px 0;
+    }
+    .step-list li {
+      counter-increment: steps;
+      position: relative;
+      padding-left: 40px;
+      margin-bottom: 16px;
+      font-size: 15px;
+      color: var(--ink);
+    }
+    .step-list li::before {
+      content: counter(steps);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 26px;
+      height: 26px;
+      background: var(--ink);
+      color: #FFFFFF;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .highlight-box {
+      background: #F9FAFB;
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--ink-secondary);
+    }
+    .danger-box {
+      background: var(--danger-light);
+      border-left: 4px solid var(--danger);
+      padding: 14px 16px;
+      border-radius: 0 8px 8px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #991B1B;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #F9FAFB;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .tag-delete {
+      background: #FEE2E2;
+      color: #991B1B;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--danger);
+      color: #FFFFFF;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
+    .btn:hover {
+      background: #DC2626;
+    }
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: var(--ink-secondary);
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .footer a {
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">Google Play Data Safety Policy</div>
+      <h1 class="brand-title">OopsieEats</h1>
+      <p class="subtitle">Panduan & Permohonan Penghapusan Akun dan Data Pengguna<br><em>Account and Associated Data Deletion Instructions</em></p>
+    </div>
+
+    <!-- Section 1: In-App Deletion -->
+    <div class="card">
+      <h2>📱 Cara 1: Penghapusan Mandiri Melalui Aplikasi (Disarankan)</h2>
+      <p>Jika aplikasi <strong>OopsieEats</strong> masih terpasang di perangkat Anda, Anda dapat menghapus akun dan data secara instan langsung dari dalam aplikasi:</p>
+      <ol class="step-list">
+        <li>Buka aplikasi <strong>OopsieEats</strong> dan pastikan Anda telah login.</li>
+        <li>Buka tab <strong>Profil</strong> (ikon orang di pojok kanan bawah).</li>
+        <li>Gulir ke bawah hingga bagian <strong>Zona Keamanan & Akun</strong>.</li>
+        <li>Ketuk tombol <strong>Hapus Akun Saya</strong> (*Delete Account*).</li>
+        <li>Konfirmasi keputusan Anda dengan memasukkan kata sandi atau verifikasi ulang dengan akun Google Anda.</li>
+        <li>Sistem secara otomatis akan menghapus seluruh data Anda secara permanen dan mengarahkan kembali ke halaman login.</li>
+      </ol>
+      <div class="highlight-box">
+        <strong>Catatan:</strong> Proses penghapusan akun dari dalam aplikasi berlangsung seketika (*real-time*) tanpa perlu menunggu antrean tim admin.
+      </div>
+    </div>
+
+    <!-- Section 2: External / Web Deletion Request -->
+    <div class="card">
+      <h2>🌐 Cara 2: Permohonan Hapus Akun dari Luar Aplikasi (Web / Email)</h2>
+      <p>Apabila Anda sudah mencopot pemasangan (*uninstall*) aplikasi OopsieEats atau mengalami kendala login, Anda dapat mengajukan permohonan penghapusan akun dan data melalui email resmi pengembang:</p>
+      
+      <ol class="step-list">
+        <li>Kirim email ke: <strong>ahmadbadawi.biu.si@gmail.com</strong></li>
+        <li>Gunakan subjek: <code>Permohonan Penghapusan Akun OopsieEats - [Email Anda]</code></li>
+        <li>Sertakan alamat email yang Anda gunakan saat mendaftar di OopsieEats.</li>
+        <li>(Opsional) Sertakan alasan penghapusan untuk membantu kami menyempurnakan aplikasi.</li>
+      </ol>
+
+      <div style="margin-top: 12px;">
+        <a class="btn" href="mailto:ahmadbadawi.biu.si@gmail.com?subject=Permohonan%20Penghapusan%20Akun%20OopsieEats&body=Halo%20Tim%20OopsieEats,%0A%0ASaya%20ingin%20mengajukan%20penghapusan%20akun%20dan%20seluruh%20data%20saya%20pada%20aplikasi%20OopsieEats.%0A%0AEmail%20terdaftar:%20[masukkan%20email%20anda]%0A%0ATerima%20kasih.">
+          ✉️ Buat Email Permohonan Penghapusan Akun
+        </a>
+      </div>
+
+      <div class="highlight-box" style="margin-top: 16px;">
+        <strong>Waktu Pemrosesan:</strong> Permohonan penghapusan akun melalui email akan diproses dan dieksekusi secara permanen dalam waktu <strong>maksimal 3x24 jam</strong> kerja. Anda akan menerima email konfirmasi ketika akun telah selesai dihapus.
+      </div>
+    </div>
+
+    <!-- Section 3: Data Deletion Scope -->
+    <div class="card">
+      <h2>🗑️ Rincian Data yang Dihapus & Disimpan</h2>
+      <p>Sesuai kepatuhan kebijakan Google Play Data Safety, berikut adalah perincian penanganan data saat akun dihapus:</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Kategori Data</th>
+            <th>Rincian Data</th>
+            <th>Tindakan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Kredensial Autentikasi</strong></td>
+            <td>Email, kata sandi terenkripsi, identitas login Google OAuth, dan UID Firebase Auth.</td>
+            <td><span class="tag-delete">DIHAPUS PERMANEN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Biodata & Profil Fisik</strong></td>
+            <td>Nama tampilan, usia/tanggal lahir, jenis kelamin, tinggi badan, berat badan, tingkat aktivitas, dan target kalori.</td>
+            <td><span class="tag-delete">DIHAPUS PERMANEN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Riwayat Pencatatan Makanan</strong></td>
+            <td>Seluruh log makanan harian, jumlah kalori, proporsi makronutrien (karbohidrat, protein, lemak), dan tanggal konsumsi.</td>
+            <td><span class="tag-delete">DIHAPUS PERMANEN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Foto Makanan</strong></td>
+            <td>Foto makanan yang diunggah saat pemindaian nutrisi di media penyimpanan cloud storage.</td>
+            <td><span class="tag-delete">DIHAPUS PERMANEN</span></td>
+          </tr>
+          <tr>
+            <td><strong>Data yang Disimpan</strong></td>
+            <td>Tidak ada data pribadi pengguna yang disimpan setelah proses penghapusan selesai.</td>
+            <td><em>Nihil / Bersih</em></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="danger-box">
+        <strong>Peringatan Penting:</strong> Penghapusan akun bersifat final dan tidak dapat dibatalkan (*irreversible*). Seluruh riwayat analisis gizi dan target yang tersimpan tidak dapat dipulihkan kembali.
+      </div>
+    </div>
+
+    <!-- Section 4: English Overview for Google Reviewers -->
+    <div class="card">
+      <h2>🌍 Account Deletion Notice (English Summary)</h2>
+      <p>In compliance with the Google Play User Data Policy, <strong>OopsieEats</strong> provides both in-app and external account deletion mechanisms:</p>
+      <ul style="margin: 12px 0 12px 24px; color: var(--ink-secondary); font-size: 14px;">
+        <li><strong>In-App Deletion:</strong> Navigate to <em>Profile &rarr; Account Settings &rarr; Delete My Account</em>. Deletion of the Firebase Auth user, user profile document, and all meal subcollections is executed immediately.</li>
+        <li><strong>Web / Outside-the-App Request:</strong> Users who uninstalled the app can send an account deletion request to <strong>ahmadbadawi.biu.si@gmail.com</strong>. The request will be permanently processed within 3 business days.</li>
+        <li><strong>Data Cleaned:</strong> Firebase Auth credentials, biometric metadata, user profile data (height, weight, age, calorie targets), meal logs, and inspection images in cloud storage.</li>
+        <li><strong>Data Retained:</strong> None. All user personal data is purged completely.</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 OopsieEats App. Dikembangkan oleh <strong>Ahmad Badawi</strong>.</p>
+      <p style="margin-top: 6px;">
+        <a href="/privacy">Kebijakan Privasi (Privacy Policy)</a> &bull; 
+        <a href="mailto:ahmadbadawi.biu.si@gmail.com">Hubungi Dukungan</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

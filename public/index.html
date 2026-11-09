@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OopsieEats — Food Nutrition & Daily Tracking App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F4F6F0;
+      --card-bg: #FFFFFF;
+      --ink: #111827;
+      --ink-secondary: #4B5563;
+      --primary: #10B981;
+      --border: #E5E7EB;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 40px 32px;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+    .logo-badge {
+      display: inline-block;
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    p {
+      color: var(--ink-secondary);
+      font-size: 15px;
+      margin-bottom: 24px;
+    }
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn {
+      display: block;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background: #374151;
+    }
+    .btn-secondary {
+      background: #F3F4F6;
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover {
+      background: #E5E7EB;
+    }
+    .footer {
+      margin-top: 32px;
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo-badge">🥗</div>
+    <h1>OopsieEats</h1>
+    <p>Smart On-Device Food Recognition & Daily Nutrition Tracking App.</p>
+    
+    <div class="links">
+      <a class="btn btn-primary" href="/privacy.html">📄 Kebijakan Privasi (Privacy Policy)</a>
+      <a class="btn btn-secondary" href="/delete-account.html">🗑️ Permohonan Penghapusan Akun & Data</a>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 OopsieEats App. All rights reserved.</p>
+      <p>Developer: Ahmad Badawi</p>
+    </div>
+  </div>
+</body>
+</html>

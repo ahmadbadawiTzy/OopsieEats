@@ -1,16 +1,16 @@
-# NutriView
+# OopsieEats (NutriView)
 
-NutriView adalah aplikasi pelacak nutrisi makanan *mobile* berbasis **Flutter** dengan kemampuan **Computer Vision On-Device (YOLO26n TFLite)** dan arsitektur nirserver (**Firebase Serverless**).
+**OopsieEats** (`com.oopsieeats.app`, sebelumnya *NutriView*) adalah aplikasi pelacak nutrisi makanan *mobile* berbasis **Flutter** dengan kemampuan **Computer Vision On-Device (YOLO26n TFLite)** dan arsitektur nirserver (**Firebase Serverless + Supabase Storage**).
 
-Pengguna mengatur profil fisik pribadi, memperoleh target kalori dan makronutrien harian secara deterministik menggunakan persamaan Mifflin-St Jeor, serta mencatat makanan dengan memotret hidangan mereka. Model neural network terkuantisasi **YOLO26n TensorFlow Lite (~9.4 MB)** mengidentifikasi 29 kelas makanan langsung pada perangkat pengguna tanpa memerlukan koneksi internet aktif. Pengguna mengonfirmasi porsi gram, dan metrik nutrisi dihitung secara deterministik dengan validasi konsistensi faktor energi Atwater sebelum disinkronkan ke Cloud Firestore dengan dukungan persistensi *offline* penuh.
+Pengguna mengatur profil fisik pribadi, memperoleh target kalori dan makronutrien harian secara deterministik menggunakan persamaan Mifflin-St Jeor, serta mencatat makanan dengan memotret hidangan mereka. Model neural network terkuantisasi **YOLO26n TensorFlow Lite (~9.4 MB)** mengidentifikasi 29 kelas makanan langsung pada perangkat pengguna tanpa memerlukan koneksi internet aktif. Pengguna mengonfirmasi porsi gram, dan metrik nutrisi dihitung secara deterministik dengan validasi konsistensi faktor energi Atwater sebelum disinkronkan ke Cloud Firestore dan Supabase Storage dengan dukungan persistensi *offline* penuh.
 
-> **Pernyataan Penyangkalan (Disclaimer)**: Nilai gizi dan rekomendasi yang disajikan oleh NutriView merupakan estimasi algoritmik untuk pemantauan kesehatan umum dan **tidak dapat menggantikan saran medis, diagnosis klinis, atau konsultasi ahli gizi profesional**.
+> **Pernyataan Penyangkalan (Disclaimer)**: Nilai gizi dan rekomendasi yang disajikan oleh OopsieEats merupakan estimasi algoritmik untuk pemantauan kesehatan umum dan **tidak dapat menggantikan saran medis, diagnosis klinis, atau konsultasi ahli gizi profesional**.
 
 ---
 
 ## Ringkasan Arsitektur Sistem
 
-NutriView mengimplementasikan arsitektur *edge-AI mobile* nirserver (*serverless*):
+OopsieEats mengimplementasikan arsitektur *edge-AI mobile* nirserver (*serverless*):
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -28,26 +28,26 @@ NutriView mengimplementasikan arsitektur *edge-AI mobile* nirserver (*serverless
 │   │ (FoodRepository, MealRepository, ProfileRepo, AuthRepo, Client) │  │
 │   └────────────────────────────────┬────────────────────────────────┘  │
 └────────────────────────────────────┼───────────────────────────────────┘
-                                     │ Direct Firebase SDK (HTTPS / TLS)
-                                     ▼ (Firestore Rules & Strict 2-Role RBAC)
+                                     │ Direct HTTPS / TLS SDKs
+                                     ▼ (Firestore Rules & Supabase RLS)
 ┌────────────────────────────────────────────────────────────────────────┐
-│                   LAYANAN CLOUD FIREBASE (SPARK PLAN $0)               │
+│              LAYANAN CLOUD NIRSERVER (FIREBASE & SUPABASE)             │
 │                                                                        │
 │   ┌─────────────────────────────────┐   ┌──────────────────────────┐   │
-│   │ Firebase Authentication         │   │ Cloud Firestore          │   │
-│   │ (Email/Password, Google Sign-In,│   │ (Multi-tenant Meals,     │   │
-│   │  Biometric Session Fallback)    │   │  Foods Catalog, CMS,     │   │
-│   │                                 │   │  Immutable Audit Logs)   │   │
+│   │ Firebase Authentication         │   │ Cloud Firestore &        │   │
+│   │ (Email/Password, Google Sign-In,│   │ Supabase Storage (RLS    │   │
+│   │  Biometric Session Fallback)    │   │ Private Bucket, Meals,   │   │
+│   │                                 │   │ Foods Catalog, CMS)      │   │
 │   └─────────────────────────────────┘   └──────────────────────────┘   │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Karakteristik Utama Arsitektur:
 1. **100% On-Device Food Inference**: Model YOLO26n (9.4 MB) dieksekusi secara lokal via C++ runtime `tflite_flutter` pada *background isolate* tanpa latensi transmisi jaringan, menjamin privasi visual pengguna.
-2. **Serverless Spark Plan ($0/bulan)**: Beroperasi murni pada layanan terkelola Firebase (Authentication dan Cloud Firestore) tanpa memerlukan server VPS, kontainer Docker, proses backend mandiri, ataupun bucket Cloud Storage berbayar.
+2. **Serverless Cloud Architecture**: Beroperasi pada layanan terkelola Firebase (Authentication, Cloud Firestore, Hosting) dan Supabase Storage (bucket privat `food-history-images` dengan Row-Level Security) tanpa memerlukan server VPS atau kontainer Docker.
 3. **Isolasi Data & Keamanan Multi-Tenant**: Catatan makan privat pengguna disimpan di bawah `users/{uid}/meals/{mealId}`, dilindungi secara ketat oleh deklaratif `firestore.rules` dengan sistem peran biner terverifikasi (`admin` dan `user`).
 4. **Desain Visual Overkill Neo-Brutalism**: Antarmuka ekspresif dengan batas hitam tebal (`2.0` / `3.0`), bayangan pejal tanpa blur (*hard shadow*), skala spasi integer terukur, dan ikon Material Symbols (`rounded`).
-5. **Karakter Avatar Game Vektor**: Karakter profil digambar secara prosedural oleh kode Flutter (`AvatarCatalog`) tanpa mewajibkan pengguna mengunggah foto ke cloud.
+5. **Avatar Vektor & Foto Profil Kustom**: Mendukung karakter avatar vektor prosedural (`AvatarCatalog`) maupun unggahan foto profil terisolasi.
 
 ---
 
@@ -64,28 +64,30 @@ NutriView mengimplementasikan arsitektur *edge-AI mobile* nirserver (*serverless
 
 ## Teknologi yang Digunakan (Tech Stack)
 
-- **Framework**: Flutter (Dart SDK `^3.13.4`, kompatibel dengan Flutter 3.24+)
+- **Framework**: Flutter (Dart SDK `^3.13.4`, paket `oopsieeats` v1.0.0+2002)
 - **Computer Vision & ML**: TensorFlow Lite (`tflite_flutter` v0.12.1), custom YOLO26n model (`best.tflite`)
-- **Autentikasi**: `firebase_auth` (v7.0.1), `google_sign_in` (v7.2.0), `local_auth` (v3.0.2), `flutter_secure_storage` (v9.2.2)
-- **Basis Data Cloud**: `cloud_firestore` (v7.1.0), `firebase_core` (v5.1.0)
+- **Autentikasi & Keamanan**: `firebase_auth` (v7.0.1), `google_sign_in` (v7.2.0), `local_auth` (v3.0.2), `flutter_secure_storage` (v9.2.2)
+- **Basis Data & Penyimpanan Cloud**: `cloud_firestore` (v7.1.0), `firebase_core` (v5.1.0), `supabase_flutter` (v2.18.3)
 - **Manajemen Status**: `provider` (v6.1.2) dengan arsitektur Repository Pattern
-- **Pemrosesan Citra**: `image` (v4.12.0) untuk rotasi EXIF dan transformasi tensor matriks
+- **Pemrosesan Citra & Utilitas**: `image` (v4.12.0), `image_picker` (v1.1.2), `intl` (v0.19.0)
 
 ---
 
 ## Dokumentasi Teknis Lengkap
 
-NutriView menyediakan dokumentasi arsitektur dan teknis mendalam yang terbagi dalam direktori `docs/`:
+OopsieEats menyediakan dokumentasi arsitektur dan teknis mendalam yang terbagi dalam direktori `docs/`:
 
 | Dokumen | Topik Pembahasan |
 |---|---|
 | [**Arsitektur Sistem**](docs/ARCHITECTURE.md) | Diagram arsitektur detail, diagram sekuensial, tanggung jawab per layer, dan alur navigasi |
 | [**Basis Data & Backend**](docs/DATABASE_AND_BACKEND.md) | Skema koleksi Firestore, Security Rules RBAC biner, indeks komposit, dan mekanisme persistensi offline |
+| [**Penyimpanan Media Supabase**](docs/SUPABASE_IMAGE_STORAGE.md) | Konfigurasi bucket privat Supabase Storage, kebijakan RLS multi-tenant, dan alur unggah citra |
 | [**Machine Learning & Formulasi Gizi**](docs/MACHINE_LEARNING.md) | Pipeline inferensi YOLO26n on-device, pra-pemrosesan isolate, NMS, rumus Mifflin-St Jeor, dan faktor Atwater |
 | [**Panduan Pengembangan**](docs/DEVELOPMENT_GUIDE.md) | Konvensi kode Dart, implementasi prinsip SOLID, sistem desain Neo-Brutalism, dan hierarki error |
-| [**Pengujian Kualitas & QA**](docs/TESTING_AND_QA.md) | Piramida pengujian, inventaris 32 berkas uji, hasil eksekusi 256 test cases (100% lulus), dan tolak ukur benchmark |
+| [**Pengujian Kualitas & QA**](docs/TESTING_AND_QA.md) | Piramida pengujian, inventaris berkas uji, hasil eksekusi 348 test cases (100% lulus), dan tolak ukur benchmark |
 | [**Panduan Operasional & Deployment**](docs/deployment.md) | Konfigurasi Firebase CLI, bootstrap admin pertama, build APK/AAB rilis, dan ProGuard |
-| [**Laporan Audit Dokumentasi**](docs/DOCUMENTATION_AUDIT_REPORT.md) | Laporan menyeluruh hasil audit dokumentasi, penyesuaian historis, dan bukti verifikasi |
+| [**Audit Kesiapan Rilis RC1**](docs/rebranding_oopsieeats/audit/FULL_PROJECT_AUDIT.md) | Laporan lengkap audit rebranding OopsieEats, keamanan, performa, dan kepatuhan Google Play Store |
+| [**Laporan Audit Repositori**](docs/REPOSITORY_AUDIT_REPORT.md) | Laporan audit menyeluruh struktur direktori, pembersihan berkas, dependensi, dan validasi repositori |
 
 ---
 
@@ -108,7 +110,7 @@ Model inferensi dan daftar label telah terbundel langsung di dalam repositori:
 - Label Map: `frontend/assets/models/classes.txt` (29 kelas makanan)
 
 ### 4. Konfigurasi Kredensial Firebase
-- Letakkan berkas `google-services.json` pada direktori:
+- Pastikan berkas `google-services.json` tersedia pada direktori:
   ```text
   frontend/android/app/google-services.json
   ```
@@ -133,7 +135,7 @@ flutter analyze
 cd frontend
 flutter test
 ```
-*Hasil aktual: **256 test cases passed (100% pass rate)** meliputi validasi formula Mifflin-St Jeor, Atwater factor, stabilitas isolasi TFLite, autentikasi biometrik, responsivitas antarmuka, dan RBAC biner.*
+*Hasil aktual: **348 test cases passed (100% pass rate)** pada 39 berkas pengujian meliputi validasi formula Mifflin-St Jeor, Atwater factor, stabilitas isolasi TFLite, autentikasi biometrik, Google Sign-In, Supabase Storage, responsivitas antarmuka, dan RBAC biner.*
 
 ---
 

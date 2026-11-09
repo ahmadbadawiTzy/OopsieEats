@@ -42,15 +42,15 @@ Audit menyeluruh memeriksa seluruh artefak dokumentasi di dalam repositori:
 | 4 | `docs/ai.md` | Engineering Specification backend lama (29 Sep 2026) |
 | 5 | `docs/CMS_IMPLEMENTATION_SPEC.md` | Spesifikasi awal CMS & perbandingan arsitektur |
 | 6 | `docs/deployment.md` | Panduan operasional & rilis Firebase |
-| 7 | `docs/FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md` | Laporan audit pembersihan Firebase Storage |
-| 8 | `docs/FINAL_INTEGRATION_AND_RELEASE_READINESS_REPORT.md` | Laporan kesiapan rilis & integrasi |
-| 9 | `docs/NUTRIVIEW_APP_SIZE_OPTIMIZATION_REPORT.md` | Laporan optimasi ukuran bundle aplikasi |
-| 10 | `docs/NUTRIVIEW_CONSUMER_COPYWRITING_AND_ARTICLE_REDESIGN_REPORT.md` | Laporan desain ulang konten artikel |
-| 11 | `docs/NUTRIVIEW_FULL_UX_REDESIGN_AVATARS_AND_CREATOR_REPORT.md` | Laporan UX avatar game & profil kreator |
-| 12 | `docs/NUTRIVIEW_PRODUCTION_READINESS_REPORT.md` | Laporan kesiapan produksi |
-| 13 | `docs/NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md` | Laporan audit role & otorisasi |
-| 14 | `docs/NUTRIVIEW_SPLASH_AND_APP_ICON_REPORT.md` | Laporan aset splash & icon |
-| 15 | `docs/NUTRIVIEW_VISUAL_OVERHAUL_V2_REPORT.md` | Laporan visual overhauls v2 |
+| 7 | `docs/reports/legacy_nutriview/FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md` | Laporan audit pembersihan Firebase Storage |
+| 8 | `docs/reports/legacy_nutriview/FINAL_INTEGRATION_AND_RELEASE_READINESS_REPORT.md` | Laporan kesiapan rilis & integrasi |
+| 9 | `docs/reports/legacy_nutriview/NUTRIVIEW_APP_SIZE_OPTIMIZATION_REPORT.md` | Laporan optimasi ukuran bundle aplikasi |
+| 10 | `docs/reports/legacy_nutriview/NUTRIVIEW_CONSUMER_COPYWRITING_AND_ARTICLE_REDESIGN_REPORT.md` | Laporan desain ulang konten artikel |
+| 11 | `docs/reports/legacy_nutriview/NUTRIVIEW_FULL_UX_REDESIGN_AVATARS_AND_CREATOR_REPORT.md` | Laporan UX avatar game & profil kreator |
+| 12 | `docs/reports/legacy_nutriview/NUTRIVIEW_PRODUCTION_READINESS_REPORT.md` | Laporan kesiapan produksi |
+| 13 | `docs/reports/legacy_nutriview/NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md` | Laporan audit role & otorisasi |
+| 14 | `docs/reports/legacy_nutriview/NUTRIVIEW_SPLASH_AND_APP_ICON_REPORT.md` | Laporan aset splash & icon |
+| 15 | `docs/reports/legacy_nutriview/NUTRIVIEW_VISUAL_OVERHAUL_V2_REPORT.md` | Laporan visual overhauls v2 |
 | 16 | `docs/maintenance/GOOGLE_SIGN_IN_SKILL_MATRIX.md` | Matriks pemeliharaan Google Sign-In |
 | 17 | `docs/maintenance/AUTH_RECOVERY_IMPLEMENTATION_REPORT.md` | Laporan pemulihan autentikasi |
 | 18 | `docs/maintenance/DEAD_CODE_CLEANUP_REPORT.md` | Laporan pembersihan kode mati |
@@ -124,7 +124,7 @@ Dokumen-dokumen berikut dipertahankan dalam repositori karena memiliki nilai riw
 2. **`docs/ai.md`**: Menyimpan spesifikasi teknis arsitektur modular monolith terdahulu.
 3. **`docs/CMS_IMPLEMENTATION_SPEC.md`**: Menyimpan perbandingan analitis antara berbagai pendekatan CMS.
 4. **`docs/project-report/README.md` & `revision-notes.md`**: Menyimpan dokumentasi laporan akademik perkuliahan.
-5. **Laporan Audit Fase Tertentu** (`FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md`, `NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md`, dll.): Dipertahankan sebagai catatan verifikasi *milestone*.
+5. **Laporan Audit Fase Tertentu** (`docs/reports/legacy_nutriview/FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md`, `docs/reports/legacy_nutriview/NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md`, dll.): Dipertahankan sebagai catatan verifikasi *milestone*.
 
 ---
 
@@ -218,8 +218,8 @@ flutter test
 | `docs/prd.md` | Spesifikasi produk awal berbasis arsitektur lama (FastAPI + MySQL). | Dipertahankan dengan penambahan banner peringatan dokumen historis dan tautan ke docs aktif. | **HISTORICAL** |
 | `docs/ai.md` | Spesifikasi rekayasa backend lama (FastAPI + MySQL). | Dipertahankan dengan penambahan banner peringatan dokumen historis dan tautan ke docs aktif. | **HISTORICAL** |
 | `docs/CMS_IMPLEMENTATION_SPEC.md` | Spesifikasi perancangan awal CMS berbasis REST/Docker. | Dipertahankan dengan penambahan banner peringatan dokumen historis RFC. | **HISTORICAL** |
-| `docs/FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md` | Laporan migrasi penghapusan Firebase Storage (24 Okt 2026). | Dipertahankan sebagai bukti audit migrasi milestone historis. | **ACCURATE** |
-| `docs/NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md` | Laporan audit role dan pemisahan profesi. | Dipertahankan sebagai bukti audit sistem otorisasi. | **ACCURATE** |
+| `docs/reports/legacy_nutriview/FINAL_FIREBASE_MIGRATION_AND_ONDEVICE_YOLO_REPORT.md` | Laporan migrasi penghapusan Firebase Storage (24 Okt 2026). | Dipertahankan sebagai bukti audit migrasi milestone historis. | **ACCURATE** |
+| `docs/reports/legacy_nutriview/NUTRIVIEW_ROLE_AND_PERMISSION_AUDIT_REPORT.md` | Laporan audit role dan pemisahan profesi. | Dipertahankan sebagai bukti audit sistem otorisasi. | **ACCURATE** |
 | `docs/project-report/*` | Berkas laporan akademik perkuliahan. | Dipertahankan sebagai dokumen pelaporan akademik resmi. | **HISTORICAL** |
 
 ---
