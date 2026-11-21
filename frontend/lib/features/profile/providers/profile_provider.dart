@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
 import 'package:oopsieeats/data/models/profile.dart';
 import 'package:oopsieeats/data/models/user.dart';
 import 'package:oopsieeats/data/repositories/profile_repository.dart';
@@ -14,6 +15,8 @@ class ProfileProvider extends ChangeNotifier {
   DailyTarget? _dailyTarget;
   bool _isLoading = false;
   String? _errorMessage;
+  int _biodataVersion = 0;
+  int _operationId = 0;
 
   VoidCallback? onProfileUpdated;
 
@@ -24,6 +27,7 @@ class ProfileProvider extends ChangeNotifier {
   DailyTarget? get dailyTarget => _dailyTarget;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  int get biodataVersion => _biodataVersion;
   bool get hasProfile => _profile != null;
   bool get isProfileComplete {
     if (_profile == null) return false;
@@ -34,48 +38,96 @@ class ProfileProvider extends ChangeNotifier {
         _profile!.activityLevel.isNotEmpty;
   }
 
+  DailyTarget _calculateTargetFor(UserProfile p) {
+    return NutritionCalculator.calculateDailyTarget(
+      age: p.calculatedAge,
+      sex: p.sex,
+      weightKg: p.weightKg,
+      heightCm: p.heightCm,
+      activityLevel: p.activityLevel,
+      goal: p.goal,
+    );
+  }
+
   Future<void> loadProfile() async {
+    final opId = ++_operationId;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _user = await _repository.getUser();
+      final loadedUser = await _repository.getUser();
+      if (opId != _operationId) return;
+      _user = loadedUser;
       _profile = _user?.profile;
       if (_profile != null) {
         try {
-          _dailyTarget = await _repository.getDailyTarget();
-        } catch (_) {}
+          final target = await _repository.getDailyTarget();
+          if (opId != _operationId) return;
+          _dailyTarget = target;
+        } catch (_) {
+          if (opId != _operationId) return;
+          _dailyTarget ??= _calculateTargetFor(_profile!);
+        }
       }
     } on ApiException catch (e) {
+      if (opId != _operationId) return;
       _errorMessage = e.friendlyMessage;
     } catch (_) {
+      if (opId != _operationId) return;
       _errorMessage = 'Gagal memuat profil pengguna.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (opId == _operationId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<bool> saveProfile(UserProfile newProfile) async {
+    final opId = ++_operationId;
+    final previousProfile = _profile;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _profile = await _repository.updateProfile(newProfile);
-      _dailyTarget = await _repository.getDailyTarget();
-      onProfileUpdated?.call();
+      final savedProfile = await _repository.updateProfile(newProfile);
+      if (opId != _operationId) return true;
+
+      final metricsChanged =
+          _dailyTarget == null ||
+          !savedProfile.hasSameNutritionMetrics(previousProfile);
+
+      _profile = savedProfile;
+      if (_user != null) {
+        _user = _user!.copyWith(
+          profile: savedProfile,
+          isProfileComplete: true,
+        );
+      }
+
+      if (metricsChanged) {
+        _dailyTarget = _calculateTargetFor(savedProfile);
+        _biodataVersion++;
+        onProfileUpdated?.call();
+      }
       return true;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      if (opId == _operationId) {
+        _errorMessage = e.friendlyMessage;
+      }
       return false;
     } catch (_) {
-      _errorMessage = 'Gagal menyimpan profil.';
+      if (opId == _operationId) {
+        _errorMessage = 'Gagal menyimpan profil.';
+      }
       return false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (opId == _operationId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -151,56 +203,115 @@ class ProfileProvider extends ChangeNotifier {
     required String fullName,
     required UserProfile newProfile,
   }) async {
+    final opId = ++_operationId;
+    final previousProfile = _profile;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _profile = await _repository.saveBiodata(
-        fullName: fullName,
+      final cleanedName = fullName.trim();
+      final savedProfile = await _repository.saveBiodata(
+        fullName: cleanedName,
         profile: newProfile,
       );
-      _dailyTarget = await _repository.getDailyTarget();
-      await loadProfile();
-      onProfileUpdated?.call();
+      if (opId != _operationId) return true;
+
+      final metricsChanged =
+          _dailyTarget == null ||
+          !savedProfile.hasSameNutritionMetrics(previousProfile);
+
+      _profile = savedProfile;
+      if (_user != null) {
+        _user = _user!.copyWith(
+          fullName: cleanedName.isNotEmpty ? cleanedName : _user!.fullName,
+          profile: savedProfile,
+          isProfileComplete: true,
+        );
+      } else {
+        _user = User(
+          id: 1,
+          email: '',
+          fullName: cleanedName,
+          isProfileComplete: true,
+          profile: savedProfile,
+        );
+      }
+
+      if (metricsChanged) {
+        _dailyTarget = _calculateTargetFor(savedProfile);
+        _biodataVersion++;
+        onProfileUpdated?.call();
+      }
       return true;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      if (opId == _operationId) {
+        _errorMessage = e.friendlyMessage;
+      }
       return false;
     } catch (_) {
-      _errorMessage = 'Gagal menyimpan biodata pengguna.';
+      if (opId == _operationId) {
+        _errorMessage = 'Gagal menyimpan biodata pengguna.';
+      }
       return false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (opId == _operationId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<bool> deleteBiodata() async {
+    final opId = ++_operationId;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       await _repository.deleteBiodata();
+      if (opId != _operationId) return true;
+
       _profile = null;
       _dailyTarget = null;
-      await loadProfile();
+      if (_user != null) {
+        _user = User(
+          id: _user!.id,
+          email: _user!.email,
+          fullName: _user!.fullName,
+          role: _user!.role,
+          isActive: _user!.isActive,
+          isProfileComplete: false,
+          profile: null,
+          photoUrl: _user!.photoUrl,
+          photoPath: _user!.photoPath,
+          avatarPreset: _user!.avatarPreset,
+        );
+      }
+      _biodataVersion++;
       onProfileUpdated?.call();
       return true;
     } on ApiException catch (e) {
-      _errorMessage = e.friendlyMessage;
+      if (opId == _operationId) {
+        _errorMessage = e.friendlyMessage;
+      }
       return false;
     } catch (_) {
-      _errorMessage = 'Gagal menghapus biodata pengguna.';
+      if (opId == _operationId) {
+        _errorMessage = 'Gagal menghapus biodata pengguna.';
+      }
       return false;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (opId == _operationId) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   void clear() {
+    _operationId++;
+    _biodataVersion = 0;
     _user = null;
     _profile = null;
     _dailyTarget = null;

@@ -1,0 +1,48 @@
+%% Sequence Diagram: Scan-to-Meal Logging Flow — OopsieEats (NutriView)
+%% Menampilkan alur interaksi berurutan: Scanner UI, Provider, YOLO Isolate, Supabase Storage, & Cloud Firestore
+sequenceDiagram
+    autonumber
+    actor Pengguna
+    participant ScannerUI as ScannerScreen
+    participant ScanFlow as ScanFlowProvider
+    participant FoodRepo as FoodRepository
+    participant YOLO as YoloDetector (Isolate)
+    participant Storage as SupabaseStorageService
+    participant MealRepo as MealRepository
+    participant NutriCalc as NutritionCalculator
+    participant Firestore as Cloud Firestore
+
+    Pengguna->>ScannerUI: Ambil foto makanan (Kamera / Galeri)
+    ScannerUI->>ScanFlow: setCapturedImage(imageBytes)
+    ScanFlow->>FoodRepo: detectFood(imageBytes)
+    FoodRepo->>YOLO: detectFromBytes(imageBytes)
+
+    Note over YOLO: Isolate.run: decode, orientation EXIF,<br/>resize 640x640, float32 NCHW tensor,<br/>TFLite interpreter.run, NMS filter IoU >= 0.45
+
+    YOLO-->>FoodRepo: List<RawDetection> (bbox, classId, confidence)
+    FoodRepo->>FoodRepo: Cocokkan class dengan katalog pangan (Firestore/seed)
+    FoodRepo-->>ScanFlow: List<DetectionItem> (mapped / lowConfidence / unmapped)
+    ScanFlow-->>ScannerUI: Navigasi ke DetectionConfirmationScreen
+
+    Pengguna->>ScannerUI: Konfirmasi deteksi & buka PortionInputScreen
+    Pengguna->>ScannerUI: Masukkan porsi gram aktual (cth: 150g)
+    ScannerUI->>ScanFlow: updateItemPortion(item, grams)
+    ScanFlow->>NutriCalc: calculatePortionNutrition(food100g, portionGrams)
+    NutriCalc-->>ScanFlow: Kalori, protein, karbohidrat, lemak porsi
+    ScannerUI-->>Pengguna: Tampilkan ringkasan kalkulasi real-time
+
+    Pengguna->>ScannerUI: Tekan tombol simpan catatan makan
+    ScannerUI->>ScanFlow: submitMeal(mealType, items, capturedBytes)
+
+    opt Foto Makanan Tersedia
+        ScanFlow->>Storage: uploadFoodImage(userId, mealId, imageBytes)
+        Note over Storage: Isolate: Kompresi JPEG (max 1024px, q=80)<br/>Upload ke bucket food-history-images
+        Storage-->>ScanFlow: MealImageMetadata (path, width, height, size_bytes)
+    end
+
+    ScanFlow->>MealRepo: createMeal(mealType, consumedAt, items, imageMetadata)
+    MealRepo->>Firestore: set(users/{uid}/meals/{mealId}, mealPayload)
+    Firestore-->>MealRepo: Sukses simpan (Local SQLite & Cloud Sync)
+    MealRepo-->>ScanFlow: Objek MealRecord lengkap
+    ScanFlow-->>ScannerUI: Navigasi ke MealResultScreen
+    ScannerUI-->>Pengguna: Tampilkan konfirmasi sukses & rincian gizi tercatat

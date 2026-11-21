@@ -1,0 +1,39 @@
+%% Diagram 9: UML Sequence Diagram — Cascade Account Deletion Flow
+sequenceDiagram
+    autonumber
+    actor Pengguna as 👤 Pengguna
+    participant ProfileUI as 📱 ProfileScreen
+    participant AuthProv as 🔄 AuthProvider
+    participant AuthRepo as 📦 AuthRepository
+    participant SupaStorage as ☁️ Supabase Storage
+    participant Firestore as 🔥 Cloud Firestore
+    participant FirebaseAuth as 🔐 Firebase Auth
+    participant KeyStore as 🗝️ FlutterSecureStorage
+
+    Pengguna->>ProfileUI: Klik Tombol "Hapus Akun Permanen"
+    ProfileUI-->>Pengguna: Tampilkan Dialog Konfirmasi Bahaya (NeoDialog)
+    Pengguna->>ProfileUI: Masukkan Password / Konfirmasi Reautentikasi
+    ProfileUI->>AuthProv: deleteAccount(password)
+    AuthProv->>AuthRepo: executeCascadeAccountDeletion(uid)
+
+    Note over AuthRepo,SupaStorage: Tahap 1: Pembersihan Berkas Citra Terkait
+    AuthRepo->>SupaStorage: deleteAllUserMealImages(uid)
+    SupaStorage-->>AuthRepo: Sukses (Seluruh foto di food-history-images/{uid} terhapus)
+
+    Note over AuthRepo,Firestore: Tahap 2: Pembersihan Dokumen Subkoleksi Firestore
+    AuthRepo->>Firestore: batchDelete(users/{uid}/meals)
+    Firestore-->>AuthRepo: Sukses (Seluruh subkoleksi catatan makan terhapus)
+    AuthRepo->>Firestore: delete(users/{uid})
+    Firestore-->>AuthRepo: Sukses (Dokumen profil pengguna terhapus)
+
+    Note over AuthRepo,KeyStore: Tahap 3: Pembersihan Sesi Lokal
+    AuthRepo->>KeyStore: deleteAll()
+    KeyStore-->>AuthRepo: Kunci terenkripsi dan token sesi dihapus bersih
+
+    Note over AuthRepo,FirebaseAuth: Tahap 4: Penghapusan Identitas Firebase Auth
+    AuthRepo->>FirebaseAuth: currentUser.delete()
+    FirebaseAuth-->>AuthRepo: Kredensial akun resmi dihapus permanen
+
+    AuthRepo-->>AuthProv: Operasi Berhasil
+    AuthProv-->>ProfileUI: Sesi Diakhiri
+    ProfileUI-->>Pengguna: Notifikasi Akun Berhasil Dihapus & Alihkan ke Login

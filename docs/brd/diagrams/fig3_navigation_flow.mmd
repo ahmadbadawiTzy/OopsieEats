@@ -1,0 +1,53 @@
+%% Figure 3: Application Navigation Flowchart — NeoBottomNav Shell & Auth Gates
+%% Standar: Navigation Architecture, OopsieEats
+graph TD
+    Splash["SplashScreen\n(Cek Sesi Sembari Inisialisasi Firebase)"]
+
+    Splash --> AuthCheck{"Status Autentikasi?"}
+
+    subgraph AuthBranch ["Alur Pengguna Belum Masuk (Unauthenticated)"]
+        Onboard["OnboardingScreen\n(3 Slide Edukatif: AI, Kalori, Tracking)"]
+        Login["LoginScreen\n(Email/Password, Google Sign-In, Biometric Shortcut)"]
+        Register["RegisterScreen\n(Validasi Input, Auto Role 'user', is_active: true)"]
+        Forgot["ForgotPasswordModal\n(Kirim Link Reset Bahasa Indonesia)"]
+
+        Onboard --> Login
+        Login <--> Register
+        Login --> Forgot
+    end
+
+    AuthCheck -->|Belum Login / Pengguna Baru| Onboard
+    AuthCheck -->|Sudah Login / Sesi Aktif| ProfileGuard{"Biodata Lengkap?\n(Complete Profile Guard)"}
+
+    subgraph OnboardingFlow ["Alur Kelengkapan Profil Wajib"]
+        CompleteProf["CompleteProfileScreen\n(Input Usia, Gender, TB, BB, Aktivitas, Goal)\n• Kalkulasi Otomatis Mifflin-St Jeor & TDEE"]
+    end
+
+    ProfileGuard -->|Belum Lengkap (Field Kosong)| CompleteProf
+    CompleteProf -->|Simpan Berhasil| Shell
+
+    ProfileGuard -->|Lengkap| Shell["NeoBottomNav Shell (Floating Navigation Container)"]
+
+    subgraph MainAppShell ["Layar Utama Aplikasi (NeoBottomNav Shell)"]
+        direction TB
+        Tab1["Tab 1: DashboardScreen\n• Daily Calorie Hero Card (Dial Progres)\n• Bento Grid Makronutrien (P, C, F)\n• Log Asupan Harian & Indikator Gizi"]
+        Tab2["Tab 2: MealHistoryScreen\n• Kalender Pemilih Tanggal Harian\n• Riwayat Waktu Makan (Pagi, Siang, Malam, Camilan)\n• Rincian Porsi & Hapus Catatan"]
+        Tab3["Tab 3 (Center Floating): Scanner\n• Modal Pilihan: Kamera / Galeri\n• DetectionConfirmationScreen (Bounding Box)\n• PortionInputScreen (Bobot Gram & Hitung Atwater)\n• Unggah Foto ke Supabase Storage (Signed URL)"]
+        Tab4["Tab 4: ArticleScreen\n• Filter Kategori Edukasi Gizi\n• ArticleDetailScreen (Waktu Baca & Konten)"]
+        Tab5["Tab 5: ProfileScreen\n• BiodataScreen & Edit Profil Fisik\n• AvatarCatalog Modal (Pemilihan Preset)\n• AboutScreen & Penafian Medis Gizi\n• Keluar Sesi & Hapus Akun Bertingkat"]
+
+        Shell --> Tab1
+        Shell --> Tab2
+        Shell --> Tab3
+        Shell --> Tab4
+        Shell --> Tab5
+    end
+
+    Tab5 --> AdminCheck{"Role == 'admin'?"}
+
+    subgraph AdminPortal ["Portal Khusus Administrator"]
+        AdminDash["AdminDashboardScreen\n• Panel Ringkasan Metrik Sistem\n• FoodManagementScreen (Katalog TKPI & Atwater 4-4-9)\n• ArticleManagementScreen (Editor Artikel CMS)\n• AuditLogModal (Inspeksi Log Tak-Terubah)"]
+    end
+
+    AdminCheck -->|Ya| AdminDash
+    AdminCheck -->|Tidak / User Biasa| Denied["Akses Ditolak / Kembali ke Dashboard"]

@@ -90,6 +90,16 @@ class UserProfile {
     );
   }
 
+  bool hasSameNutritionMetrics(UserProfile? other) {
+    if (other == null) return false;
+    return calculatedAge == other.calculatedAge &&
+        sex == other.sex &&
+        weightKg == other.weightKg &&
+        heightCm == other.heightCm &&
+        activityLevel == other.activityLevel &&
+        goal == other.goal;
+  }
+
   String get sexLabel => sex == 'male' ? 'Laki-laki' : 'Perempuan';
 
   String get activityLabel {
@@ -141,7 +151,10 @@ class DailyTarget {
   });
 
   factory DailyTarget.fromJson(Map<String, dynamic> json) {
-    final basis = json['basis'] as Map<String, dynamic>? ?? {};
+    final rawBasis = json['basis'];
+    final basis = rawBasis is Map
+        ? Map<String, dynamic>.from(rawBasis)
+        : const <String, dynamic>{};
     return DailyTarget(
       caloriesKcal: (json['calories_kcal'] as num).toInt(),
       proteinG: (json['protein_g'] as num).toDouble(),

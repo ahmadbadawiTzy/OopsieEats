@@ -1,6 +1,7 @@
 # Environments and Secrets
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 *.jks
@@ -81,3 +82,18 @@ Thumbs.db
 
 # Backups & Data Dumps
 scripts/backups/
+
+# Agent skills & internal AI metadata
+.agents/
+skills-lock.json
+
+# Local promotional video generation artifacts
+app_introduction_video/
+remotion_production
+
+# Local platform test binaries
+frontend/blobs/
+
+# Local Python caches & screenshots
+docs/play_store_assets/__pycache__/
+docs/audit_screenshots/

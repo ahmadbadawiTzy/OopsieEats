@@ -1,0 +1,116 @@
+%% High-Level Application Architecture — OopsieEats (NutriView)
+%% Arsitektur berlapis: Presentation, State Management, Data Repository, Core ML/Math, & Infrastructure
+flowchart TB
+    subgraph PresentationLayer ["1. Presentation Layer (UI & Widgets)"]
+        direction TB
+        subgraph Screens ["Screens & Features"]
+            AuthScreens["Auth: LoginScreen, RegisterScreen,\nCompleteProfileScreen, Modals"]
+            OnboardScreen["Onboarding: OnboardingScreen (3 Slides)"]
+            DashScreen["Dashboard: DashboardScreen, Hero Card,\nBento Grid, Intake Section"]
+            ScanScreens["Scanner: ScannerScreen, DetectionConfirm,\nPortionInput, MealResult"]
+            MealScreens["Meals: MealHistoryScreen, MealDetailScreen"]
+            ProfileScreens["Profile: ProfileScreen, BiodataScreen, AboutScreen"]
+            AdminScreens["Admin: AdminDashboardScreen (CMS Panels)"]
+            ArticleScreens["Articles: ArticleListScreen, ArticleDetailScreen"]
+        end
+
+        subgraph SharedUI ["Overkill Neo-Brutalism Design System"]
+            NeoWidgets["NeoButton, NeoCard, NeoInput, NeoBadge,\nNeoProgressBar, NeoBottomNav, AvatarCatalog"]
+        end
+    end
+
+    subgraph StateLayer ["2. Business Logic & State Management Layer (Provider v6.1.2)"]
+        direction TB
+        AuthProvider["AuthProvider\n• Sesi login, logout, biometrik\n• Complete profile guard state\n• Reauth & delete account"]
+        DashboardProvider["DashboardProvider\n• Selected date & daily intake\n• Target synchronization\n• Invalidation hooks"]
+        ScanFlowProvider["ScanFlowProvider\n• Camera capture & image flow\n• Multi-step detection pipeline\n• Portion adjustments & submit"]
+        MealHistoryProvider["MealHistoryProvider\n• Daily meal logs & filters\n• Pagination & deletion"]
+        ProfileProvider["ProfileProvider\n• User physical metrics & goal\n• Dynamic age & target calc\n• Profile photo upload/delete"]
+    end
+
+    subgraph CoreLayer ["3. Core & Compute Engine (Pure Dart / Isolate)"]
+        direction TB
+        YoloDetector["YoloDetector (Background Isolate)\n• best.tflite (9.4 MB) via tflite_flutter\n• Input: [1, 3, 640, 640] Float32\n• Output: [1, 33, 8400] Float32\n• NMS & IoU Thresholding"]
+        NutritionCalculator["NutritionCalculator\n• BMR: Mifflin-St Jeor Formula\n• TDEE: Activity Multipliers\n• Goal Adjustment (Calorie Floor)\n• Atwater Validation (4P + 4C + 9F)"]
+        AgeCalculator["AgeCalculator\n• Kalkulasi usia dinamis dari birth_date\n• Parsing ISO-8601"]
+        NeoTokens["NeoTokens & Theme\n• Palet warna, tebal border 2.0/3.0\n• Bayangan pejal tanpa blur (0 blurRadius)"]
+    end
+
+    subgraph RepoLayer ["4. Data & Repository Layer (Abstraksi & Caching)"]
+        direction TB
+        AuthRepo["AuthRepository\n• Firebase Auth + Google Sign-In\n• Biometric fallback & cascading delete"]
+        ProfileRepo["ProfileRepository\n• Firestore users/{uid} sync\n• DailyTarget compute & save"]
+        FoodRepo["FoodRepository\n• Query foods catalog (TTL 10 min)\n• Fallback seed_foods.json\n• YOLO detection mapping"]
+        MealRepo["MealRepository\n• users/{uid}/meals CRUD\n• Porsi gizi via NutritionCalculator\n• Metadata citra inspeksi"]
+        DashRepo["DashboardRepository\n• Agregasi harian (intake vs target)\n• In-memory target caching (TTL 15 min)"]
+        ArticleRepo["ArticleRepository\n• cms_articles & categories (TTL 5 min)"]
+        AdminRepo["AdminRepository\n• CMS CRUD & immutable cms_audit_logs"]
+        StorageService["SupabaseStorageService\n• Compress 1024px/512px in Isolate\n• Upload/delete food & profile images\n• Signed URL generator (1 hour TTL)"]
+        ApiClient["ApiClient\n• FlutterSecureStorage wrapper\n• Biometric keys & legacy migration"]
+    end
+
+    subgraph InfrastructureLayer ["5. Infrastructure & Cloud Backend"]
+        direction TB
+        subgraph LocalInfra ["Local Storage & Offline Resilience"]
+            FSS["FlutterSecureStorage (Encrypted Keystore/Keyring)"]
+            FSCache["Cloud Firestore SQLite Cache (100 MB Limit)"]
+            AssetSeed["Asset File: seed_foods.json (29 Pangan)"]
+        end
+
+        subgraph CloudInfra ["Cloud Services"]
+            FirebaseAuthCloud["Firebase Authentication (Auth & OAuth)"]
+            FirestoreCloud["Cloud Firestore (Declarative Security Rules)"]
+            SupabaseStorageCloud["Supabase Storage (food-history-images Private Bucket)"]
+        end
+    end
+
+    %% Wiring: UI to State
+    Screens --> NeoWidgets
+    Screens -->|watch / select / read| StateLayer
+
+    %% Wiring: State to Repositories & Core
+    StateLayer --> RepoLayer
+    StateLayer --> CoreLayer
+
+    %% Wiring: Repositories to Core
+    FoodRepo --> YoloDetector
+    MealRepo --> NutritionCalculator
+    ProfileRepo --> NutritionCalculator
+    ProfileRepo --> AgeCalculator
+
+    %% Wiring: Repositories to Infrastructure
+    AuthRepo --> FirebaseAuthCloud
+    AuthRepo --> FirestoreCloud
+    AuthRepo --> StorageService
+    AuthRepo --> ApiClient
+
+    ProfileRepo --> FirestoreCloud
+    ProfileRepo --> StorageService
+    ProfileRepo --> ApiClient
+
+    FoodRepo --> FirestoreCloud
+    FoodRepo --> AssetSeed
+
+    MealRepo --> FirestoreCloud
+    MealRepo --> StorageService
+
+    DashRepo --> FirestoreCloud
+    ArticleRepo --> FirestoreCloud
+    AdminRepo --> FirestoreCloud
+
+    StorageService --> SupabaseStorageCloud
+    ApiClient --> FSS
+    FirestoreCloud <--> FSCache
+
+    %% Styling
+    classDef presentation fill:#EBF8FF,stroke:#3182CE,stroke-width:2px,color:#1A365D;
+    classDef state fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef core fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px,color:#63171B;
+    classDef repo fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+    classDef infra fill:#EDF2F7,stroke:#4A5568,stroke-width:2px,color:#2D3748;
+
+    class Screens,SharedUI,AuthScreens,OnboardScreen,DashScreen,ScanScreens,MealScreens,ProfileScreens,AdminScreens,ArticleScreens,NeoWidgets presentation;
+    class StateLayer,AuthProvider,DashboardProvider,ScanFlowProvider,MealHistoryProvider,ProfileProvider state;
+    class CoreLayer,YoloDetector,NutritionCalculator,AgeCalculator,NeoTokens core;
+    class RepoLayer,AuthRepo,ProfileRepo,FoodRepo,MealRepo,DashRepo,ArticleRepo,AdminRepo,StorageService,ApiClient repo;
+    class InfrastructureLayer,LocalInfra,CloudInfra,FSS,FSCache,AssetSeed,FirebaseAuthCloud,FirestoreCloud,SupabaseStorageCloud infra;

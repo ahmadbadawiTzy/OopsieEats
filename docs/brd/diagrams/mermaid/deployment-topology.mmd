@@ -1,0 +1,49 @@
+%% Diagram 4: UML Deployment Topology Diagram — OopsieEats
+flowchart TB
+    subgraph ClientNode ["CLIENT DEVICE NODE (Android Physical Device)"]
+        direction TB
+        subgraph AndroidOS ["Android OS (Target SDK 36, minSdk 23)"]
+            ART["Android Runtime (ART)"]
+            subgraph AppProcess ["OopsieEats Mobile Runtime (.apk / .aab)"]
+                FE["Flutter Engine & Dart AOT VM"]
+                TFLite["tflite_flutter C++ Runtime (4 CPU Threads)"]
+                Assets["Model best.tflite (9.4 MB) & seed_foods.json"]
+            end
+            KeyStore["Android KeyStore (Hardware AES-256 GCM)"]
+            DiskCache["Bounded Local SQLite Cache (100 MB Limit)"]
+        end
+    end
+
+    subgraph StoreNode ["GOOGLE PLAY STORE DISTRIBUTION NODE"]
+        AAB["Android App Bundle (AAB v1.0.0+2002)\n• ProGuard / R8 Obfuscation\n• AAPT Options: noCompress('tflite')\n• Play App Signing (KMS)"]
+        Console["Google Play Console Pipeline"]
+        AAB --> Console
+    end
+
+    subgraph CloudNodes ["CLOUD BACKEND SERVERS"]
+        direction TB
+        subgraph FirebaseProject ["Firebase Cloud (Spark Plan $0 — asia-southeast2)"]
+            AuthService["Firebase Authentication (OAuth 2.0 & Email)"]
+            FirestoreService["Cloud Firestore Database (Multi-Tenant NoSQL)"]
+            HostingService["Firebase Hosting (Web Domain & Landing)"]
+        end
+
+        subgraph SupabaseProject ["Supabase Platform (Free Tier — ap-southeast-1)"]
+            SupaStorageNode["Supabase Object Storage\n• Bucket: food-history-images (Private)\n• Row-Level Security (RLS) Policy\n• Time-Limited Signed URL Generator (1 Jam)"]
+        end
+    end
+
+    Console -.->|Distribusi Rilis OTA| ClientNode
+    AppProcess -->|HTTPS / OAuth 2.0| AuthService
+    AppProcess -->|Direct SDK / gRPC via TLS 1.3| FirestoreService
+    AppProcess -->|HTTPS Multipart / Signed Upload| SupaStorageNode
+    AppProcess -->|Enkripsi Sesi Lokal| KeyStore
+    AppProcess -->|Baca/Tulis Cache Luring| DiskCache
+
+    classDef client fill:#E8EEF8,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px;
+    classDef store fill:#FEF3C7,stroke:#D97706,color:#92400E,stroke-width:1.5px;
+    classDef cloud fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:1.5px;
+
+    class ClientNode,AndroidOS,AppProcess,ART,FE,TFLite,Assets,KeyStore,DiskCache client;
+    class StoreNode,AAB,Console store;
+    class CloudNodes,FirebaseProject,AuthService,FirestoreService,HostingService,SupabaseProject,SupaStorageNode cloud;

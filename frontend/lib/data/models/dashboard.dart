@@ -1,3 +1,4 @@
+import 'package:oopsieeats/core/nutrition_calculator.dart';
 import 'package:oopsieeats/data/models/meal.dart';
 
 class NutrientProgress {
@@ -61,6 +62,52 @@ class DailyDashboard {
     required this.consumed,
     required this.progress,
   });
+
+  DailyDashboard withUpdatedTarget(DailyTarget newTarget) {
+    final targetTotals = MealNutritionTotals(
+      caloriesKcal: NutritionCalculator.roundHalfUp(
+        newTarget.caloriesKcal.toDouble(),
+        1,
+      ),
+      proteinG: NutritionCalculator.roundHalfUp(newTarget.proteinG, 1),
+      carbsG: NutritionCalculator.roundHalfUp(newTarget.carbsG, 1),
+      fatG: NutritionCalculator.roundHalfUp(newTarget.fatG, 1),
+    );
+
+    double calcPct(double c, double t) {
+      if (t <= 0) return 0.0;
+      return NutritionCalculator.roundHalfUp((c / t) * 100.0, 2);
+    }
+
+    return DailyDashboard(
+      date: date,
+      mealCount: mealCount,
+      target: targetTotals,
+      consumed: consumed,
+      progress: DashboardProgress(
+        calories: NutrientProgress(
+          consumed: consumed.caloriesKcal,
+          target: targetTotals.caloriesKcal,
+          percentage: calcPct(consumed.caloriesKcal, targetTotals.caloriesKcal),
+        ),
+        protein: NutrientProgress(
+          consumed: consumed.proteinG,
+          target: targetTotals.proteinG,
+          percentage: calcPct(consumed.proteinG, targetTotals.proteinG),
+        ),
+        carbs: NutrientProgress(
+          consumed: consumed.carbsG,
+          target: targetTotals.carbsG,
+          percentage: calcPct(consumed.carbsG, targetTotals.carbsG),
+        ),
+        fat: NutrientProgress(
+          consumed: consumed.fatG,
+          target: targetTotals.fatG,
+          percentage: calcPct(consumed.fatG, targetTotals.fatG),
+        ),
+      ),
+    );
+  }
 
   factory DailyDashboard.fromJson(Map<String, dynamic> json) {
     return DailyDashboard(

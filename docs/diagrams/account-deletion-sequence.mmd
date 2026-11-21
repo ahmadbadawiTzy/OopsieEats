@@ -1,0 +1,59 @@
+%% Sequence Diagram: Cascading Account Deletion — OopsieEats (NutriView)
+%% Menampilkan alur penghapusan akun berurutan: Re-autentikasi, Batch Delete Firestore, Purge Supabase Storage, & Auth Delete
+sequenceDiagram
+    autonumber
+    actor Pengguna
+    participant ProfileUI as ProfileScreen / Dialog
+    participant AuthProv as AuthProvider
+    participant AuthRepo as AuthRepository
+    participant FBAuth as Firebase Authentication
+    participant Firestore as Cloud Firestore
+    participant Storage as SupabaseStorageService
+    participant ApiClient as ApiClient (Secure Storage)
+
+    Pengguna->>ProfileUI: Tekan tombol 'Hapus Akun'
+    ProfileUI->>ProfileUI: Tampilkan konfirmasi & peringatan permanen
+    Pengguna->>ProfileUI: Konfirmasi hapus akun
+
+    opt Sesi > 5 Menit atau Provider Google/Password
+        ProfileUI->>AuthProv: Minta Re-autentikasi kredensial
+        alt Akun Berbasis Google OAuth
+            AuthProv->>AuthRepo: reauthenticateWithGoogle()
+            AuthRepo->>FBAuth: currentUser.reauthenticateWithCredential(googleAuth)
+        else Akun Berbasis Email & Password
+            ProfileUI-->>Pengguna: Tampilkan dialog input kata sandi
+            Pengguna->>ProfileUI: Input kata sandi akun
+            ProfileUI->>AuthProv: reauthenticateWithPassword(password)
+            AuthProv->>AuthRepo: reauthenticateWithPassword(password)
+            AuthRepo->>FBAuth: currentUser.reauthenticateWithCredential(emailAuth)
+        end
+        FBAuth-->>AuthRepo: Re-autentikasi Sukses
+    end
+
+    ProfileUI->>AuthProv: deleteAccount(password, useGoogleReauth)
+    AuthProv->>AuthRepo: deleteAccount(password, useGoogleReauth)
+
+    Note over AuthRepo,Firestore: Tahap 1: Pembersihan Koleksi Firestore
+    AuthRepo->>Firestore: get(users/{uid}/meals)
+    Firestore-->>AuthRepo: List dokumen meal records
+    loop Batch Chunking (Maksimal 450 dokumen per batch)
+        AuthRepo->>Firestore: batch.delete(mealRef)
+        AuthRepo->>Firestore: batch.commit()
+    end
+    AuthRepo->>Firestore: delete(users/{uid})
+    AuthRepo->>Firestore: delete(profiles/{uid}) [Legacy cleanup]
+
+    Note over AuthRepo,Storage: Tahap 2: Pembersihan Berkas Supabase Storage
+    AuthRepo->>Storage: deleteUserFoodImages(uid)
+    Storage-->>AuthRepo: Folder users/{uid}/ dan profile purged
+
+    Note over AuthRepo,FBAuth: Tahap 3: Penghapusan Identitas Firebase Auth
+    AuthRepo->>FBAuth: currentUser.delete()
+    FBAuth-->>AuthRepo: Akun Auth Terhapus Permanen
+
+    Note over AuthRepo,ApiClient: Tahap 4: Pembersihan Sesi Lokal
+    AuthRepo->>ApiClient: clearToken()
+    AuthRepo->>ApiClient: clearBiometricPreference()
+    AuthRepo-->>AuthProv: Akun & Sesi Selesai Dihapus
+    AuthProv-->>ProfileUI: Navigasi ke LoginScreen & Reset State
+    ProfileUI-->>Pengguna: Tampilkan notifikasi akun berhasil dihapus

@@ -18,16 +18,16 @@ def markdown_to_html():
       <div class="cover-top-bar"></div>
       <div class="cover-content">
         <div class="cover-badge">BUSINESS REQUIREMENTS DOCUMENT &amp; TECHNICAL REPORT</div>
-        <h1 class="cover-title">NUTRIVIEW</h1>
-        <div class="cover-subtitle">Food Nutrition Recognition &amp; Daily Tracking Mobile Application</div>
+        <h1 class="cover-title">OOPSIEEATS</h1>
+        <div class="cover-subtitle">Food Nutrition Recognition &amp; Daily Tracking App (Historically NutriView)</div>
         
         <div class="cover-divider"></div>
         
         <p class="cover-abstract">
           Dokumen Business Requirements Document (BRD) dan Rekonstruksi Spesifikasi Teknis Komprehensif: 
           Arsitektur Flutter Layered, Komputasi On-Device Edge AI (YOLO26n TFLite Worker Isolate), 
-          Basis Data NoSQL Cloud Firestore Multi-Tenant, Formulasi Deterministik Mifflin-St Jeor &amp; Atwater 4-4-9, 
-          serta Pengujian Mutu Otomatis 256 Test Cases.
+          Basis Data NoSQL Cloud Firestore Multi-Tenant, Penyimpanan Citra Supabase Storage dengan Row-Level Security, 
+          Formulasi Deterministik Mifflin-St Jeor &amp; Atwater 4-4-9, serta Pengujian Mutu Otomatis 359 Test Cases (42 File Uji).
         </p>
 
         <div class="cover-meta-grid">
@@ -45,15 +45,15 @@ def markdown_to_html():
           </div>
           <div class="meta-card">
             <span class="meta-label">Versi &amp; Status Dokumen</span>
-            <span class="meta-value"><span class="status-tag">Versi 1.0.0 (Release Candidate)</span></span>
+            <span class="meta-value"><span class="status-tag">Versi 1.1.0 (Full Reconstruction)</span></span>
           </div>
           <div class="meta-card">
             <span class="meta-label">Tahun Akademik &amp; Tanggal Rilis</span>
-            <span class="meta-value">2026 / 07 November 2026</span>
+            <span class="meta-value">2026 / 13 November 2026</span>
           </div>
           <div class="meta-card">
             <span class="meta-label">Integritas Kode Sumber</span>
-            <span class="meta-value"><span class="badge-success">256/256 Automated Tests Passed (100%)</span></span>
+            <span class="meta-value"><span class="badge-success">359/359 Automated Tests Passed (100%)</span></span>
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@ def markdown_to_html():
         <tbody>
           <tr>
             <th style="width: 28%;">Nama Dokumen</th>
-            <td>Business Requirements Document (BRD) &amp; Project Report — NutriView</td>
+            <td>Business Requirements Document (BRD) &amp; Project Report — OopsieEats (NutriView)</td>
           </tr>
           <tr>
             <th>Klasifikasi Dokumen</th>
@@ -80,7 +80,7 @@ def markdown_to_html():
           </tr>
           <tr>
             <th>Target Implementasi</th>
-            <td>Flutter 3.24+ / Dart 3.5+, Android SDK 34, Google Firebase (asia-southeast2)</td>
+            <td>Flutter 3.x / Dart ^3.13.4, Android SDK 36 (minSdk 23), Firebase &amp; Supabase Storage</td>
           </tr>
           <tr>
             <th>Distribusi Salinan</th>
@@ -88,7 +88,7 @@ def markdown_to_html():
           </tr>
           <tr>
             <th>Integritas Data</th>
-            <td>100% Berbasis Kode Sumber Terverifikasi (0 Test Failure, 0 Analyze Warning)</td>
+            <td>100% Berbasis Kode Sumber Terverifikasi (359 Tests Passed across 42 Files, 0 Warning)</td>
           </tr>
         </tbody>
       </table>
@@ -124,6 +124,13 @@ def markdown_to_html():
             <td>07 Nov 2026</td>
             <td>Ahmad Badawi</td>
             <td>Final release: Redesain diagram UML standar &amp; 256 automated test audit</td>
+            <td><span class="status-muted">Superseded</span></td>
+          </tr>
+          <tr>
+            <td><strong>1.1.0</strong></td>
+            <td>13 Nov 2026</td>
+            <td>Ahmad Badawi</td>
+            <td>Rekonstruksi Total: OopsieEats Rebranding, Supabase Storage, Complete Profile Guard &amp; 359 Tests</td>
             <td><span class="status-approved">Approved</span></td>
           </tr>
         </tbody>

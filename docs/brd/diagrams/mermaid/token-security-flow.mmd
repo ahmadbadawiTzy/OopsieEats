@@ -1,0 +1,29 @@
+%% Diagram 12: Firebase Token and Secure Session Flow Topology — OopsieEats
+sequenceDiagram
+    autonumber
+    actor Pengguna as 👤 Pengguna
+    participant App as 📱 OopsieEats App (Flutter)
+    participant FSS as 🔐 FlutterSecureStorage (KeyStore)
+    participant Auth as 🛡️ Firebase Auth
+    participant DB as 🔥 Cloud Firestore (Rules)
+
+    Pengguna->>App: Masukkan Kredensial (Email/Password atau Google Sign-In)
+    App->>Auth: Kirim Permintaan Autentikasi (OAuth 2.0 / Password)
+    Auth-->>App: Respon Sukses: ID Token (JWT), Refresh Token, UID
+    App->>FSS: Enkripsi & Simpan Sesi (UID, Role, Refresh Token)
+    Note over App,FSS: Kunci sesi dilindungi AES-256 GCM pada hardware KeyStore/Keychain
+
+    Pengguna->>App: Buka Dashboard / Riwayat Makan
+    App->>DB: Kueri Firestore users/{uid}/meals (Sertakan ID Token gRPC)
+    DB->>DB: Evaluasi Aturan firestore.rules: request.auth.uid == userId
+    alt Token Sah & UID Cocok
+        DB-->>App: Kembalikan Data Dokumen & Stream Snapshot
+        App-->>Pengguna: Tampilkan Data Asupan Gizi di Layar
+    else Token Kedaluwarsa (Expired)
+        App->>Auth: Minta Refresh Token Baru di Latar Belakang
+        Auth-->>App: Terbitkan ID Token Baru
+        App->>DB: Ulangi Kueri Data dengan Token Baru
+    else Percobaan Akses Dokumen Pengguna Lain (UID Tidak Cocok)
+        DB-->>App: Error: PERMISSION_DENIED (Akses Ditolak)
+        App-->>Pengguna: Tampilkan Pesan Keamanan
+    end

@@ -1,0 +1,67 @@
+%% UML Package Diagram: Clean Architecture & Modular Traceability — OopsieEats
+flowchart TB
+    subgraph PresentationPackage ["package: presentation (UI & Widgets)"]
+        direction TB
+        Screens["Screens: Auth, Dashboard, Scanner, History, Profile, Admin"]
+        DesignWidgets["Widgets: NeoButton, NeoCard, NeoInput, HeroCalorieDial"]
+        Screens --> DesignWidgets
+    end
+
+    subgraph LogicPackage ["package: logic (State Management & Providers)"]
+        direction TB
+        Providers["Providers: AuthProvider, DashboardProvider, ScanFlowProvider, ProfileProvider"]
+    end
+
+    subgraph DataPackage ["package: data (Data Sources & Repositories)"]
+        direction TB
+        Repositories["Repositories: AuthRepo, MealRepo, FoodRepo, ProfileRepo, AdminRepo"]
+        DataModels["Models: UserModel, MealRecord, FoodItem, CMSArticle"]
+        Services["Services: SupabaseStorageService, BiometricService"]
+        Repositories --> DataModels
+        Repositories --> Services
+    end
+
+    subgraph CorePackage ["package: core (Utilities & Compute)"]
+        direction TB
+        Calculators["Compute: NutritionCalculator, AgeCalculator, AtwaterValidator"]
+        Tokens["Theme: NeoColors, NeoTokens, AppTheme"]
+        YoloIsolate["AI Runtime: YoloDetector, YoloIsolateProcessor"]
+    end
+
+    subgraph TestPackage ["package: test (Quality Assurance Suite — 359 Tests)"]
+        direction TB
+        UnitTests["Unit Tests (265 tests)"]
+        WidgetTests["Widget Tests (78 tests)"]
+        SecurityTests["Security & Rules Tests (16 tests)"]
+    end
+
+    subgraph CloudInfra ["External Infrastructure"]
+        Firestore["Cloud Firestore (asia-southeast2)"]
+        Supabase["Supabase Storage (ap-southeast-1)"]
+        FirebaseAuth["Firebase Auth (Global Edge)"]
+    end
+
+    PresentationPackage --> LogicPackage
+    LogicPackage --> DataPackage
+    LogicPackage --> CorePackage
+    DataPackage --> CorePackage
+    DataPackage --> CloudInfra
+
+    TestPackage -.->|"Verifies 100%"| PresentationPackage
+    TestPackage -.->|"Verifies 100%"| LogicPackage
+    TestPackage -.->|"Verifies 100%"| DataPackage
+    TestPackage -.->|"Verifies 100%"| CorePackage
+
+    classDef pres fill:#E8EEF8,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px;
+    classDef logic fill:#EEF2FF,stroke:#6366F1,color:#312E81,stroke-width:1.5px;
+    classDef data fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:1.5px;
+    classDef core fill:#FEF3C7,stroke:#D97706,color:#92400E,stroke-width:1.5px;
+    classDef test fill:#F3E8FF,stroke:#8B5CF6,color:#4C1D95,stroke-width:1.5px;
+    classDef cloud fill:#F1F5F9,stroke:#64748B,color:#0F172A,stroke-width:1.5px;
+
+    class PresentationPackage pres;
+    class LogicPackage logic;
+    class DataPackage data;
+    class CorePackage core;
+    class TestPackage test;
+    class CloudInfra cloud;

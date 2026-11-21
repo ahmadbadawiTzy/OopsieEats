@@ -110,16 +110,25 @@ void main() async {
   final adminRepository = AdminRepository(client: apiClient);
 
   final authProvider = AuthProvider(authRepository);
+  final profileProvider = ProfileProvider(profileRepository);
+  final dashboardProvider = DashboardProvider(dashboardRepository);
+
   authProvider.onLogout = () {
     dashboardRepository.invalidateUserCache();
+    dashboardProvider.clear();
+    profileProvider.clear();
     foodRepository.invalidateCache();
     articleRepository.invalidateCache();
     storageService.clearUrlCache();
   };
 
-  final profileProvider = ProfileProvider(profileRepository);
   profileProvider.onProfileUpdated = () {
     dashboardRepository.invalidateUserCache();
+    if (profileProvider.dailyTarget != null) {
+      dashboardProvider.updateTargetFromBiodata(profileProvider.dailyTarget!);
+    } else if (!profileProvider.hasProfile) {
+      dashboardProvider.handleBiodataDeleted();
+    }
   };
 
   apiClient.onUnauthorized = () {
@@ -145,8 +154,8 @@ void main() async {
         Provider<AdminRepository>.value(value: adminRepository),
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
         ChangeNotifierProvider<ProfileProvider>.value(value: profileProvider),
-        ChangeNotifierProvider<DashboardProvider>(
-          create: (_) => DashboardProvider(dashboardRepository),
+        ChangeNotifierProvider<DashboardProvider>.value(
+          value: dashboardProvider,
         ),
         ChangeNotifierProvider<ScanFlowProvider>(
           create: (_) => ScanFlowProvider(

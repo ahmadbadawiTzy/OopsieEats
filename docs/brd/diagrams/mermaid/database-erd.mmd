@@ -1,0 +1,44 @@
+%% Diagram 10: Entity Relationship Diagram (ERD) — Firestore & Supabase Storage
+flowchart LR
+    subgraph UsersCol ["users/{userId} — Profil & Target Pengguna"]
+        direction TB
+        USERS["<b>users/{userId}</b><hr/><div style='text-align:left; min-width:260px;'>+ uid: string (PK / Auth UID)<br/>+ email: string<br/>+ full_name: string<br/>+ role: 'user' | 'admin'<br/>+ is_active: boolean<br/>+ avatar_preset: string<br/>+ profile: map<br/>&nbsp;&nbsp;• age: int<br/>&nbsp;&nbsp;• gender: 'male' | 'female'<br/>&nbsp;&nbsp;• height_cm: double<br/>&nbsp;&nbsp;• weight_kg: double<br/>&nbsp;&nbsp;• activity_level: string<br/>&nbsp;&nbsp;• goal: 'lose' | 'maintain' | 'gain'<br/>+ daily_target: map<br/>&nbsp;&nbsp;• calories_kcal: int<br/>&nbsp;&nbsp;• protein_g: double<br/>&nbsp;&nbsp;• carbs_g: double<br/>&nbsp;&nbsp;• fat_g: double<br/>&nbsp;&nbsp;• bmr_kcal: double<br/>&nbsp;&nbsp;• tdee_kcal: double</div>"]
+    end
+
+    subgraph MealsCol ["users/{userId}/meals/{mealId} — Subkoleksi Catatan Makan"]
+        direction TB
+        MEALS["<b>users/{userId}/meals/{mealId}</b><hr/><div style='text-align:left; min-width:270px;'>+ id: string (PK / timestamp id)<br/>+ meal_type: 'breakfast'|'lunch'|'dinner'|'snack'<br/>+ consumed_date: string (YYYY-MM-DD, Index)<br/>+ consumed_at: timestamp (Index)<br/>+ image_path: string (Supabase Bucket Path)<br/>+ items: array&lt;map&gt;<br/>&nbsp;&nbsp;• food_id: int<br/>&nbsp;&nbsp;• food_name: string<br/>&nbsp;&nbsp;• portion_grams: double<br/>&nbsp;&nbsp;• calories: double<br/>&nbsp;&nbsp;• protein_g: double<br/>&nbsp;&nbsp;• carbs_g: double<br/>&nbsp;&nbsp;• fat_g: double<br/>&nbsp;&nbsp;• confidence: double<br/>+ totals: map (calories, protein, carbs, fat)</div>"]
+    end
+
+    subgraph FoodsCol ["foods/{foodId} — Master Pangan TKPI 2020"]
+        direction TB
+        FOODS["<b>foods/{foodId}</b><hr/><div style='text-align:left; min-width:250px;'>+ id: int (PK / Kode Pangan)<br/>+ name: string (Nama Pangan Indonesia)<br/>+ yolo_class: string (Label YOLO26n)<br/>+ is_active: boolean<br/>+ calories_kcal_per_100g: double<br/>+ protein_g_per_100g: double<br/>+ carbs_g_per_100g: double<br/>+ fat_g_per_100g: double<br/>+ source: 'TKPI 2020'</div>"]
+    end
+
+    subgraph CMSCol ["cms_articles & cms_audit_logs — Edukasi & Audit"]
+        direction TB
+        ARTICLES["<b>cms_articles/{articleId}</b><hr/><div style='text-align:left; min-width:240px;'>+ id: string (PK)<br/>+ title: string<br/>+ slug: string (Unik)<br/>+ status: 'published' | 'draft'<br/>+ cover_image_url: string<br/>+ category: string<br/>+ content: string</div>"]
+        AUDIT["<b>cms_audit_logs/{logId}</b><hr/><div style='text-align:left; min-width:240px;'>+ id: string (PK)<br/>+ action: string<br/>+ performed_by: string (UID Admin)<br/>+ timestamp: timestamp</div>"]
+    end
+
+    subgraph StorageBucket ["Supabase Object Storage (Private)"]
+        direction TB
+        STORAGE["<b>food-history-images (Bucket)</b><hr/><div style='text-align:left; min-width:240px;'>+ {userId}/{mealId}.jpg<br/>• RLS Policy: Auth UID Match<br/>• Akses: Signed URL (TTL 1 Jam)</div>"]
+    end
+
+    USERS == "1 : N (Subkoleksi Privat)" ==> MEALS
+    FOODS -. "Direferensikan pada items[].food_id" .-> MEALS
+    MEALS -. "image_path mereferensikan file" .-> STORAGE
+    USERS -. "performed_by mencatat UID Admin" .-> AUDIT
+
+    classDef userNode fill:#EEF2FF,stroke:#18181B,stroke-width:2px,color:#18181B;
+    classDef mealNode fill:#ECFDF5,stroke:#18181B,stroke-width:2px,color:#18181B;
+    classDef foodNode fill:#FEF3C7,stroke:#18181B,stroke-width:2px,color:#18181B;
+    classDef cmsNode fill:#FEE2E2,stroke:#18181B,stroke-width:2px,color:#18181B;
+    classDef storageNode fill:#F0FDF4,stroke:#18181B,stroke-width:2px,color:#18181B;
+
+    class USERS userNode;
+    class MEALS mealNode;
+    class FOODS foodNode;
+    class ARTICLES,AUDIT cmsNode;
+    class STORAGE storageNode;

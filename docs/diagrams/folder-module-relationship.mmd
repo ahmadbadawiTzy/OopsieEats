@@ -1,0 +1,73 @@
+%% Folder & Module Relationship — OopsieEats (NutriView)
+%% Menampilkan struktur modul, pemisahan tanggung jawab, dan arah dependensi kode
+flowchart TB
+    subgraph RootStructure ["Struktur Folder Repositori (OopsieEats)"]
+        direction TB
+
+        subgraph CoreModule ["frontend/lib/core/ (Core Logic & Tokens)"]
+            Config["config.dart\ncreator_config.dart\nsupabase_config.dart"]
+            Tokens["neo_tokens.dart\ntheme.dart\napp_icons.dart"]
+            MathCalc["nutrition_calculator.dart\nage_calculator.dart"]
+            ErrorHandler["error_handler.dart\n(ApiException)"]
+            MLCore["ml/\n• yolo_detector.dart\n• yolo_detector_io.dart\n• yolo_detector_stub.dart"]
+            Routes["routes.dart\n(AppRoutes)"]
+        end
+
+        subgraph DataModule ["frontend/lib/data/ (Data Layer)"]
+            Models["models/\n• user.dart\n• profile.dart\n• food.dart\n• meal.dart\n• article.dart\n• dashboard.dart"]
+            Repositories["repositories/\n• auth_repository.dart\n• profile_repository.dart\n• food_repository.dart\n• meal_repository.dart\n• dashboard_repository.dart\n• article_repository.dart"]
+            Services["services/\n• biometric_service.dart\n• supabase_storage_service.dart"]
+            ApiClientMod["api_client.dart\n(FlutterSecureStorage)"]
+        end
+
+        subgraph FeaturesModule ["frontend/lib/features/ (Feature Modules)"]
+            AuthFeat["auth/\n• screens, widgets, providers"]
+            OnboardFeat["onboarding/\n• screens, widgets, models"]
+            DashFeat["dashboard/\n• screens, widgets, providers"]
+            ScannerFeat["scanner/\n• screens, providers"]
+            MealsFeat["meals/\n• screens, providers"]
+            ProfileFeat["profile/\n• screens, widgets, providers"]
+            ArticleFeat["article/\n• screens"]
+            AdminFeat["admin/\n• presentation, data/admin_repo"]
+            SplashFeat["splash/\n• screens, widgets"]
+        end
+
+        subgraph SharedModule ["frontend/lib/shared/ (Shared UI Components)"]
+            NeoShared["neo/\n• neo_button, neo_card, neo_input\n• neo_badge, neo_bottom_nav\n• avatar_catalog, neo_avatar"]
+            WidgetsShared["widgets/\n• error_view, loading_indicator\n• neo_image_thumbnail"]
+        end
+
+        subgraph EntryModule ["frontend/lib/ (Bootstrapping)"]
+            MainEntry["main.dart\n(MultiProvider & Route Guard)"]
+            FBOpts["firebase_options.dart\n(Generated Config)"]
+        end
+    end
+
+    %% Arah Dependensi
+    EntryModule --> FeaturesModule
+    EntryModule --> DataModule
+    EntryModule --> CoreModule
+    EntryModule --> SharedModule
+
+    FeaturesModule --> SharedModule
+    FeaturesModule --> DataModule
+    FeaturesModule --> CoreModule
+
+    SharedModule --> CoreModule
+    DataModule --> CoreModule
+
+    %% Core tidak boleh bergantung pada Data, Features, atau Shared
+    %% Data tidak bergantung pada UI/Features
+
+    %% Styling
+    classDef entry fill:#EBF8FF,stroke:#3182CE,stroke-width:2px,color:#1A365D;
+    classDef feat fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef data fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+    classDef core fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px,color:#63171B;
+    classDef shared fill:#FFFBEB,stroke:#D97706,stroke-width:2px,color:#78350F;
+
+    class MainEntry,FBOpts entry;
+    class AuthFeat,OnboardFeat,DashFeat,ScannerFeat,MealsFeat,ProfileFeat,ArticleFeat,AdminFeat,SplashFeat feat;
+    class Models,Repositories,Services,ApiClientMod data;
+    class Config,Tokens,MathCalc,ErrorHandler,MLCore,Routes core;
+    class NeoShared,WidgetsShared shared;

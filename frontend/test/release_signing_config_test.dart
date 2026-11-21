@@ -102,5 +102,47 @@ void main() {
       expect(buildGradleContent, contains('[CRITICAL RELEASE SIGNING ERROR]'));
       expect(buildGradleContent, contains('Automatic fallback to debug signing is strictly forbidden'));
     });
+
+    test('7. Android compileSdk and targetSdk explicitly enforce API 36 (Android 16) minimum', () {
+      expect(
+        buildGradleContent,
+        contains('compileSdk = maxOf(flutter.compileSdkVersion, 36)'),
+        reason: 'compileSdk must enforce at least API 36',
+      );
+      expect(
+        buildGradleContent,
+        contains('targetSdk = maxOf(flutter.targetSdkVersion, 36)'),
+        reason: 'targetSdk must enforce at least API 36 for Google Play compliance',
+      );
+    });
+
+    test('8. 16 KB page size compatibility is enforced via uncompressed JNI packaging', () {
+      expect(
+        buildGradleContent,
+        contains('useLegacyPackaging = false'),
+        reason: 'jniLibs must disable legacy packaging for 16 KB ELF page alignment',
+      );
+    });
+
+    test('9. AndroidManifest.xml strips transitive legacy permissions (READ_PHONE_STATE, READ/WRITE_EXTERNAL_STORAGE)', () {
+      final projectDir = Directory.current.path.endsWith('frontend')
+          ? Directory.current.parent
+          : Directory.current;
+      final manifestFile = File('${projectDir.path}/frontend/android/app/src/main/AndroidManifest.xml');
+      final manifestContent = manifestFile.readAsStringSync();
+
+      expect(
+        manifestContent,
+        contains('android:name="android.permission.READ_PHONE_STATE" tools:node="remove"'),
+      );
+      expect(
+        manifestContent,
+        contains('android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"'),
+      );
+      expect(
+        manifestContent,
+        contains('android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"'),
+      );
+    });
   });
 }

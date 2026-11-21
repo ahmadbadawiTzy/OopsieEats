@@ -1,0 +1,40 @@
+%% Figure 11: Offline Fallback & Cache Storage Configuration Flow
+%% Standar: Offline-First Architecture, OopsieEats
+graph TD
+    AppOp["Operasi Aplikasi: Baca Katalog Pangan / Muat Riwayat Makan"]
+    NetCheck{"Apakah Jaringan Internet Tersedia?"}
+
+    AppOp --> NetCheck
+
+    subgraph OnlinePath ["Jalur Daring (Online - Jaringan Terhubung)"]
+        FetchCloud["Kueri Cloud Firestore via Direct SDK"]
+        UpdateCache["Perbarui Bounded Local SQLite Cache (Maks 100 MB)"]
+        EvictLRU{"Cache Melebihi 100 MB?"}
+        PruneCache["Eliminasi Dokumen Tertua Otomatis (LRU Eviction)"]
+        ReturnOnlineData["Kembalikan Data Terbaru ke Antarmuka UI"]
+
+        FetchCloud --> UpdateCache
+        UpdateCache --> EvictLRU
+        EvictLRU -->|Ya| PruneCache --> ReturnOnlineData
+        EvictLRU -->|Tidak| ReturnOnlineData
+    end
+
+    subgraph OfflinePath ["Jalur Luring (Offline - Tanpa Jaringan)"]
+        ReadLocalCache["Baca Bounded Local Firestore Cache"]
+        CacheHit{"Data Ditemukan di Cache Lokal?"}
+        ReturnCacheData["Sajikan Data Cache ke Layar (Status Offline Indikator)"]
+
+        subgraph CatalogFallback ["Fallback Khusus Katalog Pangan Master"]
+            ReadSeed["Buka Asset Bundle: assets/data/seed_foods.json"]
+            ParseSeed["Parse 29 Pangan Lokal Terverifikasi TKPI 2020"]
+            ReturnSeedData["Sajikan Katalog Fallback ke Fitur Scanner & Pencarian"]
+        end
+
+        ReadLocalCache --> CacheHit
+        CacheHit -->|Tersedia| ReturnCacheData
+        CacheHit -->|Kosong / Miss| ReadSeed
+        ReadSeed --> ParseSeed --> ReturnSeedData
+    end
+
+    NetCheck -->|Tersambung (Online)| FetchCloud
+    NetCheck -->|Terputus (Offline / Airplane Mode)| ReadLocalCache

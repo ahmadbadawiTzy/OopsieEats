@@ -1,0 +1,48 @@
+%% Diagram 1: System Context Diagram (C4 Level 1) — OopsieEats
+flowchart TB
+    subgraph Users ["AKTOR PENGGUNA"]
+        RegularUser["👤 Regular User\n(Pengguna Mobile Pelacak Gizi)"]
+        AdminUser["🛡️ Administrator\n(Pengelola Master Data & CMS)"]
+    end
+
+    subgraph SystemBoundary ["BATAS SISTEM OOPSIEEATS"]
+        OopsieApp["📱 OopsieEats Mobile Application\n• Flutter 3.x / Dart ^3.13.4\n• On-Device YOLO26n TFLite (9.4 MB)\n• Mifflin-St Jeor & Atwater Engine\n• Neo-Brutalism UI & Complete Profile Guard"]
+    end
+
+    subgraph CloudServices ["LAYANAN CLOUD EKSTERNAL"]
+        subgraph FirebaseCloud ["Google Firebase (asia-southeast2)"]
+            FirebaseAuth["🔐 Firebase Authentication\n(Email/Password, Google OAuth 2.0)"]
+            FirestoreDB["🔥 Cloud Firestore\n(Multi-Tenant NoSQL Database)"]
+        end
+
+        subgraph SupabaseCloud ["Supabase Platform (ap-southeast-1)"]
+            SupaStorage["☁️ Supabase Storage\n(Private Bucket 'food-history-images' via RLS)"]
+        end
+    end
+
+    subgraph DeviceHardware ["PERANGKAT KERAS PERANGKAT"]
+        DeviceCamera["📷 Kamera & Galeri Foto"]
+        DeviceBio["🔒 Sensor Biometrik (Fingerprint / Face ID)"]
+        DeviceKeyStore["🗝️ Hardware KeyStore / Keychain"]
+    end
+
+    RegularUser -->|Input porsi, foto makanan, kelola profil| OopsieApp
+    AdminUser -->|Kelola pangan master, verifikasi Atwater, audit log| OopsieApp
+
+    OopsieApp -->|Ambil foto hidangan| DeviceCamera
+    OopsieApp -->|Verifikasi biometrik| DeviceBio
+    OopsieApp -->|Enkripsi sesi lokal AES-256| DeviceKeyStore
+
+    OopsieApp -->|Pertukaran token sesi JWT & Google Sign-In| FirebaseAuth
+    OopsieApp -->|Kueri & sinkronisasi data reaktif via gRPC TLS 1.3| FirestoreDB
+    OopsieApp -->|Unggah foto kompresi & ambil signed URL| SupaStorage
+
+    classDef user fill:#F3F4F6,stroke:#6B7280,color:#111827,stroke-width:1.5px;
+    classDef app fill:#E8EEF8,stroke:#3B82F6,color:#1E3A8A,stroke-width:2px;
+    classDef cloud fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:1.5px;
+    classDef hw fill:#F8FAFC,stroke:#94A3B8,color:#334155,stroke-width:1.5px;
+
+    class RegularUser,AdminUser user;
+    class OopsieApp app;
+    class FirebaseAuth,FirestoreDB,SupaStorage cloud;
+    class DeviceCamera,DeviceBio,DeviceKeyStore hw;

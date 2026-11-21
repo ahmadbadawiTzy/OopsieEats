@@ -1,0 +1,60 @@
+%% Figure 3b: UML Activity Diagram with Swimlanes — On-Device AI Detection & Meal Logging Flow
+%% Standar: UML 2.5 Activity Swimlanes, OopsieEats
+graph TB
+    subgraph LaneUser ["👤 Pengguna (User)"]
+        A1["Mulai: Ambil Foto Makanan / Pilih Galeri"]
+        A4["Tinjau Hasil Deteksi (Bounding Box & Nama Makanan)"]
+        A5["Atur / Konfirmasi Bobot Porsi (Gram)"]
+        A10["Melihat Pembaruan Dashboard & Riwayat Makan"]
+    end
+
+    subgraph LaneUI ["📱 Flutter UI Thread (Main)"]
+        A2["Tangkap Image File via image_picker"]
+        A3["Kirim Raw Image Bytes ke Background Isolate"]
+        A7["Terima Bounding Boxes & Confidence Scores"]
+        A8["Tampilkan DetectionConfirmationScreen & Porsi"]
+        A9["Panggil SupabaseStorageService (Unggah Citra)"]
+        A12["Panggil MealRepository.createMeal()"]
+        A15["Perbarui State Provider (Dashboard & History)"]
+    end
+
+    subgraph LaneIsolate ["⚡ Worker Isolate (Edge AI Core)"]
+        B1["Decode Citra & Koreksi Orientasi EXIF"]
+        B2["Resize Linier ke 640 x 640 Piksel"]
+        B3["Normalisasi Kanal RGB Float32 [1, 3, 640, 640]"]
+        B4["Eksekusi TFLite Interpreter (best.tflite)"]
+        B5["Pasca-proses: Non-Maximum Suppression (NMS)\n(IoU: 0.45, Score Threshold: 0.15)"]
+        B6["Petakan ID Kelas ke 29 Pangan Indonesia"]
+    end
+
+    subgraph LaneSupabase ["☁️ Supabase Cloud Storage"]
+        C1["Terima Stream Citra Terkompresi (1024px)"]
+        C2["Simpan ke Bucket 'food-history-images/{uid}/{mealId}.jpg'"]
+        C3["Buat Time-Limited Signed URL (TTL 1 Jam)"]
+    end
+
+    subgraph LaneFirestore ["🔥 Cloud Firestore & Cache"]
+        D1["Terima Dokumen Catatan Makan Atomik"]
+        D2["Validasi Aturan Keamanan (request.auth.uid == userId)"]
+        D3["Simpan ke users/{userId}/meals/{mealId}"]
+        D4["Perbarui Bounded Local SQLite Cache (100 MB)"]
+        D5["Pancarkan Snapshot Stream Real-Time"]
+    end
+
+    %% Alur Kerja Antar Swimlane
+    A1 --> A2
+    A2 --> A3
+    A3 --> B1
+    B1 --> B2 --> B3 --> B4 --> B5 --> B6
+    B6 --> A7
+    A7 --> A8
+    A8 --> A4
+    A4 --> A5
+    A5 --> A9
+    A9 --> C1
+    C1 --> C2 --> C3
+    C3 --> A12
+    A12 --> D1
+    D1 --> D2 --> D3 --> D4 --> D5
+    D5 --> A15
+    A15 --> A10

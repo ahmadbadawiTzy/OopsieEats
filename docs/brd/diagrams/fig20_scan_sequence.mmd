@@ -1,0 +1,44 @@
+%% Figure 20: UML Sequence Diagram — Computer Vision & Meal Logging Flow
+%% Standar: UML 2.5 Sequence Diagram, OopsieEats
+sequenceDiagram
+    autonumber
+    actor User as 👤 Pengguna
+    participant ScannerUI as 📱 ScannerScreen
+    participant ScanProv as 🔄 ScanFlowProvider
+    participant YoloProc as ⚡ YoloIsolateProcessor
+    participant TFLite as 🧠 TFLite Interpreter
+    participant ConfirmUI as 📋 DetectionConfirmationScreen
+    participant PortionUI as ⚖️ PortionInputScreen
+    participant SupaStorage as ☁️ Supabase Storage
+    participant MealRepo as 📦 MealRepository
+    participant Firestore as 🔥 Cloud Firestore
+
+    User->>ScannerUI: Ambil Foto Makanan (Kamera / Galeri)
+    ScannerUI->>ScanProv: processCapturedImage(imageFile)
+    ScanProv->>YoloProc: runInferenceInIsolate(rawBytes)
+    Note over ScanProv,YoloProc: Eksekusi dialihkan ke background Isolate via Isolate.run (0ms UI blocking)
+
+    YoloProc->>YoloProc: Decode, rotasi EXIF, resize 640x640, normalisasi float32
+    YoloProc->>TFLite: run(inputTensor, outputTensor)
+    TFLite-->>YoloProc: Output Tensor [1, 33, 8400]
+    YoloProc->>YoloProc: Non-Maximum Suppression (IoU 0.45, Conf >= 0.15)
+    YoloProc-->>ScanProv: List<DetectionResult> (Bounding Boxes & 29 Kelas Pangan)
+    ScanProv-->>ScannerUI: Selesai Inferensi (< 300ms)
+
+    ScannerUI->>ConfirmUI: Navigasi ke DetectionConfirmationScreen
+    ConfirmUI-->>User: Tampilkan Foto Berkotak Pembatas & Nama Makanan
+    User->>ConfirmUI: Konfirmasi Hidangan Terdeteksi
+    ConfirmUI->>PortionUI: Navigasi ke PortionInputScreen
+
+    User->>PortionUI: Masukkan Bobot Porsi (misal 150 gram)
+    PortionUI->>PortionUI: Hitung Gizi Deterministik Atwater (4P + 4C + 9F)
+    User->>PortionUI: Klik "Simpan Catatan Makan"
+
+    PortionUI->>SupaStorage: uploadMealImage(userId, mealId, compressedBytes)
+    SupaStorage-->>PortionUI: URL Path: food-history-images/{uid}/{mealId}.jpg
+
+    PortionUI->>MealRepo: createMeal(mealType, date, items, imagePath)
+    MealRepo->>Firestore: Simpan Dokumen ke users/{uid}/meals/{mealId}
+    Firestore-->>MealRepo: Sukses (Dokumen Tersimpan & Cache Diperbarui)
+    MealRepo-->>PortionUI: MealRecord Model
+    PortionUI-->>User: Notifikasi Berhasil & Alihkan ke Dashboard / Riwayat

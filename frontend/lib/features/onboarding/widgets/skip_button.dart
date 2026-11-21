@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 import 'package:oopsieeats/features/onboarding/models/onboarding_tokens.dart';
 
-/// Tactile Neo-Brutalist Skip button with physical press feedback.
+/// Neo-Brutalist Skip button with warm cream fill, thick black border,
+/// primaryGreen chevron accent, and tactile press-down animation.
 class SkipButton extends StatefulWidget {
   final VoidCallback onPressed;
 
@@ -16,52 +18,72 @@ class _SkipButtonState extends State<SkipButton> {
 
   @override
   Widget build(BuildContext context) {
-    const double offsetX = 3.0;
-    const double offsetY = 3.0;
+    const double offsetX = 3.5;
+    const double offsetY = 3.5;
 
-    return GestureDetector(
-      onTapDown: (_) {
-        if (mounted) setState(() => _isPressed = true);
-      },
-      onTapUp: (_) {
-        if (mounted) setState(() => _isPressed = false);
-        widget.onPressed();
-      },
-      onTapCancel: () {
-        if (mounted) setState(() => _isPressed = false);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 90),
-        transform: Matrix4.translationValues(
-          _isPressed ? offsetX : 0.0,
-          _isPressed ? offsetY : 0.0,
-          0.0,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 7.0),
-        decoration: BoxDecoration(
-          color: OnboardingTokens.white,
-          borderRadius: BorderRadius.circular(999.0),
-          border: Border.all(
-            color: OnboardingTokens.black,
-            width: OnboardingTokens.borderWidthThin,
+    return Semantics(
+      button: true,
+      label: 'Lewati onboarding',
+      child: GestureDetector(
+        onTapDown: (_) {
+          if (mounted) setState(() => _isPressed = true);
+        },
+        onTapUp: (_) {
+          if (mounted) setState(() => _isPressed = false);
+          widget.onPressed();
+        },
+        onTapCancel: () {
+          if (mounted) setState(() => _isPressed = false);
+        },
+        child: AnimatedContainer(
+          duration: NeoMotion.getDuration(context, NeoMotion.durationFast),
+          transform: Matrix4.translationValues(
+            _isPressed ? offsetX : 0.0,
+            _isPressed ? offsetY : 0.0,
+            0.0,
           ),
-          boxShadow: _isPressed
-              ? []
-              : const [
-                  BoxShadow(
-                    color: OnboardingTokens.black,
-                    offset: Offset(offsetX, offsetY),
-                    blurRadius: 0.0,
-                  ),
-                ],
-        ),
-        child: const Text(
-          'Skip',
-          style: TextStyle(
-            color: OnboardingTokens.black,
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.2,
+          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 7.0),
+          decoration: BoxDecoration(
+            color: OnboardingTokens.warmBackground,
+            borderRadius: BorderRadius.circular(NeoTokens.radiusPill),
+            border: Border.all(
+              color: OnboardingTokens.black,
+              width: OnboardingTokens.borderWidth,
+            ),
+            boxShadow: _isPressed
+                ? []
+                : const [
+                    BoxShadow(
+                      color: OnboardingTokens.black,
+                      offset: Offset(offsetX, offsetY),
+                      blurRadius: NeoTokens.shadowBlurRadius,
+                    ),
+                  ],
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Skip',
+                style: TextStyle(
+                  color: OnboardingTokens.black,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.2,
+                  height: 1.0,
+                ),
+              ),
+              SizedBox(width: 4.0),
+              Text(
+                '»',
+                style: TextStyle(
+                  color: OnboardingTokens.primaryGreen,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  height: 1.0,
+                ),
+              ),
+            ],
           ),
         ),
       ),

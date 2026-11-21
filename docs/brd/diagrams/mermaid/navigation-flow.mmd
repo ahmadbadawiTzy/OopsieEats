@@ -1,0 +1,60 @@
+%% Diagram 6: Application Navigation Flowchart — NeoBottomNav Shell & Auth Gates
+flowchart TD
+    Splash["SplashScreen\n(Cek Kredensial Lokal KeyStore)"]
+
+    Splash --> AuthCheck{"Pengguna Sudah Login?"}
+
+    subgraph UnauthFlow ["ALUR PENGGUNA BARU / BELUM LOGIN"]
+        Onboard["OnboardingScreen (3 Slide Edukatif)\n• Food Discovery • Nutrition Awareness • Healthy Habits"]
+        Login["LoginScreen\n(Email/Password, Google OAuth, Biometric Shortcut)"]
+        Register["RegisterScreen\n(Validasi Input, Auto Role 'user', is_active: true)"]
+        Forgot["ForgotPasswordModal\n(Kirim Link Reset Bahasa Indonesia)"]
+
+        Onboard --> Login
+        Login <--> Register
+        Login --> Forgot
+    end
+
+    AuthCheck -->|Belum Login| Onboard
+    AuthCheck -->|Sudah Login| ProfileCheck{"Biodata Lengkap?\n(Complete Profile Guard)"}
+
+    subgraph MandatoryProfileFlow ["ALUR BIODATA WAJIB"]
+        CompleteProf["CompleteProfileScreen\n• Usia • Gender • TB • BB • Aktivitas • Sasaran\n(Kalkulasi Deterministik BMR & TDEE)"]
+    end
+
+    ProfileCheck -->|Belum Lengkap| CompleteProf
+    CompleteProf -->|Simpan Berhasil| MainShell
+
+    ProfileCheck -->|Sudah Lengkap| MainShell["NeoBottomNav Shell (Floating Navigation Container)"]
+
+    subgraph MainAppShell ["SHELL UTAMA APLIKASI"]
+        direction TB
+        Tab1["Tab 1: DashboardScreen\n• Hero Dial Progres Kalori • Bento Grid Makro\n• Log Asupan Harian"]
+        Tab2["Tab 2: MealHistoryScreen\n• Kalender Pemilih Tanggal • Rincian Waktu Makan\n• Navigasi ke MealDetailScreen"]
+        Tab3["Tab 3: Scanner (Floating Action Center)\n• Viewfinder Kamera / Galeri • Bounding Box Confirmation\n• PortionInputScreen • Upload Supabase"]
+        Tab4["Tab 4: ArticleScreen\n• Kategori Artikel • Navigasi ke ArticleDetailScreen"]
+        Tab5["Tab 5: ProfileScreen\n• BiodataScreen • AvatarCatalog Modal • AboutScreen\n• Logout & Modal Hapus Akun"]
+
+        MainShell --> Tab1
+        MainShell --> Tab2
+        MainShell --> Tab3
+        MainShell --> Tab4
+        MainShell --> Tab5
+    end
+
+    Tab5 --> AdminCheck{"Role == 'admin'?"}
+
+    subgraph AdminPortal ["PORTAL ADMINISTRASI KHUSUS"]
+        AdminDashboard["AdminDashboardScreen\n• Panel Ringkasan Metrik Sistem\n• FoodManagementScreen (Katalog Pangan)\n• ArticleManagementScreen (Editor CMS)\n• AuditViewerModal (Log Tak-Terubah)"]
+    end
+
+    AdminCheck -->|Ya| AdminDashboard
+    AdminCheck -->|Bukan Admin| Denied["Akses Ditolak (Kembali ke Dashboard)"]
+
+    classDef screen fill:#FFFFFF,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px;
+    classDef gate fill:#FEF3C7,stroke:#D97706,color:#92400E,stroke-width:1.5px;
+    classDef shell fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:2px;
+
+    class Splash,Onboard,Login,Register,Forgot,CompleteProf,Tab1,Tab2,Tab3,Tab4,Tab5,AdminDashboard screen;
+    class AuthCheck,ProfileCheck,AdminCheck,Denied gate;
+    class MainShell shell;

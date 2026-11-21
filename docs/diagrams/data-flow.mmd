@@ -1,0 +1,57 @@
+%% Main Application Data Flow — OopsieEats (NutriView)
+%% Menampilkan alur pergerakan data dari input pengguna, state management, repository, database, dan pembaruan UI reaktif
+flowchart LR
+    subgraph UI ["Lapisan Antarmuka (UI)"]
+        UserInput["Input Pengguna\n• Tap tombol / Navigasi\n• Foto makanan kamera\n• Ubah porsi gram\n• Form biodata"]
+        ConsumerWidget["Consumer / Selector Widget\n• DailyCalorieHeroCard\n• MacroBentoGrid\n• TodaysIntakeSection\n• UserProfileAvatar"]
+    end
+
+    subgraph State ["State Management (Provider)"]
+        ProviderMethod["Provider Action Method\n(ChangeNotifier)\n• Memanggil async repository\n• Menetapkan loading state\n• Menangani error state"]
+        NotifyListeners["notifyListeners()\n• Memicu rebuild reaktif\n• Memperbarui model view"]
+    end
+
+    subgraph DomainCompute ["Kalkulasi Deterministik (Core)"]
+        ComputeEngine["Mesin Hitung Nutrisi\n• Mifflin-St Jeor (BMR)\n• TDEE & Target Makro\n• Validasi Atwater"]
+    end
+
+    subgraph Data ["Data & Repository Layer"]
+        RepoMethod["Metode Repository\n• Orkestrasi sumber data\n• Pemeriksaan in-memory cache\n• Penanganan fallback offline"]
+        DTO["Data Transfer Object (DTO)\n• User.fromJson()\n• MealRecord.fromJson()\n• DailyDashboard.fromJson()"]
+    end
+
+    subgraph Storage ["Penyimpanan & Backend Cloud"]
+        FirestoreDB["Cloud Firestore\n• users/{uid}\n• users/{uid}/meals/{mealId}\n• foods, cms_articles"]
+        SupabaseStore["Supabase Storage\n• food-history-images (Private)\n• Signed URL Generator (1 hr)"]
+        LocalCache["Local Persistent Cache\n• Firestore SQLite (100 MB)\n• seed_foods.json"]
+    end
+
+    %% Alur Pergerakan Data Maju (Request/Command)
+    UserInput -->|1. Event / Trigger| ProviderMethod
+    ProviderMethod -->|2. Invoke Business Logic| RepoMethod
+    RepoMethod -->|3. Kalkulasi Gizi| ComputeEngine
+    ComputeEngine -->|4. Hasil Kalkulasi| RepoMethod
+    RepoMethod -->|5. Write / Query| FirestoreDB
+    RepoMethod -->|5b. Binary Upload / URL| SupabaseStore
+    FirestoreDB -.->|Offline Fallback| LocalCache
+
+    %% Alur Pergerakan Data Balik (Response/Reactive Update)
+    FirestoreDB -->|6. Raw Map Data| DTO
+    SupabaseStore -->|6b. Signed URL String| DTO
+    DTO -->|7. Model Terstruktur| RepoMethod
+    RepoMethod -->|8. Return Model / Result| ProviderMethod
+    ProviderMethod -->|9. Perbarui State Internal| NotifyListeners
+    NotifyListeners -->|10. Re-render Elemen Terkait| ConsumerWidget
+
+    %% Styling
+    classDef ui fill:#E8F1FF,stroke:#2B6CB0,stroke-width:2px,color:#1A365D;
+    classDef state fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef core fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px,color:#63171B;
+    classDef repo fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+    classDef storage fill:#FFF2E8,stroke:#DD6B20,stroke-width:2px,color:#7B341E;
+
+    class UserInput,ConsumerWidget ui;
+    class ProviderMethod,NotifyListeners state;
+    class ComputeEngine core;
+    class RepoMethod,DTO repo;
+    class FirestoreDB,SupabaseStore,LocalCache storage;

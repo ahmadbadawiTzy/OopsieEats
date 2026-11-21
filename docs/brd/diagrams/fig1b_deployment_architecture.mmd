@@ -1,0 +1,49 @@
+%% Figure 1b: UML Deployment Architecture Diagram — Client Node, Distribution, & Cloud
+%% Standar: UML 2.5 Deployment Topology, OopsieEats
+graph TB
+    subgraph ClientDevice ["Client Device Node (Android Physical Device)"]
+        direction TB
+        subgraph OS ["Operating System (Android 7.0 s/d 16+)"]
+            ART["Android Runtime (ART) / Target SDK 36 (minSdk 23)"]
+            subgraph FlutterHost ["OopsieEats Flutter Application (.apk / .aab)"]
+                FE["Flutter C++ Engine"]
+                DartVM["Dart Ahead-Of-Time (AOT) Runtime"]
+                TFLiteLib["tflite_flutter Native C++ Library\n(4 Multi-Thread CPU Cores)"]
+                AppAssets["Assets Bundle:\n• assets/models/best.tflite (9.4 MB)\n• assets/models/classes.txt (29 Label)\n• assets/data/seed_foods.json"]
+            end
+            subgraph SecureHW ["Hardware Security Module"]
+                KeyStore["Android KeyStore / Keyring\n(AES-256 GCM Session Encryption)"]
+            end
+            subgraph LocalDB ["Persistensi Lokal"]
+                DiskCache["Bounded Firestore SQLite Cache (100 MB)"]
+            end
+        end
+    end
+
+    subgraph DistributionNode ["Google Play Store Distribution Node"]
+        direction TB
+        AAB["Android App Bundle (AAB)\n• AAPT Options: noCompress('tflite')\n• ProGuard / R8 Obfuscation & Shrinking\n• Keystore V2/V3 Signing via key.properties\n• Version: 1.0.0+2002"]
+        PlayConsole["Google Play Console\n• Target SDK 36 API Compliance\n• 64-bit Architecture (ARM64-v8a & x86_64)"]
+        AAB --> PlayConsole
+    end
+
+    subgraph CloudNodes ["Google Cloud & Supabase Backend Nodes"]
+        direction TB
+        subgraph FirebaseProject ["Firebase Project: nutriview-943cd (Spark Plan $0)"]
+            AuthSvc["Firebase Authentication Service\n(Email/Password, Google OAuth 2.0)"]
+            FirestoreSvc["Cloud Firestore Multi-Tenant Database\n(Region: asia-southeast2 Jakarta)\n• Latensi < 50ms ke ISP Indonesia\n• Indeks Komposit & Aturan RBAC Ketat"]
+            HostingSvc["Firebase Hosting Node\n(Distribusi Asset Web Publik)"]
+        end
+
+        subgraph SupabaseProject ["Supabase Project (Region: ap-southeast-1 Singapore)"]
+            SupaStorageNode["Supabase Object Storage\n• Bucket: food-history-images (Private)\n• Row-Level Security (RLS) Policy\n• Time-Limited Signed URL Generator (1 Jam)"]
+        end
+    end
+
+    %% Relasi Penyebaran & Jaringan
+    PlayConsole -.->|Distribusi / Update Aplikasi| ClientDevice
+    FlutterHost -->|Direct SDK / gRPC via TLS 1.3| FirestoreSvc
+    FlutterHost -->|HTTPS / OAuth 2.0 Token Exchange| AuthSvc
+    FlutterHost -->|HTTPS Multipart / Signed URL Upload| SupaStorageNode
+    FlutterHost -->|Enkripsi Kunci Sesi Lokal| KeyStore
+    FlutterHost -->|Baca/Tulis Cache Luring| DiskCache

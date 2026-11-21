@@ -171,6 +171,16 @@ class SupabaseStorageService {
       );
     }
 
+    if (imageBytes.isEmpty) {
+      throw ArgumentError('File gambar kosong.');
+    }
+
+    if (imageBytes.length > 20 * 1024 * 1024) {
+      throw ArgumentError(
+        'Ukuran foto mentah terlalu besar (> 20MB). Silakan pilih foto yang lebih kecil.',
+      );
+    }
+
     final sb = client;
     if (sb == null) {
       throw StateError('Supabase client belum diinisialisasi.');
@@ -180,6 +190,12 @@ class SupabaseStorageService {
     final compressed = await Isolate.run(
       () => _compressImageWorker(imageBytes),
     );
+
+    if (compressed.bytes.length > SupabaseConfig.maxUploadSizeBytes) {
+      throw ArgumentError(
+        'Ukuran foto terkompresi melebihi batas maksimal 5MB.',
+      );
+    }
 
     // 2. Generate unique, collision-resistant path under user-isolated directory
     final timestamp = DateTime.now().millisecondsSinceEpoch;

@@ -1,0 +1,61 @@
+%% Authentication & Session Flow — OopsieEats (NutriView)
+%% Menampilkan alur Login, Registrasi, Google OAuth, Biometrik, Complete Profile Guard, & Penghapusan Akun
+flowchart TD
+    Start(["Mulai Aplikasi (SplashScreen)"]) --> CheckOnboarding{"Sudah selesai\nOnboarding?"}
+
+    CheckOnboarding -->|Belum| OnboardingScreen["OnboardingScreen\n(3 Slide Edukatif & Interaktif)"]
+    OnboardingScreen -->|Selesai / Lewati| SaveOnboardFlag["Simpan status onboarding di ApiClient"]
+    SaveOnboardFlag --> LoginScreen["LoginScreen (Tampilan Masuk)"]
+
+    CheckOnboarding -->|Sudah| CheckSession{"Pemeriksaan Sesi:\nFirebase Auth currentUser\n& ApiClient Token"}
+
+    CheckSession -->|Sesi Valid & Biometrik Aktif| BiometricPrompt["Tampilkan BiometricPrompt\n(Sidik Jari / Face ID)"]
+    BiometricPrompt -->|Berhasil| ValidateProfileComplete{"is_profile_complete\n== true?"}
+    BiometricPrompt -->|Gagal / Batal| FallbackPassword["Opsi Masukkan Password Fallback\natau Navigasi ke LoginScreen"]
+
+    CheckSession -->|Tidak Ada Sesi / Kadaluarsa| LoginScreen
+
+    LoginScreen --> UserAuthChoice{"Pilihan Autentikasi Pengguna"}
+
+    UserAuthChoice -->|Email & Kata Sandi| EmailAuth["Input Email & Password\nAuthRepository.login()"]
+    UserAuthChoice -->|Google Sign-In| GoogleAuth["GoogleSignIn.signIn()\nOAuth 2.0 Credential Exchange"]
+    UserAuthChoice -->|Belum Punya Akun| RegisterScreen["RegisterScreen\nInput Nama, Email, Password (>=8 chars)\nAuthRepository.register()"]
+    UserAuthChoice -->|Lupa Kata Sandi| ForgotModal["ForgotPasswordModal\nAuthRepository.sendPasswordResetEmail()"]
+
+    RegisterScreen -->|Akun Berhasil Dibuat| CompleteProfileScreen["CompleteProfileScreen\n(Mandatory Biodata Onboarding Gate)"]
+    EmailAuth -->|Login Berhasil| ValidateProfileComplete
+    GoogleAuth -->|OAuth Berhasil| CheckDocExists{"Dokumen users/{uid}\nsudah ada di Firestore?"}
+
+    CheckDocExists -->|Belum| CreateUserDoc["Buat Dokumen Baru users/{uid}\nrole: 'user', is_profile_complete: false"]
+    CreateUserDoc --> CompleteProfileScreen
+    CheckDocExists -->|Sudah| ValidateProfileComplete
+
+    ValidateProfileComplete -->|Tidak & Bukan Admin| CompleteProfileScreen
+    CompleteProfileScreen -->|Isi Form Biodata & Simpan Target| SaveBiodata["ProfileRepository.saveBiodata()\nUpdate is_profile_complete = true"]
+    SaveBiodata --> DashboardScreen["DashboardScreen (Beranda Utama)"]
+
+    ValidateProfileComplete -->|Ya ATAU Role Admin| CheckRole{"Peran Pengguna\n(role)"}
+    CheckRole -->|admin| AdminDashboardScreen["AdminDashboardScreen (Panel CMS)"]
+    CheckRole -->|user| DashboardScreen
+
+    %% Alur Keluar & Hapus Akun
+    DashboardScreen --> UserSessionAction{"Aksi Pengguna"}
+    UserSessionAction -->|Logout| LogoutAction["AuthProvider.logout()\n• Clear Token & Sesi\n• Invalidate Semua Cache Repositori"]
+    LogoutAction --> LoginScreen
+
+    UserSessionAction -->|Hapus Akun| DeleteAccountGuard{"Verifikasi Keamanan\n(Re-autentikasi)"}
+    DeleteAccountGuard -->|Password / Google Reauth| CascadingDelete["Proses Hapus Akun Cascading:\n1. Hapus subkoleksi users/{uid}/meals (batch 450)\n2. Hapus dokumen users/{uid}\n3. Purge folder Supabase Storage users/{uid}/\n4. user.delete() pada Firebase Auth\n5. ApiClient.clearToken() & clearBiometric()"]
+    CascadingDelete --> LoginScreen
+
+    %% Styling
+    classDef start fill:#FFE8A3,stroke:#C47D00,stroke-width:2px,color:#3D2700;
+    classDef decision fill:#FFF2E8,stroke:#DD6B20,stroke-width:2px,color:#7B341E;
+    classDef screen fill:#E8F1FF,stroke:#2B6CB0,stroke-width:2px,color:#1A365D;
+    classDef action fill:#E6FFFA,stroke:#2C7A7B,stroke-width:2px,color:#1D4044;
+    classDef danger fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px,color:#63171B;
+
+    class Start start;
+    class CheckOnboarding,CheckSession,ValidateProfileComplete,CheckRole,UserAuthChoice,CheckDocExists,UserSessionAction,DeleteAccountGuard decision;
+    class OnboardingScreen,LoginScreen,RegisterScreen,CompleteProfileScreen,DashboardScreen,AdminDashboardScreen,ForgotModal screen;
+    class SaveOnboardFlag,BiometricPrompt,FallbackPassword,EmailAuth,GoogleAuth,CreateUserDoc,SaveBiodata,LogoutAction action;
+    class CascadingDelete danger;

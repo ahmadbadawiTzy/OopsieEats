@@ -51,6 +51,30 @@
       },
       "oauth_client": [
         {
+          "client_id": "350308179098-332cnjdc3eighrljub444lf25lsgkrtr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oopsieeats.app",
+            "certificate_hash": "7f2ad760539abe8d4ccec0ea3266bddea8a57ad8"
+          }
+        },
+        {
+          "client_id": "350308179098-39ebv4n5oo39d5pemnnkj5s997obu67l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oopsieeats.app",
+            "certificate_hash": "27c34cea8722a15aa3e5f186b22e48838427d33a"
+          }
+        },
+        {
+          "client_id": "350308179098-dkirg58ht9eimqdavnslqatjkpuc30mq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.oopsieeats.app",
+            "certificate_hash": "08659b8442f62839a6e3ce21e258d624cabd87be"
+          }
+        },
+        {
           "client_id": "350308179098-md8oblv9248foinfud509k81l5q98gij.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

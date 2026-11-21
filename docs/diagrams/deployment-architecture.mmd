@@ -1,0 +1,87 @@
+%% Deployment Architecture — OopsieEats (NutriView)
+%% Menampilkan alur build rilis Android App Bundle (.aab), validasi 12 tahap, dan deployment ke Google Play & Firebase Hosting
+flowchart TB
+    subgraph DevEnvironment ["1. Lingkungan Pengembangan & CI"]
+        SourceCode["Kode Sumber Repositori\n• Flutter 3.x (Dart ^3.13.4)\n• Android SDK 36 (targetSdk & compileSdk)\n• Java 17 (JDK 17)"]
+        KeystoreConfig["Konfigurasi Penandatanganan Kriptografi\n• key.properties (Keystore Path, Passwords, Alias)\n• oopsieeats-upload-keystore.jks (RSA 2048-bit)\n• Strict Fail-Fast di build.gradle.kts (No Debug Fallback)"]
+    end
+
+    subgraph BuildPipeline ["2. Pipeline Build Rilis (Release Gate)"]
+        direction TB
+        BuildCmd["flutter build appbundle --release\n--obfuscate\n--split-debug-info=../symbols/android"]
+        R8Minify["Android Gradle Plugin + R8 Minification\n• isMinifyEnabled = true\n• isShrinkResources = true\n• proguardFiles('proguard-rules.pro')\n• aaptOptions.noCompress('tflite')"]
+        ValidateScript["Automated Release Validation Suite\n(./scripts/validate_release.sh)"]
+
+        subgraph ValidationStages ["12 Tahap Gerbang Kualitas (Quality Gate)"]
+            V1["1. Dependency Resolution"]
+            V2["2. Static Analysis (0 Issues)"]
+            V3["3. Automated Tests (359 Tests Passed)"]
+            V4["4. Release AAB Build Check"]
+            V5["5. R8 Mapping & Symbols Check"]
+            V6["6. Package ID: com.oopsieeats.app"]
+            V7["7. Target SDK 36 (Android 16)"]
+            V8["8. Jarsigner Release Signature"]
+            V9["9. Secret & Keystore Leak Audit"]
+            V10["10. Manifest Permission Strip Audit"]
+            V11["11. 16 KB Page Alignment Audit"]
+            V12["12. Legal Privacy & Deletion Audit"]
+        end
+    end
+
+    subgraph ArtifactOutputs ["3. Output Artefak Rilis Terverifikasi"]
+        AAB["app-release.aab\n(Android App Bundle Rilis Produksi)"]
+        R8Map["mapping.txt\n(R8 ProGuard Obfuscation Map)"]
+        DartSymbols["Dart Split Debug Symbols\n(symbols/android/app.android-*.symbols)"]
+        NativeSymbols["Native C/C++ Debug Symbols\n(Terbundel di BUNDLE-METADATA)"]
+    end
+
+    subgraph DistributionCloud ["4. Distribusi & Layanan Produksi"]
+        subgraph GooglePlay ["Google Play Store"]
+            InternalTrack["Internal Testing Track"]
+            ClosedTrack["Closed Testing Track (20 Tester / 14 Hari)"]
+            ProductionTrack["Production Release Track"]
+        end
+
+        subgraph FirebaseCloud ["Firebase Hosting Production"]
+            PrivacyWeb["Kebijakan Privasi Publik\nhttps://nutriview-943cd.web.app/privacy"]
+            DeleteWeb["Penghapusan Akun Web Publik\nhttps://nutriview-943cd.web.app/delete-account"]
+        end
+
+        subgraph BackendServices ["Backend Operasional"]
+            LiveAuth["Firebase Authentication"]
+            LiveFirestore["Cloud Firestore (Rules Enforced)"]
+            LiveStorage["Supabase Storage (Private Bucket RLS)"]
+        end
+    end
+
+    %% Wiring
+    SourceCode --> BuildCmd
+    KeystoreConfig --> R8Minify
+    BuildCmd --> R8Minify
+    R8Minify --> AAB
+    R8Minify --> R8Map
+    BuildCmd --> DartSymbols
+    R8Minify --> NativeSymbols
+
+    AAB --> ValidateScript
+    ValidateScript --> ValidationStages
+    ValidationStages -->|12/12 PASS| GooglePlay
+
+    InternalTrack --> ClosedTrack
+    ClosedTrack --> ProductionTrack
+
+    DevEnvironment -->|firebase deploy --only hosting| FirebaseCloud
+    ProductionTrack -.->|Tautan Legal Wajib| PrivacyWeb
+    ProductionTrack -.->|Tautan Legal Wajib| DeleteWeb
+    ProductionTrack <-->|Konsumsi API Langsung| BackendServices
+
+    %% Styling
+    classDef dev fill:#FFE8A3,stroke:#C47D00,stroke-width:2px,color:#3D2700;
+    classDef build fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef artifact fill:#E8F1FF,stroke:#2B6CB0,stroke-width:2px,color:#1A365D;
+    classDef cloud fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+
+    class SourceCode,KeystoreConfig dev;
+    class BuildCmd,R8Minify,ValidateScript,ValidationStages,V1,V2,V3,V4,V5,V6,V7,V8,V9,V10,V11,V12 build;
+    class AAB,R8Map,DartSymbols,NativeSymbols artifact;
+    class GooglePlay,FirebaseCloud,BackendServices,InternalTrack,ClosedTrack,ProductionTrack,PrivacyWeb,DeleteWeb,LiveAuth,LiveFirestore,LiveStorage cloud;

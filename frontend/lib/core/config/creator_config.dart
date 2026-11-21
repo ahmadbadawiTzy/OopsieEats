@@ -3,7 +3,7 @@
 class CreatorConfig {
   // Application Info
   static const String appName = 'OopsieEats';
-  static const String appVersion = '1.0.0+1';
+  static const String appVersion = '1.0.0+2002';
   static const String appTagline = 'Kenali Makananmu, Pahami Gizinya';
   static const String appDescription =
       'OopsieEats membantu kamu mengenali makanan dan memahami informasi nutrisinya agar kamu bisa membuat pilihan makan yang lebih sadar.';
@@ -28,4 +28,10 @@ class CreatorConfig {
   static const String instagramUrl = 'https://instagram.com/1hmdbdw_';
   static const String linkedinUrl =
       'https://www.linkedin.com/in/ahmad-badawi-b87274410';
+
+  // Google Play Compliance & Legal Links
+  static const String privacyPolicyUrl =
+      'https://nutriview-943cd.web.app/privacy';
+  static const String deleteAccountUrl =
+      'https://nutriview-943cd.web.app/delete-account';
 }

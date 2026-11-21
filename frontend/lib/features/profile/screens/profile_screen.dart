@@ -1125,14 +1125,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     accentColor: NeoTokens.mintGreen,
                   ),
                   GestureDetector(
-                    onTap: () async {
-                      final updated = await Navigator.pushNamed(
-                        context,
-                        AppRoutes.biodata,
-                      );
-                      if (updated == true && mounted) {
-                        profileProvider.loadProfile();
-                      }
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.biodata);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -1225,14 +1219,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         text: 'Lengkapi Biodata Sekarang',
                         variant: NeoButtonVariant.primary,
                         prefixIcon: AppIcons.add,
-                        onPressed: () async {
-                          final updated = await Navigator.pushNamed(
-                            context,
-                            AppRoutes.biodata,
-                          );
-                          if (updated == true && mounted) {
-                            profileProvider.loadProfile();
-                          }
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.biodata);
                         },
                       ),
                     ],

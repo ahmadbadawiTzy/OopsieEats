@@ -122,7 +122,7 @@ class ProfileRepository {
     try {
       // Calculate daily targets deterministically
       final target = NutritionCalculator.calculateDailyTarget(
-        age: profile.age,
+        age: profile.calculatedAge,
         sex: profile.sex,
         weightKg: profile.weightKg,
         heightCm: profile.heightCm,
@@ -181,18 +181,12 @@ class ProfileRepository {
       }
 
       final data = doc.data()!;
-      if (data['daily_target'] != null) {
-        return DailyTarget.fromJson(
-          Map<String, dynamic>.from(data['daily_target'] as Map),
-        );
-      }
-
-      if (data['profile'] != null) {
+      if (data['profile'] is Map) {
         final profile = UserProfile.fromJson(
           Map<String, dynamic>.from(data['profile'] as Map),
         );
         final target = NutritionCalculator.calculateDailyTarget(
-          age: profile.age,
+          age: profile.calculatedAge,
           sex: profile.sex,
           weightKg: profile.weightKg,
           heightCm: profile.heightCm,
@@ -200,22 +194,30 @@ class ProfileRepository {
           goal: profile.goal,
         );
 
-        // Cache computed target
-        await _firestore.collection('users').doc(uid).set({
-          'daily_target': {
-            'calories_kcal': target.caloriesKcal,
-            'protein_g': target.proteinG,
-            'carbs_g': target.carbsG,
-            'fat_g': target.fatG,
-            'basis': {
-              'bmr_kcal': target.bmrKcal,
-              'tdee_kcal': target.tdeeKcal,
-              'formula': 'mifflin_st_jeor',
+        if (data['daily_target'] == null) {
+          // Cache computed target if not yet stored
+          await _firestore.collection('users').doc(uid).set({
+            'daily_target': {
+              'calories_kcal': target.caloriesKcal,
+              'protein_g': target.proteinG,
+              'carbs_g': target.carbsG,
+              'fat_g': target.fatG,
+              'basis': {
+                'bmr_kcal': target.bmrKcal,
+                'tdee_kcal': target.tdeeKcal,
+                'formula': 'mifflin_st_jeor',
+              },
             },
-          },
-        }, SetOptions(merge: true));
+          }, SetOptions(merge: true));
+        }
 
         return target;
+      }
+
+      if (data['daily_target'] is Map) {
+        return DailyTarget.fromJson(
+          Map<String, dynamic>.from(data['daily_target'] as Map),
+        );
       }
 
       throw ApiException(

@@ -1,0 +1,53 @@
+%% Diagram 5: UML Use Case Diagram — Actors: Regular User & Administrator
+flowchart LR
+    User(["👤 Regular User"])
+    Admin(["🛡️ Administrator"])
+    AuthService[["🔐 Firebase Auth"]]
+    CameraHW[["📷 Kamera / Galeri"]]
+
+    subgraph SystemBoundary ["BATAS SISTEM OOPSIEEATS"]
+        UC01["UC-01: Masuk & Daftar Akun Multi-Metode"]
+        UC02["UC-02: Pengisian Biodata Wajib (Complete Profile Guard)"]
+        UC03["UC-03: Pindai Makanan dengan Kamera On-Device"]
+        UC04["UC-04: Atur Bobot Porsi & Validasi Gizi"]
+        UC05["UC-05: Simpan Catatan Makan & Unggah Foto"]
+        UC06["UC-06: Pantau Progres Kalori & Makronutrien"]
+        UC07["UC-07: Telusuri Riwayat Makan Harian"]
+        UC08["UC-08: Baca Artikel Edukasi Gizi"]
+        UC09["UC-09: Hapus Akun Bertingkat (Cascade Deletion)"]
+
+        UC10["UC-10: Kelola Katalog Master Pangan (TKPI 2020)"]
+        UC11["UC-11: Uji Simulator Validasi Atwater (4-4-9)"]
+        UC12["UC-12: Kelola Publikasi Artikel CMS"]
+        UC13["UC-13: Inspeksi Log Audit Sistem Tak-Terubah"]
+
+        UC03 -.->|«include»| UC04
+        UC04 -.->|«include»| UC05
+        UC05 -.->|«include»| UC06
+        UC01 -.->|«include»| UC02
+        UC10 -.->|«include»| UC11
+    end
+
+    User --> UC01
+    User --> UC02
+    User --> UC03
+    User --> UC06
+    User --> UC07
+    User --> UC08
+    User --> UC09
+
+    Admin --> UC10
+    Admin --> UC12
+    Admin --> UC13
+
+    UC01 --- AuthService
+    UC09 --- AuthService
+    UC03 --- CameraHW
+
+    classDef actor fill:#F3F4F6,stroke:#4B5563,color:#111827,stroke-width:1.5px;
+    classDef ext fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:1.5px;
+    classDef uc fill:#FFFFFF,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px;
+
+    class User,Admin actor;
+    class AuthService,CameraHW ext;
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13 uc;

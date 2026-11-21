@@ -1,47 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 import 'package:oopsieeats/features/onboarding/models/onboarding_tokens.dart';
 
-/// Editorial NutriView brand badge with black pill, green wordmark,
-/// white secondary, and clean offset shadow rotated -3 degrees.
+/// Editorial OopsieEats / NutriView brand badge with thick black border,
+/// primaryGreen & mintGreen/vividYellow accents, and hard offset shadow.
 class BrandBadge extends StatelessWidget {
   const BrandBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Transform.rotate(
-      angle: -0.052, // approx -3 degrees
+      angle: -0.045, // ~ -2.6 degrees editorial tilt
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 6.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         decoration: BoxDecoration(
-          color: OnboardingTokens.black,
-          borderRadius: BorderRadius.circular(999.0),
+          color: NeoTokens.black,
+          borderRadius: BorderRadius.circular(NeoTokens.radiusPill),
+          border: Border.all(
+            color: NeoTokens.white,
+            width: NeoTokens.borderWidth,
+          ),
           boxShadow: const [
             BoxShadow(
-              color: OnboardingTokens.white,
-              offset: Offset(3.0, 3.0),
-              blurRadius: 0.0,
+              color: NeoTokens.vividYellow,
+              offset: Offset(3.5, 3.5),
+              blurRadius: NeoTokens.shadowBlurRadius,
             ),
           ],
         ),
-        child: RichText(
-          text: const TextSpan(
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.2,
-              height: 1.0,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 8.0,
+              height: 8.0,
+              decoration: const BoxDecoration(
+                color: OnboardingTokens.primaryGreen,
+                shape: BoxShape.circle,
+              ),
             ),
-            children: [
+            const SizedBox(width: 6.0),
+            const Text.rich(
               TextSpan(
-                text: 'Oopsie',
-                style: TextStyle(color: OnboardingTokens.green),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.3,
+                  height: 1.0,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Oopsie',
+                    style: TextStyle(color: NeoTokens.mintGreen),
+                  ),
+                  TextSpan(
+                    text: 'Eats',
+                    style: TextStyle(color: NeoTokens.vividYellow),
+                  ),
+                ],
               ),
-              TextSpan(
-                text: 'Eats',
-                style: TextStyle(color: OnboardingTokens.white),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

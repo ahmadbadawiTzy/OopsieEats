@@ -171,7 +171,7 @@ def build_docx():
 
     p_title = doc.add_paragraph()
     p_title.paragraph_format.space_after = Pt(4)
-    r_title = p_title.add_run("NUTRIVIEW")
+    r_title = p_title.add_run("OOPSIEEATS")
     r_title.font.name = "Arial"
     r_title.font.size = Pt(32)
     r_title.font.bold = True
@@ -179,9 +179,9 @@ def build_docx():
 
     p_sub = doc.add_paragraph()
     p_sub.paragraph_format.space_after = Pt(18)
-    r_sub = p_sub.add_run("Food Nutrition Recognition & Daily Tracking Mobile Application")
+    r_sub = p_sub.add_run("Food Nutrition Recognition & Daily Tracking App (Historically NutriView)")
     r_sub.font.name = "Arial"
-    r_sub.font.size = Pt(16)
+    r_sub.font.size = Pt(15)
     r_sub.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
 
     # Accent divider table
@@ -198,8 +198,8 @@ def build_docx():
     r_desc = p_desc.add_run(
         "Dokumen Business Requirements Document (BRD) dan Rekonstruksi Spesifikasi Teknis Komprehensif: "
         "Arsitektur Flutter Layered, Komputasi On-Device Edge AI (YOLO26n TFLite Worker Isolate), "
-        "Basis Data NoSQL Cloud Firestore Multi-Tenant, Formulasi Deterministik Mifflin-St Jeor & Atwater 4-4-9, "
-        "serta Pengujian Mutu Otomatis 256 Test Cases."
+        "Basis Data NoSQL Cloud Firestore Multi-Tenant, Penyimpanan Citra Supabase Storage dengan Row-Level Security, "
+        "Formulasi Deterministik Mifflin-St Jeor & Atwater 4-4-9, serta Pengujian Mutu Otomatis 359 Test Cases (42 File Uji)."
     )
     r_desc.font.name = "Arial"
     r_desc.font.size = Pt(11)
@@ -213,8 +213,8 @@ def build_docx():
         ("Nomor Induk Mahasiswa (NIM)", "20090015"),
         ("Program Studi / Jurusan", "Sistem Informasi"),
         ("Institusi Akademik", "Universitas Bina Insani"),
-        ("Versi Dokumen / Status", "Versi 1.0.0 (Final Release Candidate)"),
-        ("Tahun Akademik & Tanggal", "2026 / 07 November 2026")
+        ("Versi Dokumen / Status", "Versi 1.1.0 (Full Reconstruction Release)"),
+        ("Tahun Akademik & Tanggal", "2026 / 13 November 2026")
     ]
     for i, (k, v) in enumerate(meta_info):
         c0, c1 = t_meta.cell(i, 0), t_meta.cell(i, 1)
@@ -260,7 +260,7 @@ def build_docx():
         ("Nama Dokumen", "Business Requirements Document (BRD) & Project Report"),
         ("Klasifikasi Dokumen", "Dokumentasi Teknis & Laporan Tugas Akhir / Proyek"),
         ("Distribusi Salinan", "Dosen Pembimbing, Dosen Penguji, Arsip Akademik"),
-        ("Integritas Sistem", "100% Berbasis Kode Sumber Terverifikasi (256/256 Automated Tests Passed)")
+        ("Integritas Sistem", "100% Berbasis Kode Sumber Terverifikasi (359/359 Automated Tests Passed, 42 Test Files)")
     ]
     for i, (k, v) in enumerate(dc_rows):
         c0, c1 = t_dc.cell(i, 0), t_dc.cell(i, 1)
@@ -288,13 +288,14 @@ def build_docx():
     r_rev.font.bold = True
     r_rev.font.color.rgb = RGBColor(0x1E, 0x40, 0xAF)
 
-    t_rev = doc.add_table(rows=4, cols=5)
+    t_rev = doc.add_table(rows=5, cols=5)
     t_rev.alignment = WD_TABLE_ALIGNMENT.CENTER
     rev_headers = ["Versi", "Tanggal", "Penulis", "Perubahan Utama", "Status"]
     rev_data = [
         ["0.1.0", "15 Okt 2026", "Ahmad Badawi", "Draft inisial kebutuhan fungsional & arsitektur", "Superseded"],
         ["0.9.0", "01 Nov 2026", "Ahmad Badawi", "Audit arsitektur edge AI & sinkronisasi NoSQL", "Reviewed"],
-        ["1.0.0", "07 Nov 2026", "Ahmad Badawi", "Final release: Redesain diagram UML & 256 tests audit", "Approved"]
+        ["1.0.0", "07 Nov 2026", "Ahmad Badawi", "Final release: Redesain diagram UML & 256 tests audit", "Superseded"],
+        ["1.1.0", "13 Nov 2026", "Ahmad Badawi", "Rekonstruksi Total: OopsieEats Rebranding, Supabase Storage, Complete Profile Guard & 359 Tests", "Approved"]
     ]
     for j, h in enumerate(rev_headers):
         cell = t_rev.cell(0, j)

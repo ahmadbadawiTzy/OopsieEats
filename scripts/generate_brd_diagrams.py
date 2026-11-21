@@ -296,7 +296,7 @@ def generate_deployment_architecture():
     <text x="25" y="90" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#334155">Play Console Pipeline:</text>
     <text x="25" y="106" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Android App Bundle (.aab)</text>
     <text x="25" y="120" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Play App Signing (KMS)</text>
-    <text x="25" y="134" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Target SDK 34 Compliance</text>
+    <text x="25" y="134" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Target SDK 36 Compliance</text>
     <text x="25" y="148" font-family="system-ui, sans-serif" font-size="9" fill="#475569">• Split APK per Device ABI</text>
   </g>
 
@@ -1512,7 +1512,7 @@ def generate_security_rules_flow():
     <text x="25" y="68" font-family="system-ui" font-size="9" fill="#334155">• foods, cms_articles: allow read: if true; write: if isAdmin()</text>
     <text x="25" y="84" font-family="system-ui" font-size="9" fill="#334155">• cms_audit_logs: update, delete: if false (IMMUTABLE)</text>
     <text x="25" y="100" font-family="system-ui" font-size="9" fill="#334155">• Default Deny: match /{{document=**}} {{ allow: false; }}</text>
-    <text x="25" y="116" font-family="system-ui" font-size="9" font-weight="700" fill="#DC2626">100% Verified across 256 automated test cases.</text>
+    <text x="25" y="116" font-family="system-ui" font-size="9" font-weight="700" fill="#DC2626">100% Verified across 359 automated test cases (42 files).</text>
   </g>
 
   <!-- Connectors from Target Path to Rules -->

@@ -1,12 +1,12 @@
-# NutriView — Panduan Pengembangan & Standar Rekayasa
+# OopsieEats (NutriView) — Panduan Pengembangan & Standar Rekayasa
 
-Dokumen ini memuat panduan komprehensif bagi developer mengenai konvensi kode, arsitektur perangkat lunak, sistem desain antarmuka, serta penanganan error pada aplikasi **NutriView**.
+Dokumen ini memuat panduan komprehensif bagi developer mengenai konvensi kode, arsitektur perangkat lunak, sistem desain antarmuka, serta penanganan error pada aplikasi **OopsieEats** (`com.oopsieeats.app`, nama historis: *NutriView*).
 
 ---
 
 ## 1. Konvensi & Standar Kode Dart
 
-NutriView mengikuti pedoman resmi [*Effective Dart*](https://dart.dev/effective-dart) yang ditegakkan secara otomatis melalui linter `flutter_lints`:
+OopsieEats mengikuti pedoman resmi [*Effective Dart*](https://dart.dev/effective-dart) yang ditegakkan secara otomatis melalui linter `flutter_lints`:
 
 1. **Penamaan Berkas & Simbol**:
    - Berkas: `snake_case.dart` (contoh: `nutrition_calculator.dart`, `dashboard_screen.dart`).
@@ -29,11 +29,11 @@ NutriView mengikuti pedoman resmi [*Effective Dart*](https://dart.dev/effective-
 
 ## 2. Penerapan Prinsip SOLID & OOP
 
-Arsitektur NutriView menerapkan kelima prinsip SOLID secara konsisten:
+Arsitektur OopsieEats menerapkan kelima prinsip SOLID secara konsisten:
 
-| Prinsip | Implementasi Aktual pada NutriView |
+| Prinsip | Implementasi Aktual pada OopsieEats |
 |---|---|
-| **Single Responsibility Principle (SRP)** | - `NutritionCalculator`: Hanya berisi komputasi matematis BMR, TDEE, makronutrien, dan Atwater.<br>- `YoloDetector`: Hanya mengelola siklus hidup model dan inferensi TFLite.<br>- `ApiClient`: Hanya bertanggung jawab atas persistensi token dan preferensi sesi pada secure storage. |
+| **Single Responsibility Principle (SRP)** | - `NutritionCalculator`: Hanya berisi komputasi matematis BMR, TDEE, makronutrien, dan Atwater.<br>- `AgeCalculator`: Hanya menghitung umur dinamis dari tanggal lahir.<br>- `YoloDetector`: Hanya mengelola siklus hidup model dan inferensi TFLite.<br>- `SupabaseStorageService`: Hanya mengelola kompresi dan transfer citra ke bucket Supabase.<br>- `ApiClient`: Hanya bertanggung jawab atas persistensi token dan preferensi sesi pada secure storage. |
 | **Open/Closed Principle (OCP)** | - `AvatarCatalog`: Penambahan karakter avatar baru dilakukan dengan menambahkan entri objek `GameAvatarCharacter` ke dalam daftar tanpa perlu mengubah widget modal seleksi (`AvatarSelectionModal`) atau layar profil. |
 | **Liskov Substitution Principle (LSP)** | - Seluruh repositori menerima klien dan database melalui antarmuka atau parameter opsional yang dapat digantikan sepenuhnya oleh objek tiruan (*test doubles/mocks*) tanpa merusak kontrak kode. |
 | **Interface Segregation Principle (ISP)** | - `BiometricService` memisahkan fungsi pengecekan perangkat keras (`isAvailable`), query jenis sensor (`getAvailableBiometrics`), dan autentikasi (`authenticate`) secara atomik. |
@@ -41,27 +41,43 @@ Arsitektur NutriView menerapkan kelima prinsip SOLID secara konsisten:
 
 ---
 
-## 3. Manajemen Status (State Management via Provider)
+## 3. Manajemen Status (State Management via Provider v6.1.2)
 
-Aplikasi menggunakan paket resmi `provider` (v6.1.2) dengan pemisahan peran yang tegas:
+Aplikasi menggunakan pola **MultiProvider** resmi Flutter dengan pemisahan peran yang tegas antara lapisan UI dan State:
 
-```text
-┌────────────────────────────────────────────────────────┐
-│                        main.dart                       │
-│  MultiProvider: Registrasi Repositori & ViewModels     │
-└──────────┬──────────────────────────────────┬──────────┘
-           │ Inject Repositories             │ Expose ChangeNotifier
-           ▼                                  ▼
-┌──────────────────────┐           ┌──────────────────────┐
-│  Repositories Layer  │           │   ChangeNotifier     │
-│  (Auth, Meal, Food)  │           │   Providers Layer    │
-└──────────────────────┘           └──────────┬───────────┘
-                                              │ context.watch() / select()
-                                              ▼
-                                   ┌──────────────────────┐
-                                   │  Presentation Layer  │
-                                   │  (Consumer Widgets)  │
-                                   └──────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Bootstrapping ["1. main.dart (MultiProvider Injection)"]
+        direction TB
+        InjectRepos["Registrasi Singletons Repositori & Services:\n• ApiClient, SupabaseStorageService, YoloDetector\n• AuthRepository, ProfileRepository, FoodRepository\n• MealRepository, DashboardRepository, ArticleRepository"]
+        InjectProviders["Inisialisasi ChangeNotifier Providers:\n• AuthProvider, ProfileProvider, DashboardProvider\n• ScanFlowProvider, MealHistoryProvider"]
+    end
+
+    subgraph BusinessLogic ["2. ChangeNotifier Providers Layer"]
+        direction TB
+        AuthP["AuthProvider\n(Sesi & Keamanan)"]
+        DashP["DashboardProvider\n(Intake Harian)"]
+        ScanP["ScanFlowProvider\n(Alur Kamera & Porsi)"]
+        MealP["MealHistoryProvider\n(Riwayat Makan)"]
+        ProfP["ProfileProvider\n(Biodata & Target)"]
+    end
+
+    subgraph Presentation ["3. Presentation Layer (Consumer Widgets)"]
+        direction TB
+        Consumers["Widget Konsumen Reaktif:\n• context.select<T, R>() (Granular)\n• Consumer<T> (Scoped Rebuild)\n• context.read<T>() (Aksi Tombol / Callback)"]
+    end
+
+    InjectRepos --> BusinessLogic
+    InjectProviders --> BusinessLogic
+    BusinessLogic --> Presentation
+
+    classDef boot fill:#EBF8FF,stroke:#3182CE,stroke-width:2px,color:#1A365D;
+    classDef logic fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef ui fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+
+    class Bootstrapping,InjectRepos,InjectProviders boot;
+    class BusinessLogic,AuthP,DashP,ScanP,MealP,ProfP logic;
+    class Presentation,Consumers ui;
 ```
 
 ### Praktik Terbaik Konsumsi State:
@@ -69,14 +85,15 @@ Aplikasi menggunakan paket resmi `provider` (v6.1.2) dengan pemisahan peran yang
    Gunakan `context.select<T, R>()` atau bungkus widget dengan `Consumer<T>` tepat pada elemen antarmuka yang memerlukan render ulang. Hal ini mencegah *re-render* seluruh halaman saat hanya satu nilai kecil yang berubah.
 2. **Gunakan `context.read()` untuk Eksekusi Aksi**:
    Pada fungsi *callback* tombol atau event handler (`onPressed`, `onTap`), gunakan `context.read<AuthProvider>().login(...)`. Jangan menggunakan `watch` di dalam event handler.
-3. **Invalidasi Cache Saat Logout**:
-   `AuthProvider.onLogout` mengikat aksi invalidasi cache pada `DashboardRepository`, `FoodRepository`, dan `ArticleRepository` untuk menjamin tidak ada kebocoran data antar-sesi pengguna.
+3. **Invalidasi Lintas Provider Saat Logout & Update Biodata**:
+   - `authProvider.onLogout`: Mengikat aksi invalidasi cache pada `DashboardRepository`, `FoodRepository`, `ArticleRepository`, dan `SupabaseStorageService` untuk mencegah kebocoran data antar-sesi pengguna.
+   - `profileProvider.onProfileUpdated`: Menginvalidasi cache dashboard dan memperbarui target gizi di `DashboardProvider` secara instan.
 
 ---
 
 ## 4. Sistem Desain Antarmuka: Overkill Neo-Brutalism
 
-NutriView menggunakan bahasa visual **Overkill Neo-Brutalism** yang khas, energik, dan kontras tinggi:
+OopsieEats menggunakan bahasa visual **Overkill Neo-Brutalism** yang khas, energik, dan kontras tinggi:
 
 ### 4.1. Token Desain (`neo_tokens.dart`)
 - **Warna Aksen**:
@@ -100,18 +117,11 @@ NutriView menggunakan bahasa visual **Overkill Neo-Brutalism** yang khas, energi
     ]
     ```
 
-### 4.2. Katalog Karakter Avatar Vektor (`AvatarCatalog`)
-NutriView tidak meminta unggahan foto profil dari kamera untuk menjaga efisiensi penyimpanan dan privasi pengguna. Sebagai gantinya, aplikasi menyertakan karakter avatar game yang digambar menggunakan `CustomPainter` Flutter:
-- `chef_pro` ("Master Koki" — Ahli Kuliner Sehat)
-- `runner_ace` ("Pelari Tangguh" — Atlet Kebugaran)
-- `cyber_gamer` ("Cyber Hero" — Pecinta Teknologi)
-- dan karakter lainnya.
-
 ---
 
-## 5. Hierarki Penanganan Kesalahan (Error Handling)
+## 5. Hierarki & Penanganan Kesalahan (Error Handling)
 
-NutriView menerapkan sistem penanganan error terpusat yang ramah pengguna tanpa mengekspos detail teknis yang membingungkan:
+Aplikasi menggunakan kelas pengecualian terpusat `ApiException` (`error_handler.dart`):
 
 ```dart
 class ApiException implements Exception {
@@ -119,28 +129,24 @@ class ApiException implements Exception {
   final String code;
   final String message;
   final Map<String, dynamic>? details;
-  ...
+
+  ApiException({
+    required this.statusCode,
+    required this.code,
+    required this.message,
+    this.details,
+  });
 }
 ```
 
-### Kode Error Terstandar:
-- `UNAUTHORIZED`: Pengguna belum login atau token sesi kedaluwarsa (otomatis diarahkan ke layar Login).
-- `ACCOUNT_DEACTIVATED`: Akun dinonaktifkan oleh administrator.
-- `EMAIL_ALREADY_REGISTERED`: Email pendaftaran sudah digunakan.
-- `FOOD_NOT_FOUND` / `MEAL_NOT_FOUND`: Data yang diminta tidak tersedia di basis data.
-- `VALIDATION_ERROR`: Validasi formulir gagal (misal: password kurang dari 8 karakter).
-- `FIREBASE_NOT_INITIALIZED`: Kesalahan internal inisialisasi cloud.
+### Pencegahan Kebocoran Data Sensitif (*Error Sanitization*)
+Metode `AuthRepository.sanitizeErrorMessage(raw)` secara otomatis memindai pesan galat dari backend atau SDK. Apabila pesan mengandung:
+- Pola *stack trace* (`#0 `, `package:`, `dart:`, `Exception: `)
+- Kueri basis data / kata kunci SQL (`SELECT`, `INSERT`, `FIRESTORE`, dll)
+- Kunci API / token (`AIza...`, `sb_...`, `Bearer ...`)
+- Alamat URL internal (`http://`, `https://`)
+- Kode galat Firebase mentah (`[firebase_auth/...]`)
 
-Seluruh pesan kesalahan ditampilkan kepada pengguna menggunakan `NeoSnackbar` yang memiliki batas hitam tebal dan ikon semantik yang jelas.
-
----
-
-## 6. Konfigurasi Profil Kreator (`creator_config.dart`)
-
-Informasi pengembang aplikasi dikelola secara terpusat pada `frontend/lib/core/config/creator_config.dart`:
-- Memungkinkan pembaruan data biografi, media sosial (GitHub, LinkedIn, Instagram), dan versi rilis aplikasi tanpa mengubah tata letak UI pada `AboutScreen`.
-- Menyediakan tautan portofolio profesional pengembang:
-  - Nama: **Ahmad Badawi**
-  - Peran: Pembuat & Pengembang NutriView
-  - Domain: Web · AI · Mobile
-  - Repositori: `https://github.com/ahmadbadawiTzy`
+Sistem akan secara otomatis menyensornya dan menggantinya dengan pesan ramah pengguna:
+*"Terjadi kesalahan pada sistem. Silakan coba lagi."*
+Hal ini mencegah risiko kebocoran arsitektur internal kepada pihak yang tidak berhak.

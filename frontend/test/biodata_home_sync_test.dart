@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
+import 'package:oopsieeats/core/error_handler.dart';
+import 'package:oopsieeats/core/nutrition_calculator.dart';
+import 'package:oopsieeats/core/routes.dart';
 import 'package:oopsieeats/core/theme.dart';
 import 'package:oopsieeats/data/api_client.dart';
 import 'package:oopsieeats/data/models/article.dart';
@@ -20,6 +24,7 @@ import 'package:oopsieeats/features/dashboard/providers/dashboard_provider.dart'
 import 'package:oopsieeats/features/dashboard/screens/dashboard_screen.dart';
 import 'package:oopsieeats/features/meals/providers/meal_history_provider.dart';
 import 'package:oopsieeats/features/profile/providers/profile_provider.dart';
+import 'package:oopsieeats/features/profile/screens/biodata_screen.dart';
 import 'package:oopsieeats/shared/neo/neo.dart';
 
 class MockAuthProvider extends Mock implements AuthProvider {}
@@ -82,6 +87,16 @@ class SynchronizedCachingDashboardRepository implements DashboardRepository {
 void main() {
   setUpAll(() async {
     await initializeDateFormatting('id_ID', null);
+    registerFallbackValue(
+      UserProfile(
+        age: 25,
+        sex: 'male',
+        weightKg: 70,
+        heightCm: 175,
+        activityLevel: 'moderate',
+        goal: 'maintain_weight',
+      ),
+    );
   });
 
   group('Biodata & Dashboard Home Synchronization Regression Tests', () {
@@ -349,6 +364,456 @@ void main() {
       realRepo.invalidateUserCache();
       realRepo.invalidateUserCache();
       expect(true, isTrue);
+    });
+
+    test('Scenarios 1-5: Changing weight, height, age, activity level, or multiple fields immediately recalculates Home calorie summary; non-nutrition fields do not', () async {
+      final repository = SynchronizedCachingDashboardRepository(initialDashboard);
+      final dashboardProvider = DashboardProvider(repository);
+
+      // Wire ProfileProvider -> DashboardProvider synchronization as in main.dart
+      profileProvider.onProfileUpdated = () {
+        if (profileProvider.dailyTarget != null) {
+          dashboardProvider.updateTargetFromBiodata(profileProvider.dailyTarget!);
+        }
+      };
+
+      await dashboardProvider.loadDashboard();
+      await profileProvider.loadProfile();
+
+      final baseProfile = UserProfile(
+        age: 25,
+        sex: 'male',
+        weightKg: 70,
+        heightCm: 175,
+        activityLevel: 'moderate',
+        goal: 'maintain_weight',
+      );
+
+      when(
+        () => mockProfileRepo.saveBiodata(
+          fullName: any(named: 'fullName'),
+          profile: any(named: 'profile'),
+        ),
+      ).thenAnswer((invocation) async {
+        return invocation.namedArguments[#profile] as UserProfile;
+      });
+
+      // 1. Change weight (70 -> 80 kg) -> calorie summary updates immediately
+      final weightUpdated = baseProfile.copyWith(weightKg: 80);
+      final expectedWeightTarget = NutritionCalculator.calculateDailyTarget(
+        age: weightUpdated.calculatedAge,
+        sex: weightUpdated.sex,
+        weightKg: weightUpdated.weightKg,
+        heightCm: weightUpdated.heightCm,
+        activityLevel: weightUpdated.activityLevel,
+        goal: weightUpdated.goal,
+      );
+      final ok1 = await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: weightUpdated,
+      );
+      expect(ok1, isTrue);
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedWeightTarget.caloriesKcal.toDouble()),
+      );
+      expect(
+        dashboardProvider.dashboard!.progress.calories.target,
+        equals(expectedWeightTarget.caloriesKcal.toDouble()),
+      );
+
+      // 2. Change height (175 -> 185 cm) -> calorie summary updates immediately
+      final heightUpdated = weightUpdated.copyWith(heightCm: 185);
+      final expectedHeightTarget = NutritionCalculator.calculateDailyTarget(
+        age: heightUpdated.calculatedAge,
+        sex: heightUpdated.sex,
+        weightKg: heightUpdated.weightKg,
+        heightCm: heightUpdated.heightCm,
+        activityLevel: heightUpdated.activityLevel,
+        goal: heightUpdated.goal,
+      );
+      await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: heightUpdated,
+      );
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedHeightTarget.caloriesKcal.toDouble()),
+      );
+
+      // 3. Change age (25 -> 35) -> calorie summary updates immediately
+      final ageUpdated = heightUpdated.copyWith(age: 35);
+      final expectedAgeTarget = NutritionCalculator.calculateDailyTarget(
+        age: ageUpdated.calculatedAge,
+        sex: ageUpdated.sex,
+        weightKg: ageUpdated.weightKg,
+        heightCm: ageUpdated.heightCm,
+        activityLevel: ageUpdated.activityLevel,
+        goal: ageUpdated.goal,
+      );
+      await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: ageUpdated,
+      );
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedAgeTarget.caloriesKcal.toDouble()),
+      );
+
+      // 4. Change activity level ('moderate' -> 'active') -> calorie summary updates immediately
+      final activityUpdated = ageUpdated.copyWith(activityLevel: 'active');
+      final expectedActivityTarget = NutritionCalculator.calculateDailyTarget(
+        age: activityUpdated.calculatedAge,
+        sex: activityUpdated.sex,
+        weightKg: activityUpdated.weightKg,
+        heightCm: activityUpdated.heightCm,
+        activityLevel: activityUpdated.activityLevel,
+        goal: activityUpdated.goal,
+      );
+      await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: activityUpdated,
+      );
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedActivityTarget.caloriesKcal.toDouble()),
+      );
+
+      // 5a. Change multiple biodata fields (sex, weight, height, goal) -> summary updates accurately
+      final multiUpdated = UserProfile(
+        age: 28,
+        sex: 'female',
+        weightKg: 58,
+        heightCm: 165,
+        activityLevel: 'light',
+        goal: 'lose_weight',
+      );
+      final expectedMultiTarget = NutritionCalculator.calculateDailyTarget(
+        age: multiUpdated.calculatedAge,
+        sex: multiUpdated.sex,
+        weightKg: multiUpdated.weightKg,
+        heightCm: multiUpdated.heightCm,
+        activityLevel: multiUpdated.activityLevel,
+        goal: multiUpdated.goal,
+      );
+      await profileProvider.saveBiodata(
+        fullName: 'Siti Aminah',
+        newProfile: multiUpdated,
+      );
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedMultiTarget.caloriesKcal.toDouble()),
+      );
+      expect(
+        dashboardProvider.dashboard!.target.proteinG,
+        equals(expectedMultiTarget.proteinG),
+      );
+      expect(
+        dashboardProvider.dashboard!.target.carbsG,
+        equals(expectedMultiTarget.carbsG),
+      );
+      expect(
+        dashboardProvider.dashboard!.target.fatG,
+        equals(expectedMultiTarget.fatG),
+      );
+
+      // 5b. Changing ONLY non-relevant fields (fullName & profession) does NOT trigger recalculation
+      final versionBeforeNonMetric = profileProvider.biodataVersion;
+      var dashboardNotifyCount = 0;
+      dashboardProvider.addListener(() => dashboardNotifyCount++);
+
+      final nonMetricUpdated = multiUpdated.copyWith(profession: 'Dokter');
+      await profileProvider.saveBiodata(
+        fullName: 'Dr. Siti Aminah',
+        newProfile: nonMetricUpdated,
+      );
+      expect(profileProvider.biodataVersion, equals(versionBeforeNonMetric));
+      expect(dashboardNotifyCount, equals(0));
+      expect(profileProvider.user?.fullName, equals('Dr. Siti Aminah'));
+    });
+
+    testWidgets('Scenarios 6 & 7: Saving biodata in Kelola Biodata, navigating back to Home, and restarting app keeps latest calorie summary', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      registerFallbackValue(
+        UserProfile(
+          age: 25,
+          sex: 'male',
+          weightKg: 70,
+          heightCm: 175,
+          activityLevel: 'moderate',
+          goal: 'maintain_weight',
+        ),
+      );
+
+      final repository = SynchronizedCachingDashboardRepository(initialDashboard);
+      final dashboardProvider = DashboardProvider(repository);
+
+      var persistedProfile = UserProfile(
+        age: 25,
+        birthDate: DateTime(2001, 5, 10),
+        sex: 'male',
+        weightKg: 70,
+        heightCm: 175,
+        activityLevel: 'moderate',
+        goal: 'maintain_weight',
+      );
+
+      when(
+        () => mockProfileRepo.saveBiodata(
+          fullName: any(named: 'fullName'),
+          profile: any(named: 'profile'),
+        ),
+      ).thenAnswer((invocation) async {
+        persistedProfile = invocation.namedArguments[#profile] as UserProfile;
+        final target = NutritionCalculator.calculateDailyTarget(
+          age: persistedProfile.calculatedAge,
+          sex: persistedProfile.sex,
+          weightKg: persistedProfile.weightKg,
+          heightCm: persistedProfile.heightCm,
+          activityLevel: persistedProfile.activityLevel,
+          goal: persistedProfile.goal,
+        );
+        repository.updateRemoteTarget(initialDashboard.withUpdatedTarget(target));
+        return persistedProfile;
+      });
+
+      Widget buildTestShell({
+        required ProfileProvider profProv,
+        required DashboardProvider dashProv,
+      }) {
+        return MultiProvider(
+          providers: [
+            Provider<AuthRepository>.value(value: mockAuthRepo),
+            Provider<ProfileRepository>.value(value: mockProfileRepo),
+            Provider<MealRepository>.value(value: mockMealRepo),
+            Provider<ArticleRepository>.value(value: mockArticleRepo),
+            Provider<DashboardRepository>.value(value: repository),
+            ChangeNotifierProvider<AuthProvider>.value(value: mockAuthProvider),
+            ChangeNotifierProvider<ProfileProvider>.value(value: profProv),
+            ChangeNotifierProvider<MealHistoryProvider>.value(value: mealHistoryProvider),
+            ChangeNotifierProvider<DashboardProvider>.value(value: dashProv),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            routes: {
+              AppRoutes.biodata: (_) => const BiodataScreen(),
+            },
+            home: const DashboardScreen(initialTab: NeoNavTab.home),
+          ),
+        );
+      }
+
+      await tester.pumpWidget(
+        buildTestShell(
+          profProv: profileProvider,
+          dashProv: dashboardProvider,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pumpAndSettle();
+
+      // Initial state on Home shows 2000 kcal
+      expect(find.text('2000'), findsWidgets);
+
+      // Update biodata (weight 85 kg, height 180 cm, activity active)
+      final newProfile = UserProfile(
+        age: 25,
+        birthDate: DateTime(2001, 5, 10),
+        sex: 'male',
+        weightKg: 85,
+        heightCm: 180,
+        activityLevel: 'active',
+        goal: 'maintain_weight',
+      );
+      final expectedTarget = NutritionCalculator.calculateDailyTarget(
+        age: newProfile.calculatedAge,
+        sex: newProfile.sex,
+        weightKg: newProfile.weightKg,
+        heightCm: newProfile.heightCm,
+        activityLevel: newProfile.activityLevel,
+        goal: newProfile.goal,
+      );
+
+      await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: newProfile,
+      );
+      await tester.pumpAndSettle();
+
+      // Home Screen immediately displays the recalculated calorie target without manual refresh
+      expect(
+        find.text('${expectedTarget.caloriesKcal}'),
+        findsWidgets,
+      );
+      expect(find.text('2000'), findsNothing);
+
+      // Scenario 6: Navigate to Profile tab and back to Home -> latest values remain displayed
+      await tester.tap(find.text('PROFIL'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('BERANDA'));
+      await tester.pumpAndSettle();
+      expect(find.text('${expectedTarget.caloriesKcal}'), findsWidgets);
+
+      // Scenario 7: Simulate application restart with fresh providers reading persisted state
+      when(() => mockProfileRepo.getUser()).thenAnswer(
+        (_) async => User(
+          id: 1,
+          email: 'ahmadbadawi@example.com',
+          fullName: 'Ahmad Badawi',
+          role: 'user',
+          isProfileComplete: true,
+          profile: persistedProfile,
+        ),
+      );
+      when(() => mockProfileRepo.getDailyTarget()).thenAnswer(
+        (_) async => expectedTarget,
+      );
+
+      final restartedProfileProvider = ProfileProvider(mockProfileRepo);
+      final restartedDashboardProvider = DashboardProvider(repository);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        buildTestShell(
+          profProv: restartedProfileProvider,
+          dashProv: restartedDashboardProvider,
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pumpAndSettle();
+
+      expect(find.text('${expectedTarget.caloriesKcal}'), findsWidgets);
+    });
+
+    test('Scenario 8: Failed biodata save keeps old valid values intact in both ProfileProvider and DashboardProvider', () async {
+      final repository = SynchronizedCachingDashboardRepository(initialDashboard);
+      final dashboardProvider = DashboardProvider(repository);
+
+      profileProvider.onProfileUpdated = () {
+        if (profileProvider.dailyTarget != null) {
+          dashboardProvider.updateTargetFromBiodata(profileProvider.dailyTarget!);
+        }
+      };
+
+      await profileProvider.loadProfile();
+      await dashboardProvider.loadDashboard();
+
+      final initialProfile = profileProvider.profile!;
+      final initialTargetCalories = dashboardProvider.dashboard!.target.caloriesKcal;
+
+      when(
+        () => mockProfileRepo.saveBiodata(
+          fullName: any(named: 'fullName'),
+          profile: any(named: 'profile'),
+        ),
+      ).thenThrow(
+        ApiException(
+          statusCode: 500,
+          code: 'BIODATA_SAVE_FAILED',
+          message: 'Gagal menyimpan biodata pengguna.',
+        ),
+      );
+
+      final attemptedProfile = initialProfile.copyWith(weightKg: 95, heightCm: 190);
+      final success = await profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: attemptedProfile,
+      );
+
+      expect(success, isFalse);
+      expect(profileProvider.errorMessage, isNotNull);
+      // Old valid values remain intact
+      expect(profileProvider.profile!.weightKg, equals(initialProfile.weightKg));
+      expect(profileProvider.profile!.heightCm, equals(initialProfile.heightCm));
+      expect(dashboardProvider.dashboard!.target.caloriesKcal, equals(initialTargetCalories));
+    });
+
+    test('Scenario 9: Repeated rapid updates resolve without stale data or out-of-order race conditions', () async {
+      final repository = SynchronizedCachingDashboardRepository(initialDashboard);
+      final dashboardProvider = DashboardProvider(repository);
+
+      profileProvider.onProfileUpdated = () {
+        if (profileProvider.dailyTarget != null) {
+          dashboardProvider.updateTargetFromBiodata(profileProvider.dailyTarget!);
+        }
+      };
+
+      await profileProvider.loadProfile();
+      await dashboardProvider.loadDashboard();
+
+      final completer1 = Completer<UserProfile>();
+      final completer2 = Completer<UserProfile>();
+
+      final profile1 = UserProfile(
+        age: 25,
+        sex: 'male',
+        weightKg: 60,
+        heightCm: 170,
+        activityLevel: 'sedentary',
+        goal: 'lose_weight',
+      );
+      final profile2 = UserProfile(
+        age: 25,
+        sex: 'male',
+        weightKg: 85,
+        heightCm: 182,
+        activityLevel: 'very_active',
+        goal: 'gain_weight',
+      );
+
+      var callIndex = 0;
+      when(
+        () => mockProfileRepo.saveBiodata(
+          fullName: any(named: 'fullName'),
+          profile: any(named: 'profile'),
+        ),
+      ).thenAnswer((_) {
+        callIndex++;
+        return callIndex == 1 ? completer1.future : completer2.future;
+      });
+
+      // Trigger first update (slow network response)
+      final future1 = profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: profile1,
+      );
+      // Trigger second update immediately after (finishes BEFORE first update!)
+      final future2 = profileProvider.saveBiodata(
+        fullName: 'Ahmad Badawi',
+        newProfile: profile2,
+      );
+
+      completer2.complete(profile2);
+      await future2;
+
+      // Now the outdated first request completes late
+      completer1.complete(profile1);
+      await future1;
+
+      final expectedLatestTarget = NutritionCalculator.calculateDailyTarget(
+        age: profile2.calculatedAge,
+        sex: profile2.sex,
+        weightKg: profile2.weightKg,
+        heightCm: profile2.heightCm,
+        activityLevel: profile2.activityLevel,
+        goal: profile2.goal,
+      );
+
+      // State must match the latest submitted update (profile2), not overwritten by late profile1
+      expect(profileProvider.profile!.weightKg, equals(85));
+      expect(
+        profileProvider.dailyTarget!.caloriesKcal,
+        equals(expectedLatestTarget.caloriesKcal),
+      );
+      expect(
+        dashboardProvider.dashboard!.target.caloriesKcal,
+        equals(expectedLatestTarget.caloriesKcal.toDouble()),
+      );
     });
   });
 }

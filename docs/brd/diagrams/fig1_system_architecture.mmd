@@ -1,0 +1,62 @@
+%% Figure 1: High-Level System Architecture — Edge AI & Serverless Cloud
+%% Standar: UML Architecture Diagram, Single Source of Truth: OopsieEats
+graph TB
+    subgraph ClientNode ["1. Client Device Node (Flutter Mobile Runtime — Android & iOS)"]
+        direction TB
+
+        subgraph PresentationLayer ["Lapisan Presentasi & Desain UI"]
+            UI["Overkill Neo-Brutalism UI\n• Screens: Onboarding (3 Slides), Login, Register, CompleteProfile\n• Shell: NeoBottomNav (Dashboard, History, Scanner, Articles, Profile)\n• Shared Widgets: NeoButton, NeoCard, NeoInput, AvatarCatalog"]
+        end
+
+        subgraph StateLayer ["Lapisan Manajemen State (MultiProvider v6.1.2)"]
+            Prov["Provider Controllers:\n• AuthProvider (Session, Biometric, Complete Profile Guard)\n• DashboardProvider (Selected Date, Intake vs Target Dial)\n• ScanFlowProvider (Multi-step Camera, Detection, Portion Input)\n• MealHistoryProvider (Date Filtering, Pagination, Detail)\n• ProfileProvider (Mifflin-St Jeor Daily Target Calculation)"]
+        end
+
+        subgraph CoreEngineLayer ["Lapisan Logika Inti & Pemrosesan Edge AI"]
+            YOLO["YoloDetector (Worker Isolate)\n• best.tflite (9.4 MB) via tflite_flutter\n• Normalisasi Float32 [1, 3, 640, 640]\n• NMS IoU 0.45 & Confidence Threshold 0.15\n• 29 Kelas Pangan Indonesia"]
+            NUTRI["NutritionCalculator & Engine\n• Mifflin-St Jeor (BMR & TDEE Deterministik)\n• Safe Calorie Floor (Pria >= 1500, Wanita >= 1200)\n• Validasi Faktor Atwater (4P + 4C + 9F)"]
+            AGE["AgeCalculator (Kalkulasi Usia Dinamis)"]
+        end
+
+        subgraph DataRepoLayer ["Lapisan Repositori Data & Layanan"]
+            REPOS["Repository Pattern:\n• AuthRepository (Firebase Auth & Session)\n• MealRepository (users/{uid}/meals & Kalkulasi Porsi)\n• FoodRepository (Katalog foods, Seed Fallback, TTL 10 Min)\n• ProfileRepository (Sinkronisasi users/{uid})\n• SupabaseStorageService (Kompresi & Signed URL)\n• ApiClient (Encrypted Hardware Keystore Wrapper)"]
+        end
+
+        subgraph LocalStorage ["Lapisan Persistensi Lokal"]
+            FSS["FlutterSecureStorage\n(Hardware KeyStore / Keychain)"]
+            FSCache["Cloud Firestore SQLite Cache\n(Bounded 100 MB, LRU Eviction)"]
+            SEED["Asset: seed_foods.json\n(29 Pangan Lokal Cadangan)"]
+        end
+
+        UI --> Prov
+        Prov --> CoreEngineLayer
+        Prov --> DataRepoLayer
+        DataRepoLayer --> LocalStorage
+    end
+
+    subgraph FirebaseCloud ["2. Google Firebase Serverless Backend (Spark Tier $0)"]
+        direction TB
+        FAuth["Firebase Authentication\n• Email / Password & Google OAuth 2.0\n• Bahasa Email: Indonesia ('id')"]
+        Firestore["Cloud Firestore (asia-southeast2 Jakarta)\n• users/{userId} (Profil & Target)\n• users/{userId}/meals/{mealId} (Subkoleksi Multi-Tenant)\n• foods/{foodId} (29 Master Pangan TKPI 2020)\n• cms_articles/{articleId} & cms_audit_logs/{logId}"]
+        SecRules["Strict 2-Role Security Rules\n• Roles: 'admin' dan 'user' (Reject legacy roles)\n• Multi-Tenant Isolation (request.auth.uid == userId)\n• Field Immutability & Anti-Privilege Escalation"]
+        Hosting["Firebase Hosting\n• Distribusi Web Landing & Domain Publik"]
+
+        Firestore --- SecRules
+    end
+
+    subgraph SupabaseCloud ["3. Supabase Cloud Storage (Private Bucket — ap-southeast-1)"]
+        direction TB
+        SupaStorage["Supabase Storage Bucket\n• 'food-history-images' (Private Bucket)\n• Row-Level Security (RLS) terisolasi per User ID\n• Time-Limited Signed URLs (TTL 1 Jam)"]
+    end
+
+    subgraph DeviceHardware ["4. Perangkat Keras Seluler"]
+        CAM["Kamera & Galeri (image_picker)"]
+        BIO["Sensor Biometrik (Fingerprint / Face ID via local_auth)"]
+    end
+
+    %% Koneksi Antar Lapisan
+    CAM --> UI
+    BIO --> REPOS
+    REPOS -->|gRPC / TLS 1.3 / OAuth| FAuth
+    REPOS -->|gRPC / TLS 1.3 / Direct SDK| Firestore
+    REPOS -->|HTTPS / REST API / Signed Upload| SupaStorage

@@ -1,0 +1,154 @@
+%% Database Entity Relationship Diagram (ERD) — OopsieEats (NutriView)
+%% Menampilkan skema dokumen Cloud Firestore NoSQL dan relasi objek Supabase Storage
+erDiagram
+    USERS ||--o{ MEALS : "owns (1:N Subcollection)"
+    USERS ||--o| USER_PROFILE : "embeds (1:1 Map)"
+    USERS ||--o| DAILY_TARGET : "embeds (1:1 Map)"
+    USERS ||--o{ SUPABASE_PROFILE_PHOTOS : "stores (1:N)"
+    MEALS ||--|{ MEAL_ITEMS : "contains (1:N Array)"
+    MEALS ||--|| MEAL_TOTALS : "aggregates (1:1 Map)"
+    MEALS ||--o| SUPABASE_FOOD_IMAGES : "references (1:1 Object)"
+    MEAL_ITEMS }o--|| FOODS : "references food_id"
+    CMS_ARTICLES }o--|| CMS_CATEGORIES : "categorized by category_id"
+    CMS_AUDIT_LOGS }o--|| USERS : "performed_by (Admin UID)"
+
+    USERS {
+        string uid PK "Firebase Auth UID"
+        int id "Numeric identifier"
+        string email "Alamat email unik"
+        string full_name "Nama lengkap pengguna"
+        string role "Peran: user | admin"
+        boolean is_active "Status akun aktif"
+        boolean is_profile_complete "Status kelengkapan biodata"
+        string photo_url "URL bertanda tangan foto profil (opsional)"
+        string photo_path "Jalur objek Supabase Storage (opsional)"
+        string avatar_preset "ID preset avatar vektor (opsional)"
+        string created_at "ISO-8601 Timestamp"
+        string updated_at "ISO-8601 Timestamp"
+        string deactivation_reason "Alasan non-aktif oleh admin (opsional)"
+    }
+
+    USER_PROFILE {
+        int age "Usia terkalkulasi"
+        string birth_date "ISO-8601 Tanggal lahir (opsional)"
+        string sex "Jenis kelamin: male | female"
+        float weight_kg "Berat badan (20 - 300 kg)"
+        float height_cm "Tinggi badan (50 - 250 cm)"
+        string activity_level "sedentary | light | moderate | active | very_active"
+        string goal "lose_weight | maintain_weight | gain_weight"
+        string profession "Profesi pengguna (opsional)"
+    }
+
+    DAILY_TARGET {
+        int calories_kcal "Target kalori harian"
+        float protein_g "Target protein gram"
+        float carbs_g "Target karbohidrat gram"
+        float fat_g "Target lemak gram"
+        map basis "bmr_kcal, tdee_kcal, formula"
+    }
+
+    MEALS {
+        int id PK "Epoch timestamp milidetik"
+        string meal_type "breakfast | lunch | dinner | snack"
+        string consumed_at "ISO-8601 Waktu konsumsi"
+        string consumed_date "YYYY-MM-DD Tanggal konsumsi"
+        string created_at "ISO-8601 Waktu pencatatan"
+    }
+
+    MEAL_ITEMS {
+        int id "Nomor urut item"
+        int food_id FK "ID referensi katalog pangan"
+        string food_name "Nama makanan tercatat"
+        float portion_grams "Bobot porsi aktual (gram)"
+        float calories_kcal "Kalori porsi terhitung"
+        float protein_g "Protein porsi terhitung"
+        float carbs_g "Karbohidrat porsi terhitung"
+        float fat_g "Lemak porsi terhitung"
+        string source "Sumber data acuan (TKPI)"
+        float detection_confidence "Tingkat keyakinan YOLO (opsional)"
+    }
+
+    MEAL_TOTALS {
+        float calories_kcal "Total kalori makan"
+        float protein_g "Total protein makan"
+        float carbs_g "Total karbohidrat makan"
+        float fat_g "Total lemak makan"
+    }
+
+    FOODS {
+        int id PK "ID Pangan master"
+        string name "Nama makanan (Unik)"
+        float calories_kcal_per_100g "Kalori per 100g basis"
+        float protein_g_per_100g "Protein per 100g basis"
+        float carbs_g_per_100g "Karbohidrat per 100g basis"
+        float fat_g_per_100g "Lemak per 100g basis"
+        string source "Sumber data (TKPI 2020)"
+        boolean is_active "Status ketersediaan katalog"
+    }
+
+    CMS_ARTICLES {
+        string id PK "Firestore Auto ID"
+        string title "Judul artikel edukasi"
+        string slug "URL Slug unik"
+        string excerpt "Ringkasan artikel"
+        string content "Isi artikel format Markdown"
+        string image_url "URL gambar header artikel"
+        string category_id FK "ID kategori"
+        string author_name "Nama penulis / ahli gizi"
+        string status "draft | published"
+        string created_at "ISO-8601 Timestamp"
+        string updated_at "ISO-8601 Timestamp"
+    }
+
+    CMS_CATEGORIES {
+        string id PK "Firestore Auto ID"
+        string name "Nama kategori gizi"
+        string slug "Slug kategori unik"
+        string description "Deskripsi kategori"
+    }
+
+    CMS_ANNOUNCEMENTS {
+        string id PK "Firestore Auto ID"
+        string title "Judul pengumuman"
+        string message "Pesan siaran pengumuman"
+        boolean is_active "Status siaran aktif"
+        string valid_until "ISO-8601 Batas waktu tampil"
+        string created_at "ISO-8601 Timestamp"
+    }
+
+    CMS_AUDIT_LOGS {
+        string id PK "Firestore Auto ID"
+        string action "create | update | delete | status_change"
+        string entity "foods | cms_articles | users"
+        string entity_id "ID entitas yang dimodifikasi"
+        string performed_by FK "UID Administrator pelaksana"
+        string timestamp "ISO-8601 Timestamp permanen (immutable)"
+        map payload "Snapshot data perubahan"
+    }
+
+    CMS_MEDIA {
+        string id PK "Firestore Auto ID"
+        string file_name "Nama berkas media"
+        string url "URL HTTPS publik media"
+        int size_bytes "Ukuran berkas dalam byte"
+        string mime_type "Tipe MIME citra"
+        string uploaded_by FK "UID Administrator pengunggah"
+        string created_at "ISO-8601 Timestamp"
+    }
+
+    SUPABASE_FOOD_IMAGES {
+        string bucket "food-history-images"
+        string path PK "userId/mealId/food_timestamp.jpg"
+        int width "Lebar citra (max 1024px)"
+        int height "Tinggi citra"
+        int size_bytes "Ukuran berkas JPEG terkompresi"
+        string mime_type "image/jpeg"
+    }
+
+    SUPABASE_PROFILE_PHOTOS {
+        string bucket "food-history-images"
+        string path PK "userId/profile/profile_timestamp.jpg"
+        int width "512px (1:1 Square)"
+        int height "512px"
+        string mime_type "image/jpeg"
+    }

@@ -50,5 +50,36 @@ void main() {
       final url = await service.getSignedImageUrl('user1/123/food.jpg');
       expect(url, contains('token=abc'));
     });
+
+    test('uploadFoodImage rejects path traversal userId, empty bytes, and >20MB raw payloads', () async {
+      final service = SupabaseStorageService();
+
+      await expectLater(
+        () => service.uploadFoodImage(
+          userId: '../admin',
+          mealId: 1,
+          imageBytes: Uint8List.fromList([1, 2, 3]),
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      await expectLater(
+        () => service.uploadFoodImage(
+          userId: 'validUser123',
+          mealId: 1,
+          imageBytes: Uint8List(0),
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      await expectLater(
+        () => service.uploadFoodImage(
+          userId: 'validUser123',
+          mealId: 1,
+          imageBytes: Uint8List(20 * 1024 * 1024 + 1),
+        ),
+        throwsA(isA<ArgumentError>()),
+      );
+    });
   });
 }

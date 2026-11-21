@@ -1,0 +1,95 @@
+%% UML Class Diagram: Domain Data Models & Firestore Document Entities — OopsieEats
+classDiagram
+    class UserModel {
+        +String uid
+        +String email
+        +String name
+        +String role
+        +bool isProfileComplete
+        +String gender
+        +int age
+        +double height
+        +double weight
+        +String activityLevel
+        +double calorieTarget
+        +double proteinTarget
+        +double carbTarget
+        +double fatTarget
+        +String avatarId
+        +DateTime createdAt
+        +toMap() Map
+        +fromFirestore(doc) UserModel
+    }
+
+    class MealRecord {
+        +String id
+        +String userId
+        +String mealType
+        +DateTime timestamp
+        +String date
+        +double totalCalories
+        +double totalCarbs
+        +double totalProtein
+        +double totalFat
+        +String imagePath
+        +List~MealItem~ items
+        +toMap() Map
+        +fromFirestore(doc) MealRecord
+    }
+
+    class MealItem {
+        +String foodId
+        +String foodName
+        +double portionGrams
+        +double calories
+        +double carbs
+        +double protein
+        +double fat
+        +toMap() Map
+        +fromMap(map) MealItem
+    }
+
+    class FoodItem {
+        +String id
+        +String name
+        +String category
+        +double servingSizeGrams
+        +double caloriesPerServing
+        +double proteinGrams
+        +double carbsGrams
+        +double fatGrams
+        +String tkpiCode
+        +DateTime updatedAt
+        +validateAtwaterConsistency() bool
+    }
+
+    class CMSArticle {
+        +String id
+        +String title
+        +String summary
+        +String contentMarkdown
+        +String coverImageUrl
+        +String category
+        +String status
+        +int readingTimeMinutes
+        +String authorId
+        +DateTime publishedAt
+    }
+
+    class CMSAuditLog {
+        +String id
+        +String adminUid
+        +String adminEmail
+        +String action
+        +String targetCollection
+        +String targetDocumentId
+        +DateTime timestamp
+        +Map snapshotBefore
+        +Map snapshotAfter
+    }
+
+    UserModel "1" --> "0..*" MealRecord : owns in subcollection
+    MealRecord "1" *-- "1..*" MealItem : contains
+    MealItem ..> FoodItem : references nutritional baseline
+    CMSArticle ..> UserModel : authored by admin
+    CMSAuditLog ..> UserModel : executed by admin

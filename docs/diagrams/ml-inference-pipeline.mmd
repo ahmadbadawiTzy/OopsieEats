@@ -1,0 +1,80 @@
+%% Machine Learning Inference Pipeline — OopsieEats (NutriView)
+%% Menampilkan alur pemrosesan citra on-device via Isolate, TFLite Interpreter, NMS, dan integrasi katalog pangan
+flowchart TD
+    subgraph Capture ["1. Akuisisi Citra"]
+        Source["Citra Masukan\n(Sensor Kamera / Galeri via image_picker)"]
+    end
+
+    subgraph IsolatePipeline ["2. Pipeline Pra-Pemrosesan (Dart Background Isolate)"]
+        direction TB
+        IsolateSpawn["Isolate.run(() => _runInferencePipeline(params))\n• Interpreter Address dilewatkan via pointer\n• Bebas jank pada thread UI utama"]
+        Decode["img.decodeImage(rawBytes)\nValidasi byte & integritas berkas citra"]
+        Orientation["img.bakeOrientation(decoded)\nKoreksi rotasi EXIF sensor kamera"]
+        Resize["img.copyResize(decoded, 640, 640)\nInterpolasi linear ke resolusi input model"]
+        Normalize["Normalisasi Piksel Kanal RGB\n• Input: [1, 3, 640, 640] Float32 (NCHW)\n• input[0][0..2][y][x] = pixel.rgb / 255.0"]
+    end
+
+    subgraph NativeInference ["3. Eksekusi Inferensi Neural Network (C++ TFLite Runtime)"]
+        direction TB
+        ModelLoad["best.tflite (~9.4 MB Terkuantisasi)\n• 4 Thread CPU Execution\n• aaptOptions.noCompress('tflite')"]
+        ForwardPass["interpreter.run(input, output)\n• Durasi: ~120 - 350 ms pada ARM64"]
+        OutputTensor["Output Tensor: [1, 33, 8400] Float32\n• Kanal 0: cx, Kanal 1: cy\n• Kanal 2: w, Kanal 3: h\n• Kanal 4..32: Skor probabilitas 29 kelas makanan\n• 8,400 Anchor candidates"]
+    end
+
+    subgraph PostProcessing ["4. Pasca-Pemrosesan & NMS (Isolate)"]
+        direction TB
+        Hoist["Optimized Channel Hoisting\nEliminasi 730,000 bounds checks"]
+        ConfidenceFilter{"Skor Kelas Tertinggi\n>= confidenceThreshold (0.15)?"}
+        Unnormalize["Unnormalize Koordinat Bounding Box\n• Konversi cx, cy, w, h normalisasi [0..1]\n  ke koordinat piksel asli (origW, origH)"]
+        NMS["Non-Maximum Suppression (NMS)\n• Urutkan kandidat berdasarkan confidence descending\n• Hitung Intersection over Union (IoU)\n• Supresi kandidat dengan IoU > 0.45 pada kelas yang sama"]
+        DetectionsList["List<RawDetection>\n(classId, className, confidence, boundingBox)"]
+    end
+
+    subgraph CatalogMapping ["5. Pencocokan Katalog Pangan & Gizi (FoodRepository)"]
+        direction TB
+        Lookup{"Cari di Katalog Pangan\n(Firestore Cache / seed_foods.json)"}
+        Mapped["Status: 'mapped'\nAmbil kalori, protein, karbohidrat, lemak basis 100g"]
+        LowConf["Tandai lowConfidence: true jika confidence < 0.30"]
+        Unmapped["Status: 'unmapped' atau 'food_unavailable'\nPengguna dapat mencari manual via modal"]
+    end
+
+    subgraph OutputUI ["6. Presentasi ke Pengguna"]
+        ConfirmScreen["DetectionConfirmationScreen\n• Tampilkan bounding box visual\n• Input porsi gram aktual\n• Kalkulasi gizi deterministik via NutritionCalculator"]
+    end
+
+    %% Wiring
+    Source --> IsolateSpawn
+    IsolateSpawn --> Decode
+    Decode --> Orientation
+    Orientation --> Resize
+    Resize --> Normalize
+    Normalize --> ModelLoad
+    ModelLoad --> ForwardPass
+    ForwardPass --> OutputTensor
+    OutputTensor --> Hoist
+    Hoist --> ConfidenceFilter
+    ConfidenceFilter -->|Ya| Unnormalize
+    ConfidenceFilter -->|Tidak| DropBox["Abaikan Anchor (Latar Belakang / Noise)"]
+    Unnormalize --> NMS
+    NMS --> DetectionsList
+    DetectionsList --> Lookup
+    Lookup -->|Cocok & Aktif| Mapped
+    Mapped --> LowConf
+    LowConf --> ConfirmScreen
+    Lookup -->|Tidak Ditemukan| Unmapped
+    Unmapped --> ConfirmScreen
+
+    %% Styling
+    classDef capture fill:#FFE8A3,stroke:#C47D00,stroke-width:2px,color:#3D2700;
+    classDef isolate fill:#FAF5FF,stroke:#805AD5,stroke-width:2px,color:#321A63;
+    classDef inference fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px,color:#63171B;
+    classDef post fill:#E6FFFA,stroke:#2C7A7B,stroke-width:2px,color:#1D4044;
+    classDef catalog fill:#F0FFF4,stroke:#38A169,stroke-width:2px,color:#1C4532;
+    classDef ui fill:#E8F1FF,stroke:#2B6CB0,stroke-width:2px,color:#1A365D;
+
+    class Source capture;
+    class IsolatePipeline,IsolateSpawn,Decode,Orientation,Resize,Normalize isolate;
+    class NativeInference,ModelLoad,ForwardPass,OutputTensor inference;
+    class PostProcessing,Hoist,ConfidenceFilter,Unnormalize,NMS,DetectionsList,DropBox post;
+    class CatalogMapping,Lookup,Mapped,LowConf,Unmapped catalog;
+    class OutputUI,ConfirmScreen ui;

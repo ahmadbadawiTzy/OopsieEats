@@ -1,0 +1,82 @@
+%% UML Class Diagram: Repository Pattern Architecture and Service Contracts - OopsieEats
+classDiagram
+    class IAuthRepository {
+        +Stream authStateChanges
+        +signInWithEmail(email, password)
+        +signUpWithEmail(name, email, password)
+        +signInWithGoogle()
+        +signOut()
+        +deleteAccount()
+    }
+
+    class IMealRepository {
+        +createMeal(mealRecord)
+        +getMealsByDate(date)
+        +getDailyAggregates(date)
+        +deleteMeal(mealId, imagePath)
+    }
+
+    class IFoodRepository {
+        +searchFoods(query)
+        +getFoodById(id)
+        +loadOfflineSeedCatalog()
+    }
+
+    class IProfileRepository {
+        +getUserProfile(uid)
+        +updateMetrics(height, weight, activity)
+        +updateAvatar(avatarId)
+    }
+
+    class IAdminRepository {
+        +upsertFoodItem(foodItem)
+        +publishArticle(article)
+        +getAuditLogs()
+    }
+
+    class IStorageService {
+        +uploadMealImage(uid, mealId, bytes)
+        +getSignedImageUrl(imagePath)
+        +deleteImage(imagePath)
+    }
+
+    class AuthRepository {
+        -FirebaseAuth _auth
+        -FirebaseFirestore _db
+        -FlutterSecureStorage _secStorage
+    }
+
+    class MealRepository {
+        -FirebaseFirestore _db
+    }
+
+    class FoodRepository {
+        -FirebaseFirestore _db
+        -AssetBundle _bundle
+    }
+
+    class SupabaseStorageService {
+        -SupabaseClient _client
+        +compressImage(rawBytes)
+    }
+
+    class AuthProvider {
+        -IAuthRepository _authRepo
+        +UserModel currentUser
+        +bool isAuthenticated
+        +bool isProfileComplete
+    }
+
+    class MealHistoryProvider {
+        -IMealRepository _mealRepo
+        +List dailyMeals
+    }
+
+    IAuthRepository <|.. AuthRepository
+    IMealRepository <|.. MealRepository
+    IFoodRepository <|.. FoodRepository
+    IStorageService <|.. SupabaseStorageService
+
+    AuthProvider --> IAuthRepository
+    MealHistoryProvider --> IMealRepository
+    MealRepository ..> IStorageService : delegates image deletion

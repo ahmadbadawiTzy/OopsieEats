@@ -1,0 +1,38 @@
+# Klasifikasi Release Blocker & Tindakan Manual Pemilik Akun — OopsieEats (NutriView)
+
+**Tanggal Pembaruan:** 13 November 2026  
+**Status Evaluasi:** **0 BLOCKER TEKNIS TERSISA (`PASS`)**  
+**Versi Target:** `1.0.0+2002`  
+
+Dokumen ini memetakan seluruh temuan audit ke dalam klasifikasi tingkat keparahan (*CRITICAL*, *HIGH*, *MEDIUM*, *LOW*), status penyelesaian teknis di dalam kode/build, serta tindakan manual eksternal yang wajib dilakukan oleh pemilik akun Google Play Console dan Firebase Console.
+
+---
+
+## 1. Matriks Klasifikasi Temuan Audit Teknis
+
+| ID | Kategori | Tingkat Keparahan | Temuan Audit | Dampak Jika Dibiarkan | Status Perbaikan | Bukti Penyelesaian |
+| :---: | :--- | :---: | :--- | :--- | :---: | :--- |
+| **B-01** | **Google Play Policy** | **CRITICAL** | Pustaka transitif LiteRT GPU menyuntikkan izin `READ_PHONE_STATE`, `WRITE_EXTERNAL_STORAGE`, dan `READ_EXTERNAL_STORAGE` ke dalam manifest rilis. | Penolakan rilis instan (*Rejection*) oleh peninjau Google Play karena meminta izin data sensitif telepon & penyimpanan tanpa justifikasi valid. | **FIXED** | Dihapus eksplisit via `tools:node="remove"` di `AndroidManifest.xml`; diverifikasi bersih pada merged release manifest. |
+| **B-02** | **Android 15/16 Compatibility** | **CRITICAL** | Target SDK dan ELF LOAD segment alignment pustaka native berpotensi tidak kompatibel dengan arsitektur 16 KB page-size Android 15/16. | Aplikasi crash saat dijalankan pada perangkat Android 15/16 yang menggunakan ukuran halaman memori 16 KB; pelanggaran kebijakan API Google Play 2026. | **FIXED** | Menegaskan `compileSdk = 36`, `targetSdk = 36`, dan `packaging.jniLibs.useLegacyPackaging = false` di `build.gradle.kts`. Seluruh berkas `.so` 64-bit diverifikasi memiliki segmen LOAD >= 16 KB (0x4000). |
+| **B-03** | **Release Security & Signing** | **CRITICAL** | Risiko fallback build rilis ke *Android Debug Certificate* jika keystore produksi hilang atau tidak terkonfigurasi. | Penolakan unggah oleh Google Play Console karena format tanda tangan debug; celah keamanan pemalsuan paket aplikasi. | **FIXED** | Menambahkan hook listener Gradle `gradle.taskGraph.whenReady` pada `build.gradle.kts` untuk menghentikan build seketika (*fail-fast*) tanpa pernah menggunakan kunci debug. |
+| **B-04** | **Data Consistency & UX** | **HIGH** | Perubahan biodata pengguna di `BiodataScreen` tidak otomatis memperbarui target kalori dan ringkasan kalori pada layar Beranda tanpa restart aplikasi. | Pengguna melihat data kalori basi (*stale data*); kebingungan pengguna atas ketidaksinkronan target diet harian. | **FIXED** | Mengintegrasikan invalidasi cache `DashboardRepository` dan pemanggilan `dashboardProvider.updateTargetFromBiodata()` di dalam callback `profileProvider.onProfileUpdated` di `main.dart`. |
+| **B-05** | **Cloud Storage Security** | **HIGH** | `SupabaseStorageService.uploadFoodImage` belum membatasi ukuran payload mentah dan berpotensi memicu crash Out-Of-Memory jika pengguna memilih foto mentah berukuran besar. | Potensi eksploitasi Denial-of-Service berbasis memori (*OOM crash*) dan pemborosan kuota penyimpanan cloud. | **FIXED** | Menambahkan validasi byte kosong, batas muatan mentah 20 MB, dan batas hasil kompresi 5 MB (`SupabaseConfig.maxUploadSizeBytes`) sebelum proses unggah. |
+| **B-06** | **Session Security & Privacy** | **MEDIUM** | Cache data pengguna dan cache URL foto Supabase tidak dibersihkan saat sesi pengguna keluar (*logout*). | Risiko kebocoran tampilan riwayat makan atau foto pengguna sebelumnya saat perangkat digunakan bergantian oleh orang lain. | **FIXED** | Menambahkan pembersihan cache menyeluruh (`dashboardProvider.clear()`, `profileProvider.clear()`, `foodRepository.invalidateCache()`, `storageService.clearUrlCache()`) di dalam `authProvider.onLogout` di `main.dart`. |
+| **B-07** | **Store Assets Completeness** | **MEDIUM** | Feature Graphic banner 1024x500 belum tersedia di repositori. | Tidak dapat mempublikasikan Store Listing di Google Play Console karena Feature Graphic merupakan aset wajib. | **FIXED** | Menghasilkan aset grafis resmi `docs/play_store_assets/final/feature_graphic_1024x500.png` (1024x500 px RGB) bergaya Neo-Brutalism. |
+| **B-08** | **Legal & Privacy Alignment** | **LOW** | Teks pada layar `AboutScreen` menyebutkan foto tidak diunggah ke cloud, padahal fitur riwayat makan menyimpan foto terkompresi ke bucket privat terenkripsi. | Inkonsistensi antara pengungkapan privasi in-app dengan formulir Data Safety Google Play Console. | **FIXED** | Menyelaraskan teks pengungkapan pemrosesan AI *on-device* vs penyimpanan foto riwayat privat di `AboutScreen`, `public/privacy.html`, dan `public/delete-account.html`. |
+
+---
+
+## 2. Tindakan Manual Wajib oleh Pemilik Akun (`NEEDS MANUAL ACTION`)
+
+Tindakan operasional berikut secara eksklusif hanya dapat dijalankan melalui antarmuka Google Play Console, Firebase Console, dan CLI terautentikasi:
+
+| No | Modul | Tindakan Manual yang Harus Dijalankan | Mengapa Diperlukan | Verifikasi Berhasil |
+| :---: | :--- | :--- | :--- | :--- |
+| **M-01** | **Firebase Hosting & Rules** | Jalankan perintah terminal:<br>`firebase deploy --only hosting,firestore:rules` | Mempublikasikan halaman Privacy Policy (`privacy.html`), Account Deletion (`delete-account.html`), dan `firestore.rules` ke domain produksi `https://nutriview-943cd.web.app`. | Buka URL di browser tanpa login dan periksa HTTP 200 OK. |
+| **M-02** | **Play App Signing ke Firebase** | Salin **SHA-1** dan **SHA-256** dari menu **Play Console → Setup → App signing**, lalu tambahkan ke **Firebase Console (`nutriview-943cd`) → Project Settings → Android App (`com.oopsieeats.app`)**. | Tanpa fingerprint Play App Signing di Firebase, Google Sign-In akan gagal (`ApiException: 10`) pada aplikasi yang diunduh tester dari Play Store. | Fitur *Masuk dengan Google* berhasil masuk ke aplikasi tanpa error. |
+| **M-03** | **App Access (Google Reviewer)** | Di Play Console menu **App Content → App access**, pilih *"All or some functionality is restricted"*, lalu masukkan email & password akun pengujian yang sudah memiliki biodata lengkap. | Tim peninjau Google Play wajib dapat masuk ke dalam aplikasi untuk menguji fitur di balik login. | Bagian *App access* berstatus hijau (*Completed*). |
+| **M-04** | **Formulir Kebijakan Play Console** | Isi kuesioner **Data Safety**, **Health Apps (Nutrition & Fitness / Not a medical device)**, **Target Audience (18+)**, **Content Rating (IARC)**, dan **Ads (No Ads)** sesuai panduan di `docs/release/GOOGLE_PLAY_COMPLIANCE.md`. | Google Play memblokir pengiriman rilis jika formulir App Content belum selesai diisi. | Seluruh kuesioner di menu *App Content* berstatus *Completed*. |
+| **M-05** | **Unggah Aset Visual Store Listing** | Di Play Console menu **Main store listing**, unggah icon `nutriview_playstore_512.png`, banner `feature_graphic_1024x500.png`, dan 6 screenshots dari `docs/play_store_assets/final/`. | Syarat wajib sebelum rilis dapat dikirim untuk ditinjau. | Tampilan listing memiliki preview visual lengkap. |
+| **M-06** | **Unggah AAB ke Testing Track** | Di menu **Internal testing** (atau **Closed testing**), buat rilis baru dan unggah `frontend/build/app/outputs/bundle/release/app-release.aab`. | Memulai siklus distribusi aplikasi ke perangkat tester. | Berkas AAB `1.0.0 (2002)` terunggah tanpa error peringatan. |
+| **M-07** | **Closed Testing 14 Hari (Jika Akun Personal)** | Undang minimal 12–20 tester untuk opt-in dan memasang aplikasi selama 14 hari berturut-turut. | Syarat wajib Google Play Developer Personal sebelum tombol *Apply for production* dibuka. | Penghitung waktu 14 hari di Play Console dashboard selesai. |

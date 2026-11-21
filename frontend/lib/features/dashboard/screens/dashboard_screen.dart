@@ -116,6 +116,8 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  ProfileProvider? _profileProvider;
+  int _lastSyncedBiodataVersion = 0;
 
   @override
   void initState() {
@@ -152,7 +154,40 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ProfileProvider? nextProvider;
+    try {
+      nextProvider = Provider.of<ProfileProvider>(context, listen: false);
+    } catch (_) {}
+    if (_profileProvider != nextProvider) {
+      _profileProvider?.removeListener(_onProfileChanged);
+      _profileProvider = nextProvider;
+      _lastSyncedBiodataVersion = _profileProvider?.biodataVersion ?? 0;
+      _profileProvider?.addListener(_onProfileChanged);
+    }
+  }
+
+  void _onProfileChanged() {
+    if (!mounted || _profileProvider == null) return;
+    final currentVersion = _profileProvider!.biodataVersion;
+    if (currentVersion == _lastSyncedBiodataVersion) return;
+    _lastSyncedBiodataVersion = currentVersion;
+
+    try {
+      final dash = context.read<DashboardProvider>();
+      final target = _profileProvider!.dailyTarget;
+      if (target != null) {
+        dash.updateTargetFromBiodata(target);
+      } else if (!_profileProvider!.hasProfile) {
+        dash.handleBiodataDeleted();
+      }
+    } catch (_) {}
+  }
+
+  @override
   void dispose() {
+    _profileProvider?.removeListener(_onProfileChanged);
     _animController.dispose();
     super.dispose();
   }
@@ -338,11 +373,14 @@ class _DashboardHomeViewState extends State<DashboardHomeView>
                   Consumer2<AuthProvider, ProfileProvider>(
                     builder: (context, auth, profileProv, _) {
                       final user = profileProv.user;
-                      final displayName = auth.name.isNotEmpty
-                          ? auth.name
-                          : (auth.email.isNotEmpty
-                                ? auth.email.split('@').first
-                                : 'Sobat Sehat');
+                      final profileName = user?.fullName.trim() ?? '';
+                      final displayName = profileName.isNotEmpty
+                          ? profileName
+                          : (auth.name.isNotEmpty
+                                ? auth.name
+                                : (auth.email.isNotEmpty
+                                      ? auth.email.split('@').first
+                                      : 'Sobat Sehat'));
                       return DashboardHeroSection(
                         userName: displayName,
                         photoUrl: user?.photoUrl ?? auth.currentUser?.photoUrl,

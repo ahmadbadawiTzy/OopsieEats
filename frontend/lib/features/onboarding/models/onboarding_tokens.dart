@@ -1,36 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 
-/// Design tokens specifically tailored for NutriView Onboarding Redesign.
-/// Perfectly synced with `docs/onboarding_redesign/onboarding_preview.html`.
+/// Design tokens for the NutriView Onboarding Carousel.
+/// Strictly derived from the authoritative [NeoTokens] brand palette:
+/// - [NeoTokens.primaryGreen] (`#16A34A`) — Primary brand color
+/// - [NeoTokens.mintGreen] (`#CCFF00`) — Secondary brand & highlight
+/// - [NeoTokens.vividYellow] (`#FFD600`) — High-impact CTA & visual accents
+/// - [NeoTokens.orangeCarb] (`#FF6B00`) — Nutrition-related accents
+/// - [NeoTokens.skyBlue] (`#1D4ED8`) & [NeoTokens.cyan] (`#06B6D4`) — Information accents
+/// - [NeoTokens.lavender] (`#C4B5FD`) — Secondary decorative accents
+/// - [NeoTokens.coralRed] (`#EF4444`) — Error and warning accents
+/// - [NeoTokens.warmBackground] (`#FBF9F4`) — Main warm background
+/// - [NeoTokens.white] (`#FFFFFF`) — Surface
+/// - [NeoTokens.black] (`#111111`) — Outlines, typography, and hard shadows
 class OnboardingTokens {
   OnboardingTokens._();
 
-  // Core Neo-Brutalist Palette
-  static const Color green = Color(0xFF17C964); // Slide 1 canvas & active dot
-  static const Color mint = Color(0xFFB9F3D2); // Slide 3 canvas & highlight
-  static const Color yellow = Color(0xFFFFD23F); // Slide 2 canvas & CTA button
-  static const Color orange = Color(0xFFFF7A1A); // Final CTA & accent
-  static const Color cream = Color(
-    0xFFFFF5DF,
-  ); // Bottom torn paper card surface
-  static const Color white = Color(0xFFFFFFFF); // Clean white elements
-  static const Color black = Color(0xFF0A0A0A); // High-contrast structural ink
-  static const Color pink = Color(0xFFFFB3C1); // Energy callout chip
+  // Official NutriView Brand Palette (Single Source of Truth from NeoTokens)
+  static const Color primaryGreen = NeoTokens.primaryGreen;
+  static const Color mintGreen = NeoTokens.mintGreen;
+  static const Color vividYellow = NeoTokens.vividYellow;
+  static const Color orangeCarb = NeoTokens.orangeCarb;
+  static const Color skyBlue = NeoTokens.skyBlue;
+  static const Color cyan = NeoTokens.cyan;
+  static const Color lavender = NeoTokens.lavender;
+  static const Color coralRed = NeoTokens.coralRed;
+  static const Color warmBackground = NeoTokens.warmBackground;
+  static const Color recess = NeoTokens.recess;
+  static const Color white = NeoTokens.white;
+  static const Color black = NeoTokens.black;
 
-  // Border & Shadow metrics
-  static const double borderWidth = 2.5;
-  static const double borderWidthThin = 1.8;
-  static const Offset shadowOffset = Offset(3.5, 3.5);
-  static const Offset shadowOffsetSmall = Offset(2.0, 2.0);
-  static const Offset shadowOffsetLarge = Offset(5.0, 5.0);
+  // Semantic Aliases for Onboarding Slide Compositions
+  static const Color green = NeoTokens.primaryGreen;
+  static const Color mint = NeoTokens.mintGreen;
+  static const Color lime = NeoTokens.mintGreen;
+  static const Color yellow = NeoTokens.vividYellow;
+  static const Color orange = NeoTokens.orangeCarb;
+  static const Color blue = NeoTokens.skyBlue;
+  static const Color purple = NeoTokens.lavender;
+  static const Color coral = NeoTokens.coralRed;
+  static const Color cream = NeoTokens.warmBackground;
 
-  // Reusable Shadow Generator
-  static List<BoxShadow> neoShadow([
-    Offset offset = shadowOffset,
-    Color color = black,
-  ]) => [BoxShadow(color: color, offset: offset, blurRadius: 0.0)];
+  // Borders & Hard Shadows (Consistent with NeoTokens)
+  static const double borderWidth = NeoTokens.borderWidthThick; // 2.8px
+  static const double borderWidthThin = NeoTokens.borderWidth; // 2.0px
+  static const double borderWidthThick = NeoTokens.borderWidthThick; // 2.8px
 
-  // Reusable Border Generator
-  static Border neoBorder([double width = borderWidth, Color color = black]) =>
-      Border.all(color: color, width: width);
+  static const Offset shadowOffset = NeoTokens.shadowOffsetMedium; // Offset(4, 4)
+  static const Offset shadowOffsetSmall = NeoTokens.shadowOffset; // Offset(3, 3)
+  static const Offset shadowOffsetLarge = NeoTokens.shadowOffsetLarge; // Offset(5, 5)
+  static const double shadowBlur = NeoTokens.shadowBlurRadius; // 0.0
+
+  // Radii (Consistent with NeoTokens)
+  static const double radiusSmall = NeoTokens.radiusSmall; // 6.0
+  static const double radiusMedium = NeoTokens.radiusMedium; // 10.0
+  static const double radiusLarge = NeoTokens.radiusLarge; // 14.0
+  static const double radiusPill = NeoTokens.radiusPill; // 999.0
+
+  // Pre-configured Hard Shadows
+  static const List<BoxShadow> hardShadow = [
+    BoxShadow(
+      color: NeoTokens.black,
+      offset: NeoTokens.shadowOffsetMedium,
+      blurRadius: NeoTokens.shadowBlurRadius,
+    ),
+  ];
+
+  static const List<BoxShadow> hardShadowSmall = [
+    BoxShadow(
+      color: NeoTokens.black,
+      offset: NeoTokens.shadowOffset,
+      blurRadius: NeoTokens.shadowBlurRadius,
+    ),
+  ];
+
+  static const List<BoxShadow> hardShadowLarge = [
+    BoxShadow(
+      color: NeoTokens.black,
+      offset: NeoTokens.shadowOffsetLarge,
+      blurRadius: NeoTokens.shadowBlurRadius,
+    ),
+  ];
 }

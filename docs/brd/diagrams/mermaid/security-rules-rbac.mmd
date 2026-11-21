@@ -1,0 +1,74 @@
+%% Diagram 13: Declarative Security Rules & RBAC Decision Tree — OopsieEats
+flowchart TD
+    Req["Incoming Firestore Request (Read / Write)"]
+    AuthCheck{"Apakah Pengguna Terautentikasi?\n(request.auth != null)"}
+
+    Req --> AuthCheck
+    AuthCheck -->|Tidak| DenyAnon["❌ REJECT: Akses Anonim Ditolak (403 Permission Denied)"]
+
+    AuthCheck -->|Ya| PathCheck{"Target Jalur Koleksi?"}
+
+    subgraph UserMealsPath ["Jalur: /users/:userId/meals/:mealId"]
+        OwnerCheck{"Apakah Pemilik Dokumen?\n(request.auth.uid == userId)"}
+        AllowUser["✅ ALLOW: Baca & Tulis Subkoleksi Milik Pribadi"]
+        DenyCrossUser["❌ REJECT: Dilarang Mengakses Catatan Pengguna Lain"]
+    end
+
+    subgraph FoodsPath ["Jalur: /foods/:foodId"]
+        FoodOp{"Operasi Kueri?"}
+        AllowFoodRead["✅ ALLOW: Seluruh Pengguna Boleh Baca Katalog"]
+        AdminFoodCheck{"Role Pengguna == 'admin'?"}
+        AllowFoodWrite["✅ ALLOW: Admin Boleh Tambah/Ubah Pangan"]
+        DenyFoodWrite["❌ REJECT: Pengguna Biasa Dilarang Modifikasi Katalog"]
+    end
+
+    subgraph CMSArticlesPath ["Jalur: /cms_articles/:articleId"]
+        CMSOp{"Operasi Kueri?"}
+        ArticleStatus{"Status == 'published'?"}
+        AllowPubRead["✅ ALLOW: Baca Artikel Terbitan"]
+        DenyDraftRead["❌ REJECT: Dilarang Baca Draft Non-Admin"]
+        AdminCMSCheck{"Role Pengguna == 'admin'?"}
+        AllowCMSWrite["✅ ALLOW: Admin Boleh Kelola Artikel CMS"]
+        DenyCMSWrite["❌ REJECT: Pengguna Biasa Dilarang Mengubah Artikel"]
+    end
+
+    subgraph AuditPath ["Jalur: /cms_audit_logs/:logId"]
+        AuditOp{"Operasi Kueri?"}
+        AdminAuditCheck{"Role Pengguna == 'admin'?"}
+        AllowAuditRead["✅ ALLOW: Admin Boleh Baca Log Audit"]
+        DenyAuditWrite["❌ REJECT: Log Bersifat Immutable (Write Selalu Ditolak)"]
+    end
+
+    PathCheck -->|users/:userId/meals| OwnerCheck
+    OwnerCheck -->|Ya| AllowUser
+    OwnerCheck -->|Tidak| DenyCrossUser
+
+    PathCheck -->|foods/:foodId| FoodOp
+    FoodOp -->|Read| AllowFoodRead
+    FoodOp -->|Create / Update / Delete| AdminFoodCheck
+    AdminFoodCheck -->|Ya| AllowFoodWrite
+    AdminFoodCheck -->|Tidak| DenyFoodWrite
+
+    PathCheck -->|cms_articles/:articleId| CMSOp
+    CMSOp -->|Read| ArticleStatus
+    ArticleStatus -->|Ya| AllowPubRead
+    ArticleStatus -->|Draft| DenyDraftRead
+    CMSOp -->|Write| AdminCMSCheck
+    AdminCMSCheck -->|Ya| AllowCMSWrite
+    AdminCMSCheck -->|Tidak| DenyCMSWrite
+
+    PathCheck -->|cms_audit_logs/:logId| AuditOp
+    AuditOp -->|Read| AdminAuditCheck
+    AdminAuditCheck -->|Ya| AllowAuditRead
+    AdminAuditCheck -->|Tidak| DenyAnon
+    AuditOp -->|Write / Update / Delete| DenyAuditWrite
+
+    classDef allow fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:1.5px;
+    classDef reject fill:#FEE2E2,stroke:#EF4444,color:#7F1D1D,stroke-width:1.5px;
+    classDef check fill:#FEF3C7,stroke:#D97706,color:#92400E,stroke-width:1.5px;
+    classDef req fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:2px;
+
+    class Req req;
+    class AuthCheck,PathCheck,OwnerCheck,FoodOp,AdminFoodCheck,CMSOp,ArticleStatus,AdminCMSCheck,AuditOp,AdminAuditCheck check;
+    class AllowUser,AllowFoodRead,AllowFoodWrite,AllowPubRead,AllowCMSWrite,AllowAuditRead allow;
+    class DenyAnon,DenyCrossUser,DenyFoodWrite,DenyDraftRead,DenyCMSWrite,DenyAuditWrite reject;

@@ -303,12 +303,19 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
     if (success) {
       // Synchronize in-memory auth user profile
       try {
-        context.read<AuthProvider>().updateProfile(newProfile);
+        context.read<AuthProvider>().updateProfile(
+          newProfile,
+          fullName: _nameController.text.trim(),
+        );
       } catch (_) {}
 
       // Trigger dashboard target calculation refresh
       try {
-        context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
+        final dash = context.read<DashboardProvider>();
+        if (profileProvider.dailyTarget != null) {
+          dash.updateTargetFromBiodata(profileProvider.dailyTarget!);
+        }
+        dash.loadDashboard(forceRefresh: true);
       } catch (_) {}
 
       NeoSnackBars.success(
@@ -353,7 +360,9 @@ class _UnifiedBiodataFormState extends State<UnifiedBiodataForm> {
 
       if (success) {
         try {
-          context.read<DashboardProvider>().loadDashboard(forceRefresh: true);
+          final dash = context.read<DashboardProvider>();
+          dash.handleBiodataDeleted();
+          dash.loadDashboard(forceRefresh: true);
         } catch (_) {}
         NeoSnackBars.success(context, 'Biodata fisik berhasil dihapus.');
         Navigator.of(context).pop(true);

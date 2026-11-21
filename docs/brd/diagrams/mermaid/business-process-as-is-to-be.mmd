@@ -1,0 +1,24 @@
+%% Diagram 2: Business Process Flowchart — AS-IS vs TO-BE Comparison
+flowchart TD
+    subgraph ASIS ["PROSES BISNIS BERJALAN (AS-IS) — PENCATATAN MANUAL"]
+        A1["Pengguna Menyantap Makanan"] --> A2["Mencari Nama Pangan di Aplikasi Manual"]
+        A2 --> A3["Menimbang Porsi atau Memperkirakan Sendiri"]
+        A3 --> A4["Menghitung Kalori dengan Rumus Rumit / Estimasi Kasar"]
+        A4 --> A5["Mencatat ke Buku / Aplikasi Catatan"]
+        A5 --> A6["❌ Kelelahan Kognitif & Berhenti Mencatat (< 2 Minggu)"]
+    end
+
+    subgraph TOBE ["PROSES BISNIS TARGET (TO-BE) — OOPSIEEATS EDGE AI"]
+        B1["Pengguna Memotret Makanan via Kamera"] --> B2["Inferensi On-Device YOLO26n di Background Isolate (< 300 ms)"]
+        B2 --> B3["Sistem Menampilkan Kotak Pembatas & Nama 29 Pangan Lokal"]
+        B3 --> B4["Pengguna Mengonfirmasi Item & Mengisi Bobot Gram"]
+        B4 --> B5["Kalkulasi Otomatis Gizi Deterministik (TKPI 2020 + Atwater 4-4-9)"]
+        B5 --> B6["Foto Diunggah ke Supabase Storage & Data ke Firestore"]
+        B6 --> B7["✅ Dashboard Diperbarui Seketika (Dial Kalori & Bento Grid)"]
+    end
+
+    classDef asIsNode fill:#FEE2E2,stroke:#EF4444,color:#7F1D1D,stroke-width:1.5px;
+    classDef toBeNode fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:1.5px;
+
+    class A1,A2,A3,A4,A5,A6 asIsNode;
+    class B1,B2,B3,B4,B5,B6,B7 toBeNode;

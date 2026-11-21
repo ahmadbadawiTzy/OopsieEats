@@ -1,0 +1,61 @@
+%% System Context Diagram — OopsieEats (NutriView)
+%% Menampilkan batas sistem, aktor pengguna, layanan cloud serverless, dan penyimpanan media privat
+flowchart TB
+    subgraph Actors ["Aktor Pengguna"]
+        User["Pengguna Reguler (Mobile User)\n• Pelacakan gizi harian\n• Pemindaian makanan via kamera\n• Pengelolaan profil & biodata"]
+        Admin["Administrator (Admin CMS)\n• Kurasi katalog pangan\n• Publikasi artikel gizi\n• Manajemen pengguna & log audit"]
+    end
+
+    subgraph ClientApp ["Aplikasi Klien (OopsieEats Mobile)"]
+        FlutterApp["OopsieEats Flutter Client (Android)\nPackage: com.oopsieeats.app\n• State Management (Provider)\n• On-Device ML (YOLO26n TFLite Isolate)\n• Mesin Gizi Deterministik (Mifflin-St Jeor & Atwater)\n• Desain Overkill Neo-Brutalism"]
+    end
+
+    subgraph Hardware ["Perangkat Keras & Penyimpanan Lokal"]
+        Camera["Sensor Kamera & Galeri Foto"]
+        Biometric["Sensor Biometrik (Fingerprint / Face ID)"]
+        LocalStorage["Penyimpanan Lokal Terenkripsi\n• FlutterSecureStorage (Token & Sesi)\n• Bounded Firestore Cache (100 MB SQLite)\n• Katalog Pangan Lokal (seed_foods.json)"]
+    end
+
+    subgraph FirebaseBackend ["Google Firebase Serverless (Spark Tier)"]
+        FBAuth["Firebase Authentication\n• Email & Password Auth\n• Google OAuth 2.0 Identity Provider\n• Token Lifecycle Management"]
+        Firestore["Cloud Firestore NoSQL\n• Strict 2-Role Security Rules (admin & user)\n• Multi-tenant Data: users/{uid}, meals\n• Katalog Publik: foods, cms_articles\n• Jejak Audit: cms_audit_logs (Immutable)"]
+        FBHosting["Firebase Hosting\n• Kebijakan Privasi (/privacy)\n• Halaman Hapus Akun (/delete-account)"]
+    end
+
+    subgraph SupabaseCloud ["Supabase Cloud Storage (Private Tier)"]
+        SupabaseStorage["Supabase Storage Service\n• Bucket Privat: food-history-images\n• RLS Multi-Tenant Path Isolation\n• Signed URL 1 Jam (Temporary Access)\n• Foto Inspeksi Makanan & Foto Profil"]
+    end
+
+    subgraph ExternalAuth ["Penyedia Identitas Eksternal"]
+        GoogleOAuth["Google Identity Services (OAuth 2.0)\n• Client ID Android & Web Client SHA-1"]
+    end
+
+    %% Relasi Aktor ke Aplikasi
+    User -->|Interaksi UI, Kamera, & Biometrik| FlutterApp
+    Admin -->|Akses Panel CMS via Role Admin| FlutterApp
+
+    %% Relasi Aplikasi ke Perangkat Keras Lokal
+    FlutterApp <-->|Capture Citra Makanan| Camera
+    FlutterApp <-->|Verifikasi Sidik Jari/Wajah| Biometric
+    FlutterApp <-->|Sesi Terenkripsi & Cache Offline| LocalStorage
+
+    %% Relasi Aplikasi ke Cloud
+    FlutterApp <-->|Autentikasi & Verifikasi Token| FBAuth
+    FlutterApp <-->|Sinkronisasi Data Real-Time & CRUD| Firestore
+    FlutterApp <-->|Upload JPEG & Request Signed URL| SupabaseStorage
+    FBAuth <-->|Pertukaran Kredensial OAuth 2.0| GoogleOAuth
+
+    %% Styling
+    classDef actor fill:#FFE8A3,stroke:#C47D00,stroke-width:2px,color:#3D2700;
+    classDef client fill:#E8F1FF,stroke:#2B6CB0,stroke-width:2px,color:#1A365D;
+    classDef hardware fill:#EAEAEA,stroke:#4A5568,stroke-width:2px,color:#2D3748;
+    classDef firebase fill:#FFF2E8,stroke:#DD6B20,stroke-width:2px,color:#7B341E;
+    classDef supabase fill:#E6FFFA,stroke:#2C7A7B,stroke-width:2px,color:#1D4044;
+    classDef external fill:#F3E8FF,stroke:#6B46C1,stroke-width:2px,color:#321A63;
+
+    class User,Admin actor;
+    class FlutterApp client;
+    class Camera,Biometric,LocalStorage hardware;
+    class FBAuth,Firestore,FBHosting firebase;
+    class SupabaseStorage supabase;
+    class GoogleOAuth external;

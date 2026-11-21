@@ -1,0 +1,52 @@
+%% UML State Machine Diagram: App Lifecycle & Complete Profile Guard — OopsieEats
+stateDiagram-v2
+    [*] --> SplashInitializing : App Launch
+
+    state SplashInitializing {
+        [*] --> CheckHardwareKeyStore
+        CheckHardwareKeyStore --> CheckFirebaseSession
+        CheckFirebaseSession --> [*]
+    }
+
+    SplashInitializing --> Unauthenticated : No Active Session
+    SplashInitializing --> EvaluatingProfile : Session Token Valid
+
+    state Unauthenticated {
+        [*] --> OnboardingWalkthrough : First Launch
+        OnboardingWalkthrough --> AuthGateway : Complete / Skip
+        [*] --> AuthGateway : Returning User
+        AuthGateway --> LoginScreen : Select Login
+        AuthGateway --> RegisterScreen : Select Register
+        LoginScreen --> Authenticating
+        RegisterScreen --> Authenticating
+        Authenticating --> AuthSuccess
+    }
+
+    Unauthenticated --> EvaluatingProfile : AuthSuccess
+
+    state EvaluatingProfile <<choice>>
+    EvaluatingProfile --> CompleteProfileRequired : isProfileComplete == false
+    EvaluatingProfile --> MainDashboardState : isProfileComplete == true
+
+    state CompleteProfileRequired {
+        [*] --> InputBiodataForm
+        InputBiodataForm --> ValidateAnthropometrics
+        ValidateAnthropometrics --> ComputeBMRAndTDEE
+        ComputeBMRAndTDEE --> SaveProfileAtomic
+        SaveProfileAtomic --> [*]
+    }
+
+    CompleteProfileRequired --> MainDashboardState : Profile Saved Successfully
+
+    state MainDashboardState {
+        [*] --> DashboardOverview
+        DashboardOverview --> CameraScanning : Tap Scanner CTA
+        CameraScanning --> DetectionConfirmed : AI Inferenced
+        DetectionConfirmed --> PortionAdjusted : Confirm Item
+        PortionAdjusted --> DashboardOverview : Meal Saved
+        DashboardOverview --> MealHistoryView : Select History Tab
+        DashboardOverview --> ProfileSettings : Select Profile Tab
+        ProfileSettings --> ArticleReader : Read Education CMS
+    }
+
+    MainDashboardState --> Unauthenticated : User Signs Out / Deletes Account

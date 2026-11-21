@@ -9,7 +9,7 @@ class SupabaseConfig {
   /// Supabase project URL (configurable via `--dart-define=SUPABASE_URL=...`)
   static const String url = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://rnfvudxqcwcwilcyicow.supabase.co',
+    defaultValue: '',
   );
 
   /// Supabase anonymous publishable key (configurable via `--dart-define=SUPABASE_ANON_KEY=...`)
@@ -18,7 +18,7 @@ class SupabaseConfig {
   /// Only the public anon/publishable key is safe for client applications.
   static const String anonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'sb_publishable_zkmZHcq6D4fTB1L9qvIvYw_izbuSHDj',
+    defaultValue: '',
   );
 
   /// Dedicated private storage bucket for food detection inspection photos

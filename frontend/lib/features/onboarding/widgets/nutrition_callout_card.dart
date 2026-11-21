@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 import 'package:oopsieeats/features/onboarding/models/onboarding_tokens.dart';
 
-/// Polaroid-style callout card used on Slide 2 for nutrient breakdown.
+/// Neo-Brutalist nutrition specimen callout card used on Slide 2.
+/// Features a colored header tag, inner specimen box with corner bracket ticks,
+/// crisp food image, bold label, and optional macro telemetry pill.
 class NutritionCalloutCard extends StatelessWidget {
   final String tag;
   final Color tagColor;
+  final Color tagTextColor;
   final String foodName;
-  final String imagePath;
-  final double width;
+  final String imageAsset;
   final double rotation;
+  final String? macroValue;
+  final Color? macroPillColor;
 
   const NutritionCalloutCard({
     super.key,
     required this.tag,
     required this.tagColor,
+    this.tagTextColor = NeoTokens.black,
     required this.foodName,
-    required this.imagePath,
-    this.width = 95.0,
+    required this.imageAsset,
     this.rotation = 0.0,
+    this.macroValue,
+    this.macroPillColor,
   });
 
   @override
@@ -25,18 +32,18 @@ class NutritionCalloutCard extends StatelessWidget {
     return Transform.rotate(
       angle: rotation,
       child: Container(
-        width: width,
         decoration: BoxDecoration(
-          color: OnboardingTokens.white,
+          color: NeoTokens.white,
+          borderRadius: BorderRadius.circular(NeoTokens.radiusSmall),
           border: Border.all(
-            color: OnboardingTokens.black,
-            width: OnboardingTokens.borderWidthThin,
+            color: NeoTokens.black,
+            width: OnboardingTokens.borderWidth,
           ),
           boxShadow: const [
             BoxShadow(
-              color: OnboardingTokens.black,
-              offset: Offset(3.0, 3.0),
-              blurRadius: 0.0,
+              color: NeoTokens.black,
+              offset: NeoTokens.shadowOffsetMedium,
+              blurRadius: NeoTokens.shadowBlurRadius,
             ),
           ],
         ),
@@ -44,17 +51,20 @@ class NutritionCalloutCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Tag Header
+            // Colored Header Tag
             Container(
               padding: const EdgeInsets.symmetric(
+                vertical: 3.5,
                 horizontal: 4.0,
-                vertical: 2.5,
               ),
               decoration: BoxDecoration(
                 color: tagColor,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(3.5),
+                ),
                 border: const Border(
                   bottom: BorderSide(
-                    color: OnboardingTokens.black,
+                    color: NeoTokens.black,
                     width: OnboardingTokens.borderWidthThin,
                   ),
                 ),
@@ -62,75 +72,92 @@ class NutritionCalloutCard extends StatelessWidget {
               child: Text(
                 tag,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: OnboardingTokens.black,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: tagTextColor,
                   fontSize: 9,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ),
-
-            // 2. Image container with focus corners
-            Padding(
-              padding: const EdgeInsets.all(4.0),
-              child: Container(
-                height: width * 0.55,
-                decoration: BoxDecoration(
-                  color: OnboardingTokens.cream,
-                  border: Border.all(color: OnboardingTokens.black, width: 1.0),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Corner focus ticks
-                    const Positioned(
-                      top: 2,
-                      left: 2,
-                      child: _FocusCorner(isTop: true, isLeft: true),
-                    ),
-                    const Positioned(
-                      top: 2,
-                      right: 2,
-                      child: _FocusCorner(isTop: true, isLeft: false),
-                    ),
-                    const Positioned(
-                      bottom: 2,
-                      left: 2,
-                      child: _FocusCorner(isTop: false, isLeft: true),
-                    ),
-                    const Positioned(
-                      bottom: 2,
-                      right: 2,
-                      child: _FocusCorner(isTop: false, isLeft: false),
-                    ),
-
-                    // Food image
-                    Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: Image.asset(imagePath, fit: BoxFit.contain),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // 3. Food Name
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 4.0,
-                right: 4.0,
-                bottom: 4.0,
-              ),
-              child: Text(
-                foodName,
-                textAlign: TextAlign.left,
-                style: const TextStyle(
-                  color: OnboardingTokens.black,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
                   height: 1.1,
                 ),
+              ),
+            ),
+
+            // Specimen Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(5.0, 5.0, 5.0, 5.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Inner bordered specimen frame with corner ticks
+                  Container(
+                    height: 44.0,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: NeoTokens.warmBackground,
+                      borderRadius: BorderRadius.circular(3.0),
+                      border: Border.all(
+                        color: NeoTokens.black,
+                        width: NeoTokens.borderWidthThin,
+                      ),
+                    ),
+                    child: CustomPaint(
+                      painter: _CornerTicksPainter(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(3.0),
+                        child: Image.asset(
+                          imageAsset,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Text(
+                    foodName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: NeoTokens.black,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.2,
+                      height: 1.1,
+                    ),
+                  ),
+                  if (macroValue != null) ...[
+                    const SizedBox(height: 2.5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4.5,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: macroPillColor ?? NeoTokens.mintGreen,
+                        borderRadius: BorderRadius.circular(3.0),
+                        border: Border.all(
+                          color: NeoTokens.black,
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Text(
+                        macroValue!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: NeoTokens.black,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.2,
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
@@ -140,39 +167,66 @@ class NutritionCalloutCard extends StatelessWidget {
   }
 }
 
-class _FocusCorner extends StatelessWidget {
-  final bool isTop;
-  final bool isLeft;
-
-  const _FocusCorner({required this.isTop, required this.isLeft});
-
+class _CornerTicksPainter extends CustomPainter {
   @override
-  Widget build(BuildContext context) {
-    const size = 5.0;
-    const thickness = 1.4;
-    const color = OnboardingTokens.black;
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = NeoTokens.black
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        children: [
-          Positioned(
-            top: isTop ? 0 : null,
-            bottom: isTop ? null : 0,
-            left: 0,
-            right: 0,
-            child: Container(height: thickness, color: color),
-          ),
-          Positioned(
-            top: 0,
-            bottom: 0,
-            left: isLeft ? 0 : null,
-            right: isLeft ? null : 0,
-            child: Container(width: thickness, color: color),
-          ),
-        ],
-      ),
+    const double pad = 3.0;
+    const double len = 4.0;
+
+    // Top-left
+    canvas.drawLine(
+      const Offset(pad, pad),
+      const Offset(pad + len, pad),
+      paint,
+    );
+    canvas.drawLine(
+      const Offset(pad, pad),
+      const Offset(pad, pad + len),
+      paint,
+    );
+
+    // Top-right
+    canvas.drawLine(
+      Offset(size.width - pad, pad),
+      Offset(size.width - pad - len, pad),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width - pad, pad),
+      Offset(size.width - pad, pad + len),
+      paint,
+    );
+
+    // Bottom-left
+    canvas.drawLine(
+      Offset(pad, size.height - pad),
+      Offset(pad + len, size.height - pad),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(pad, size.height - pad),
+      Offset(pad, size.height - pad - len),
+      paint,
+    );
+
+    // Bottom-right
+    canvas.drawLine(
+      Offset(size.width - pad, size.height - pad),
+      Offset(size.width - pad - len, size.height - pad),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width - pad, size.height - pad),
+      Offset(size.width - pad, size.height - pad - len),
+      paint,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

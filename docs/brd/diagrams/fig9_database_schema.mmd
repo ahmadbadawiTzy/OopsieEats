@@ -1,0 +1,35 @@
+%% Figure 9: Database Logical Schema Tree Diagram
+%% Standar: NoSQL Document Hierarchy, OopsieEats
+graph TD
+    Root["🔥 Cloud Firestore Root Database (asia-southeast2)"]
+
+    subgraph UserDomain ["Domain Pengguna & Catatan Makan"]
+        UsersCol["koleksi: /users/{userId}"]
+        MealsSub["subkoleksi: /users/{userId}/meals/{mealId}"]
+        UsersCol -->|Subkoleksi Multi-Tenant 1:N| MealsSub
+    end
+
+    subgraph MasterDomain ["Domain Master Pangan"]
+        FoodsCol["koleksi: /foods/{foodId}\n(29 Bahan Makanan TKPI 2020)"]
+    end
+
+    subgraph CMSDomain ["Domain Edukasi & Audit Trail"]
+        ArticlesCol["koleksi: /cms_articles/{articleId}\n(Artikel Edukasi Gizi)"]
+        AuditCol["koleksi: /cms_audit_logs/{logId}\n(Catatan Perubahan Tak-Terubah)"]
+    end
+
+    Root --> UsersCol
+    Root --> FoodsCol
+    Root --> ArticlesCol
+    Root --> AuditCol
+
+    subgraph StorageDomain ["Domain Supabase Storage (Private Object Storage)"]
+        SupaRoot["☁️ Bucket: food-history-images"]
+        MealImages["Folder: /{userId}/{mealId}.jpg\n(Kompresi JPEG 1024px, RLS Policy)"]
+        ProfileImages["Folder: /{userId}/profile.jpg\n(Kompresi JPEG 512px, RLS Policy)"]
+        SupaRoot --> MealImages
+        SupaRoot --> ProfileImages
+    end
+
+    MealsSub -.->|image_path menyambung ke| MealImages
+    UsersCol -.->|profile_photo_url menyambung ke| ProfileImages

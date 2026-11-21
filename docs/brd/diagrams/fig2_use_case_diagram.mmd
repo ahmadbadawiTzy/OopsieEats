@@ -1,0 +1,46 @@
+%% Figure 2: UML Standard Use Case Diagram — Actors: Regular User & Administrator
+%% Standar: UML 2.5 Use Case Specification, OopsieEats
+graph LR
+    User(["👤 Regular User"])
+    Admin(["🛡️ Administrator"])
+    FirebaseAuth[["🔐 Firebase Auth"]]
+    DeviceCam[["📷 Kamera / Galeri"]]
+
+    subgraph AppBoundary ["OopsieEats Application System Boundary"]
+        UC01["UC-01: Registrasi & Login Multi-Metode"]
+        UC02["UC-02: Pengisian Biodata Wajib (Complete Profile Guard)"]
+        UC03["UC-03: Pemindaian Makanan (On-Device AI)"]
+        UC04["UC-04: Penyesuaian Porsi & Konfirmasi Gizi"]
+        UC05["UC-05: Pencatatan Makanan & Riwayat Harian"]
+        UC06["UC-06: Pemantauan Dashboard Gizi & Target Kalori"]
+        UC07["UC-07: Membaca Artikel Edukasi Gizi"]
+        UC08["UC-08: Penghapusan Akun Bertingkat (Cascade Account Deletion)"]
+
+        UC09["UC-09: Manajemen Master Data Pangan (TKPI 2020)"]
+        UC10["UC-10: Verifikasi Faktor Energi Atwater (4-4-9)"]
+        UC11["UC-11: Manajemen Artikel CMS (Draft & Publish)"]
+        UC12["UC-12: Inspeksi Audit Trail Sistem (cms_audit_logs)"]
+
+        %% Include / Extend relationships
+        UC03 -.->|«include»| UC04
+        UC04 -.->|«include»| UC05
+        UC05 -.->|«include»| UC06
+        UC01 -.->|«include»| UC02
+        UC09 -.->|«include»| UC10
+    end
+
+    User --> UC01
+    User --> UC02
+    User --> UC03
+    User --> UC05
+    User --> UC06
+    User --> UC07
+    User --> UC08
+
+    Admin --> UC09
+    Admin --> UC11
+    Admin --> UC12
+
+    UC01 --- FirebaseAuth
+    UC08 --- FirebaseAuth
+    UC03 --- DeviceCam

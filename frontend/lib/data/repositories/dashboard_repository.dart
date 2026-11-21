@@ -7,6 +7,7 @@ import 'package:oopsieeats/core/nutrition_calculator.dart';
 import 'package:oopsieeats/data/api_client.dart';
 import 'package:oopsieeats/data/models/dashboard.dart';
 import 'package:oopsieeats/data/models/meal.dart';
+import 'package:oopsieeats/data/models/profile.dart';
 
 class DashboardRepository {
   final ApiClient _apiClient;
@@ -93,7 +94,10 @@ class DashboardRepository {
 
       mealCount = mealsSnapshot.docs.length;
       for (final doc in mealsSnapshot.docs) {
-        final totals = doc.data()['totals'] as Map<String, dynamic>? ?? {};
+        final rawTotals = doc.data()['totals'];
+        final totals = rawTotals is Map
+            ? Map<String, dynamic>.from(rawTotals)
+            : const <String, dynamic>{};
         consumedCalories +=
             (totals['calories_kcal'] as num?)?.toDouble() ?? 0.0;
         consumedProtein += (totals['protein_g'] as num?)?.toDouble() ?? 0.0;
@@ -119,28 +123,30 @@ class DashboardRepository {
       }
 
       if (userData != null) {
-        if (userData['daily_target'] != null) {
-          final dt = userData['daily_target'] as Map<String, dynamic>;
+        if (userData['profile'] is Map) {
+          final profile = UserProfile.fromJson(
+            Map<String, dynamic>.from(userData['profile'] as Map),
+          );
+          final calculated = NutritionCalculator.calculateDailyTarget(
+            age: profile.calculatedAge,
+            sex: profile.sex,
+            weightKg: profile.weightKg,
+            heightCm: profile.heightCm,
+            activityLevel: profile.activityLevel,
+            goal: profile.goal,
+          );
+          targetCalories = calculated.caloriesKcal.toDouble();
+          targetProtein = calculated.proteinG;
+          targetCarbs = calculated.carbsG;
+          targetFat = calculated.fatG;
+        } else if (userData['daily_target'] is Map) {
+          final dt = Map<String, dynamic>.from(userData['daily_target'] as Map);
           targetCalories =
               (dt['calories_kcal'] as num?)?.toDouble() ?? targetCalories;
           targetProtein =
               (dt['protein_g'] as num?)?.toDouble() ?? targetProtein;
           targetCarbs = (dt['carbs_g'] as num?)?.toDouble() ?? targetCarbs;
           targetFat = (dt['fat_g'] as num?)?.toDouble() ?? targetFat;
-        } else if (userData['profile'] != null) {
-          final p = userData['profile'] as Map<String, dynamic>;
-          final calculated = NutritionCalculator.calculateDailyTarget(
-            age: (p['age'] as num).toInt(),
-            sex: p['sex'] as String,
-            weightKg: (p['weight_kg'] as num).toDouble(),
-            heightCm: (p['height_cm'] as num).toDouble(),
-            activityLevel: p['activity_level'] as String,
-            goal: p['goal'] as String,
-          );
-          targetCalories = calculated.caloriesKcal.toDouble();
-          targetProtein = calculated.proteinG;
-          targetCarbs = calculated.carbsG;
-          targetFat = calculated.fatG;
         }
       }
     }

@@ -1,215 +1,170 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:oopsieeats/core/neo_tokens.dart';
 import 'package:oopsieeats/features/onboarding/models/onboarding_tokens.dart';
 
-/// 22-point comic explosion starburst for Slide 1 background.
-class StarburstWidget extends StatelessWidget {
-  final double size;
+/// Custom painter for the multi-point Neo-Brutalist starburst / explosion shape
+/// used behind the hero character on Slide 1.
+class StarburstPainter extends CustomPainter {
+  final Color fillColor;
+  final Color borderColor;
+  final int points;
+  final double innerRadiusRatio;
+  final double borderWidth;
+  final Offset shadowOffset;
 
-  const StarburstWidget({super.key, required this.size});
+  StarburstPainter({
+    this.fillColor = OnboardingTokens.vividYellow,
+    this.borderColor = OnboardingTokens.black,
+    this.points = 20,
+    this.innerRadiusRatio = 0.72,
+    this.borderWidth = OnboardingTokens.borderWidthThick,
+    this.shadowOffset = const Offset(6.0, 6.0),
+  });
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _StarburstPainter()),
-    );
+  Path _buildStarPath(Size size, Offset offset) {
+    final path = Path();
+    final double cx = size.width / 2 + offset.dx;
+    final double cy = size.height / 2 + offset.dy;
+    final double outerR = math.min(size.width, size.height) / 2 - 8.0;
+    final double innerR = outerR * innerRadiusRatio;
+    final int totalVertices = points * 2;
+
+    for (int i = 0; i < totalVertices; i++) {
+      final double r = (i.isEven) ? outerR : innerR;
+      final double angle = (i * math.pi / points) - (math.pi / 2);
+      final double x = cx + r * math.cos(angle);
+      final double y = cy + r * math.sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    return path;
   }
-}
 
-class _StarburstPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Normalization ratio to 200x200 viewBox
-    final double sx = size.width / 200.0;
-    final double sy = size.height / 200.0;
+    // Hard offset shadow
+    final shadowPath = _buildStarPath(size, shadowOffset);
+    final shadowPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(shadowPath, shadowPaint);
 
-    final rawPoints = [
-      const Offset(100, 4),
-      const Offset(118, 36),
-      const Offset(152, 18),
-      const Offset(152, 56),
-      const Offset(190, 56),
-      const Offset(170, 88),
-      const Offset(198, 112),
-      const Offset(164, 126),
-      const Offset(176, 162),
-      const Offset(140, 158),
-      const Offset(128, 194),
-      const Offset(100, 172),
-      const Offset(72, 194),
-      const Offset(60, 158),
-      const Offset(24, 162),
-      const Offset(36, 126),
-      const Offset(2, 112),
-      const Offset(30, 88),
-      const Offset(10, 56),
-      const Offset(48, 56),
-      const Offset(48, 18),
-      const Offset(82, 36),
-    ];
+    // Main fill
+    final mainPath = _buildStarPath(size, Offset.zero);
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(mainPath, fillPaint);
 
-    Path buildPath(double dx, double dy) {
-      final path = Path();
-      for (int i = 0; i < rawPoints.length; i++) {
-        final pt = Offset(rawPoints[i].dx * sx + dx, rawPoints[i].dy * sy + dy);
-        if (i == 0) {
-          path.moveTo(pt.dx, pt.dy);
-        } else {
-          path.lineTo(pt.dx, pt.dy);
-        }
-      }
-      path.close();
-      return path;
-    }
-
-    // 1. Draw black drop shadow
-    final shadowPath = buildPath(5.0 * sx, 5.0 * sy);
-    canvas.drawPath(
-      shadowPath,
-      Paint()
-        ..color = OnboardingTokens.black
-        ..style = PaintingStyle.fill,
-    );
-
-    // 2. Draw yellow fill
-    final mainPath = buildPath(0, 0);
-    canvas.drawPath(
-      mainPath,
-      Paint()
-        ..color = OnboardingTokens.yellow
-        ..style = PaintingStyle.fill,
-    );
-
-    // 3. Draw black stroke border
-    canvas.drawPath(
-      mainPath,
-      Paint()
-        ..color = OnboardingTokens.black
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.5 * sx
-        ..strokeJoin = StrokeJoin.round,
-    );
+    // Thick border
+    final strokePaint = Paint()
+      ..color = borderColor
+      ..strokeWidth = borderWidth
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.miter;
+    canvas.drawPath(mainPath, strokePaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant StarburstPainter oldDelegate) => false;
 }
 
-/// Sunburst rays and center orange sun for Slide 3 background.
+/// Custom painter for the radial comic sunburst rays + primaryGreen/vividYellow sun on Slide 3.
 class SunburstWidget extends StatelessWidget {
   final double size;
+  final Color sunColor;
+  final Color rayColor;
 
-  const SunburstWidget({super.key, required this.size});
+  const SunburstWidget({
+    super.key,
+    required this.size,
+    this.sunColor = NeoTokens.primaryGreen,
+    this.rayColor = NeoTokens.vividYellow,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _SunburstPainter()),
-    );
-  }
-}
-
-class _SunburstPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final double sx = size.width / 200.0;
-    final double sy = size.height / 200.0;
-
-    final rayPaint = Paint()
-      ..color = OnboardingTokens.yellow
-      ..style = PaintingStyle.fill;
-
-    final strokePaint = Paint()
-      ..color = OnboardingTokens.black
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5 * sx
-      ..strokeJoin = StrokeJoin.round;
-
-    final sunFill = Paint()
-      ..color = OnboardingTokens.orange
-      ..style = PaintingStyle.fill;
-
-    final rays = [
-      [const Offset(100, 100), const Offset(80, 0), const Offset(120, 0)],
-      [const Offset(100, 100), const Offset(170, 14), const Offset(196, 44)],
-      [const Offset(100, 100), const Offset(200, 76), const Offset(200, 118)],
-      [const Offset(100, 100), const Offset(0, 76), const Offset(0, 118)],
-      [const Offset(100, 100), const Offset(30, 14), const Offset(4, 44)],
-    ];
-
-    for (final ray in rays) {
-      final path = Path()
-        ..moveTo(ray[0].dx * sx, ray[0].dy * sy)
-        ..lineTo(ray[1].dx * sx, ray[1].dy * sy)
-        ..lineTo(ray[2].dx * sx, ray[2].dy * sy)
-        ..close();
-
-      canvas.drawPath(path, rayPaint);
-      canvas.drawPath(path, strokePaint);
-    }
-
-    // Center sun
-    final center = Offset(100 * sx, 100 * sy);
-    final radius = 34 * sx;
-    canvas.drawCircle(center, radius, sunFill);
-    canvas.drawCircle(center, radius, strokePaint..strokeWidth = 3.5 * sx);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// 4-point comic star confetti
-class StarConfetti extends StatelessWidget {
-  final double size;
-  final double rotation;
-
-  const StarConfetti({super.key, this.size = 28.0, this.rotation = 0.0});
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: rotation,
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: CustomPaint(painter: _StarConfettiPainter()),
+      child: CustomPaint(
+        painter: _SunburstPainter(
+          sunColor: sunColor,
+          rayColor: rayColor,
+        ),
       ),
     );
   }
 }
 
-class _StarConfettiPainter extends CustomPainter {
+class _SunburstPainter extends CustomPainter {
+  final Color sunColor;
+  final Color rayColor;
+
+  _SunburstPainter({
+    required this.sunColor,
+    required this.rayColor,
+  });
+
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final path = Path()
-      ..moveTo(w * 0.5, 0)
-      ..quadraticBezierTo(w * 0.5, h * 0.5, w, h * 0.5)
-      ..quadraticBezierTo(w * 0.5, h * 0.5, w * 0.5, h)
-      ..quadraticBezierTo(w * 0.5, h * 0.5, 0, h * 0.5)
-      ..quadraticBezierTo(w * 0.5, h * 0.5, w * 0.5, 0)
-      ..close();
+    final center = Offset(size.width * 0.36, size.height * 0.42);
+    final maxR = math.max(size.width, size.height) * 0.85;
+    const int rayCount = 12;
+    const double sweepAngle = (2 * math.pi) / (rayCount * 2);
 
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = OnboardingTokens.yellow
-        ..style = PaintingStyle.fill,
+    final rayFill = Paint()
+      ..color = rayColor
+      ..style = PaintingStyle.fill;
+
+    final borderStroke = Paint()
+      ..color = NeoTokens.black
+      ..strokeWidth = OnboardingTokens.borderWidthThick
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < rayCount; i++) {
+      final startAngle = i * 2 * sweepAngle;
+      final path = Path()
+        ..moveTo(center.dx, center.dy)
+        ..arcTo(
+          Rect.fromCircle(center: center, radius: maxR),
+          startAngle,
+          sweepAngle,
+          false,
+        )
+        ..close();
+
+      canvas.drawPath(path, rayFill);
+      canvas.drawPath(path, borderStroke);
+    }
+
+    // Center circle sun with hard black offset shadow
+    final sunRadius = size.width * 0.22;
+    canvas.drawCircle(
+      center + const Offset(5.0, 5.0),
+      sunRadius,
+      Paint()..color = NeoTokens.black,
     );
-    canvas.drawPath(
-      path,
+    canvas.drawCircle(
+      center,
+      sunRadius,
+      Paint()..color = sunColor,
+    );
+    canvas.drawCircle(
+      center,
+      sunRadius,
       Paint()
-        ..color = OnboardingTokens.black
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0,
+        ..color = NeoTokens.black
+        ..strokeWidth = OnboardingTokens.borderWidthThick + 0.8
+        ..style = PaintingStyle.stroke,
     );
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SunburstPainter oldDelegate) => false;
 }

@@ -1,0 +1,60 @@
+%% UML Component Diagram: Development & Build Toolchain Architecture — OopsieEats
+flowchart TB
+    subgraph DevWorkstation ["DEVELOPER WORKSTATION (Linux / macOS / Windows)"]
+        direction TB
+        subgraph Toolchain ["Core Toolchain & SDKs"]
+            FlutterSDK["Flutter SDK 3.24.x\n(Stable Channel / Impeller Engine)"]
+            DartSDK["Dart SDK ^3.13.4\n(Pattern Matching, Isolates, Class Modifiers)"]
+            FlutterSDK --> DartSDK
+        end
+
+        subgraph AndroidStack ["Android Native Build System"]
+            GradlePlugin["Android Gradle Plugin 8.3.2\n(Java 17 Bytecode, Kotlin 1.9+)"]
+            AndroidSDK["Android SDK 36\n(compileSdk 36, targetSdk 36, minSdk 23)"]
+            AAPTRules["aaptOptions { noCompress 'tflite' }\n(Direct Memory-Mapped Model IO)"]
+            GradlePlugin --> AndroidSDK
+            AndroidSDK --> AAPTRules
+        end
+
+        subgraph IOSStack ["iOS Native Build System"]
+            CocoaPods["CocoaPods 1.14+\n(use_frameworks! :linkage => :static)"]
+            XcodeBuild["Xcode 15 / 16 Toolchain\n(Deployment Target: iOS 13.0+)"]
+            CocoaPods --> XcodeBuild
+        end
+
+        subgraph LocalSecrets ["Environment & Credentials"]
+            EnvFile["assets/env/.env\n(SUPABASE_URL, ANON_KEY)"]
+            GoogleServices["google-services.json\n(Firebase Project: asia-southeast2)"]
+        end
+    end
+
+    subgraph BuildOutputs ["BUILD ARTIFACTS"]
+        direction TB
+        AAB["Android App Bundle (.aab)\nSplit APKs by ABI (~28 MB download)"]
+        IPA["iOS Archive (.ipa)\nTestFlight & App Store Package"]
+    end
+
+    subgraph CloudServices ["MANAGED CLOUD BACKENDS"]
+        FirebaseCLI["Firebase CLI & Tools\n(Cloud Firestore & Auth Integration)"]
+        SupabaseCLI["Supabase Management CLI\n(Storage Bucket: food-history-images)"]
+    end
+
+    Toolchain --> AndroidStack
+    Toolchain --> IOSStack
+    LocalSecrets --> Toolchain
+    AndroidStack --> AAB
+    IOSStack --> IPA
+    Toolchain <--> FirebaseCLI
+    Toolchain <--> SupabaseCLI
+
+    classDef dev fill:#E8EEF8,stroke:#3B82F6,color:#1E3A8A,stroke-width:1.5px;
+    classDef android fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:1.5px;
+    classDef ios fill:#FEF3C7,stroke:#D97706,color:#92400E,stroke-width:1.5px;
+    classDef artifact fill:#F3E8FF,stroke:#8B5CF6,color:#4C1D95,stroke-width:1.5px;
+    classDef cloud fill:#F1F5F9,stroke:#64748B,color:#0F172A,stroke-width:1.5px;
+
+    class Toolchain,LocalSecrets dev;
+    class AndroidStack android;
+    class IOSStack ios;
+    class BuildOutputs artifact;
+    class CloudServices cloud;

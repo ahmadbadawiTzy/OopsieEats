@@ -1,0 +1,42 @@
+%% Diagram 11: Database Logical Schema Tree Diagram — OopsieEats
+flowchart TD
+    Root["🔥 Cloud Firestore Root Database (asia-southeast2 Jakarta)"]
+
+    subgraph UserDomain ["Domain Pengguna & Catatan Makan"]
+        UsersCol["koleksi: /users/{userId}"]
+        MealsSub["subkoleksi: /users/{userId}/meals/{mealId}"]
+        UsersCol -->|Subkoleksi Multi-Tenant 1:N| MealsSub
+    end
+
+    subgraph MasterDomain ["Domain Master Pangan"]
+        FoodsCol["koleksi: /foods/{foodId}\n(29 Bahan Makanan TKPI 2020)"]
+    end
+
+    subgraph CMSDomain ["Domain Edukasi & Audit Trail"]
+        ArticlesCol["koleksi: /cms_articles/{articleId}\n(Artikel Edukasi Gizi)"]
+        AuditCol["koleksi: /cms_audit_logs/{logId}\n(Catatan Perubahan Tak-Terubah)"]
+    end
+
+    Root --> UsersCol
+    Root --> FoodsCol
+    Root --> ArticlesCol
+    Root --> AuditCol
+
+    subgraph StorageDomain ["Domain Supabase Storage (Private Object Storage)"]
+        SupaRoot["☁️ Bucket: food-history-images"]
+        MealImages["Folder: /{userId}/{mealId}.jpg\n(Kompresi JPEG 1024px, RLS Policy)"]
+        ProfileImages["Folder: /{userId}/profile.jpg\n(Kompresi JPEG 512px, RLS Policy)"]
+        SupaRoot --> MealImages
+        SupaRoot --> ProfileImages
+    end
+
+    MealsSub -.->|image_path menyambung ke| MealImages
+    UsersCol -.->|profile_photo_url menyambung ke| ProfileImages
+
+    classDef root fill:#EFF6FF,stroke:#2563EB,color:#1E40AF,stroke-width:2px;
+    classDef domain fill:#FFFFFF,stroke:#64748B,color:#1E293B,stroke-width:1.5px;
+    classDef storage fill:#ECFDF5,stroke:#10B981,color:#065F46,stroke-width:1.5px;
+
+    class Root root;
+    class UsersCol,MealsSub,FoodsCol,ArticlesCol,AuditCol domain;
+    class SupaRoot,MealImages,ProfileImages storage;

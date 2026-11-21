@@ -126,9 +126,16 @@ class AuthProvider extends ChangeNotifier {
   String get primaryProviderId => _repository.getPrimaryProviderId();
 
   /// Updates current user profile and synchronizes completion state in memory.
-  void updateProfile(UserProfile profile) {
+  void updateProfile(UserProfile profile, {String? fullName}) {
+    final cleanName = fullName?.trim();
+    if (cleanName != null && cleanName.isNotEmpty) {
+      _savedName = cleanName;
+    }
     if (_currentUser != null) {
       _currentUser = _currentUser!.copyWith(
+        fullName: (cleanName != null && cleanName.isNotEmpty)
+            ? cleanName
+            : _currentUser!.fullName,
         profile: profile,
         isProfileComplete: true,
       );
@@ -136,7 +143,9 @@ class AuthProvider extends ChangeNotifier {
       _currentUser = User(
         id: (_savedEmail ?? '').hashCode.abs(),
         email: _savedEmail ?? '',
-        fullName: _savedName ?? 'User',
+        fullName: (cleanName != null && cleanName.isNotEmpty)
+            ? cleanName
+            : (_savedName ?? 'User'),
         role: _savedRole ?? 'user',
         isActive: true,
         isProfileComplete: true,

@@ -461,5 +461,164 @@ void main() {
         }
       },
     );
+
+    testWidgets('15. Food items strictly clear the Face Safe Zone on Slide 2', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createTestWidget(child: const OnboardingScreen()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(AppIcons.arrowForward));
+      await tester.pumpAndSettle();
+
+      final stageRenderBox = tester.renderObject<RenderBox>(
+        find.byType(SlideNutritionAwareness),
+      );
+      final stageSize = stageRenderBox.size;
+      final double w = stageSize.width;
+      final double h = stageSize.height;
+
+      // Face Safe Zone on Slide 2: Horizontal [0.27 * w, 0.72 * w], Vertical [0.20 * h, 0.50 * h]
+      final faceSafeZone = Rect.fromLTRB(
+        w * 0.27,
+        h * 0.20,
+        w * 0.72,
+        h * 0.50,
+      );
+
+      final foodImages = find.descendant(
+        of: find.byType(SlideNutritionAwareness),
+        matching: find.byType(Image),
+      );
+
+      for (final element in tester.elementList(foodImages)) {
+        final renderBox = element.renderObject as RenderBox?;
+        if (renderBox != null && renderBox.hasSize) {
+          final localPos = renderBox.localToGlobal(
+            Offset.zero,
+            ancestor: stageRenderBox,
+          );
+          final rect = Rect.fromLTWH(
+            localPos.dx,
+            localPos.dy,
+            renderBox.size.width,
+            renderBox.size.height,
+          );
+          final imageWidget = element.widget as Image;
+          if (imageWidget.image is AssetImage) {
+            final asset = imageWidget.image as AssetImage;
+            if (asset.assetName.contains('food')) {
+              final intersects = rect.overlaps(faceSafeZone);
+              expect(
+                intersects,
+                isFalse,
+                reason:
+                    '${asset.assetName} overlaps Slide 2 Face Safe Zone: $rect vs $faceSafeZone',
+              );
+            }
+          }
+        }
+      }
+    });
+
+    testWidgets('16. Food items strictly clear the Face Safe Zone on Slide 3', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createTestWidget(child: const OnboardingScreen()),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(AppIcons.arrowForward));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(AppIcons.arrowForward));
+      await tester.pumpAndSettle();
+
+      final stageRenderBox = tester.renderObject<RenderBox>(
+        find.byType(SlideHealthyHabits),
+      );
+      final stageSize = stageRenderBox.size;
+      final double w = stageSize.width;
+      final double h = stageSize.height;
+
+      // Face Safe Zone on Slide 3: Horizontal [0.28 * w, 0.72 * w], Vertical [0.22 * h, 0.52 * h]
+      final faceSafeZone = Rect.fromLTRB(
+        w * 0.28,
+        h * 0.22,
+        w * 0.72,
+        h * 0.52,
+      );
+
+      final foodImages = find.descendant(
+        of: find.byType(SlideHealthyHabits),
+        matching: find.byType(Image),
+      );
+
+      for (final element in tester.elementList(foodImages)) {
+        final renderBox = element.renderObject as RenderBox?;
+        if (renderBox != null && renderBox.hasSize) {
+          final localPos = renderBox.localToGlobal(
+            Offset.zero,
+            ancestor: stageRenderBox,
+          );
+          final rect = Rect.fromLTWH(
+            localPos.dx,
+            localPos.dy,
+            renderBox.size.width,
+            renderBox.size.height,
+          );
+          final imageWidget = element.widget as Image;
+          if (imageWidget.image is AssetImage) {
+            final asset = imageWidget.image as AssetImage;
+            if (asset.assetName.contains('food')) {
+              final intersects = rect.overlaps(faceSafeZone);
+              expect(
+                intersects,
+                isFalse,
+                reason:
+                    '${asset.assetName} overlaps Slide 3 Face Safe Zone: $rect vs $faceSafeZone',
+              );
+            }
+          }
+        }
+      }
+    });
+
+    testWidgets(
+      '17. Renders cleanly with disableAnimations: true and 1.2x text scale on compact viewport',
+      (tester) async {
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              Provider<ApiClient>.value(value: mockApiClient),
+              ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+            ],
+            child: MediaQuery(
+              data: const MediaQueryData(
+                size: Size(360, 800),
+                disableAnimations: true,
+                textScaler: TextScaler.linear(1.2),
+              ),
+              child: MaterialApp(
+                theme: AppTheme.lightTheme,
+                home: const OnboardingScreen(),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.byIcon(AppIcons.arrowForward));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.byIcon(AppIcons.arrowForward));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }
